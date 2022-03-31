@@ -1,9 +1,9 @@
-import { Entity, PrimaryKey, Property, ManyToOne, ManyToMany, OneToOne } from '@mikro-orm/core'
-import User from './User'
-import Server from './Server'
+import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core'
+import { User } from './User'
+import { Server } from './Server'
 
 @Entity()
-export default class Message {
+export class Message {
   // The primary key of the message
   @PrimaryKey()
   id!: number
