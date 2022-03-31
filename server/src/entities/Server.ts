@@ -1,64 +1,47 @@
-import {
-  Entity,
-  OneToMany,
-  PrimaryKey,
-  Property,
-  ManyToOne,
-} from "@mikro-orm/core";
-import User from "./User";
-import Message from "./Message";
+import { Entity, PrimaryKey, Property, Collection, OneToMany, ManyToOne } from '@mikro-orm/core'
+import User from './User'
+import Message from './Message'
 
 @Entity()
 export default class Server {
   @PrimaryKey()
-  id!: number;
+  id!: number
 
   @Property()
-  name!: string;
+  name!: string
 
+  // Server can have one owner.
   @Property()
-  createdAt!: Date;
+  owner!: User
 
+  // icon of the server
+  @Property()
+  icon!: string
+
+  // Server can have many channels.
+  @Property({ type: 'text' })
+  channels!: string
+
+  // The date the user was created
+  @Property()
+  createdAt?: Date = new Date()
+
+  // The date the user was updated
   @Property({ onUpdate: () => new Date() })
-  updatedAt!: Date;
+  updatedAt?: Date = new Date()
 
-  @ManyToOne()
-  users!: User[];
+  // One server can have many messages.
+  @OneToMany(() => Message, message => message.server)
+  messages = new Collection<Message>(this)
 
-  @Property()
-  messages!: Message[];
+  // Server can have many users.
+  @ManyToOne(() => User)
+  users!: User
 
-  // * This is for demonstration with OOP only
-  // * Real setup will be through express routes
-  constructor(name: string) {
-    this.name = name;
-    this.createdAt = new Date();
-    this.updatedAt = new Date();
-    this.users = [];
-    this.messages = [];
-  }
-
-  addMessage(message: Message) {
-    this.messages.push(message);
-  }
-
-  addUser(user: User) {
-    this.users.push(user);
-  }
-
-  removeUser(user: User) {
-    this.users = this.users.filter((u) => u !== user);
-  }
-
-  removeMessage(message: Message) {
-    this.messages = this.messages.filter((m) => m !== message);
-  }
-
-  getMessages() {
-    return this.messages;
-  }
-
-  getUsers() {
-    return this.users;
+  constructor(name: string, owner: User, icon: string, channels: string) {
+    this.name = name
+    this.owner = owner
+    this.icon = icon
+    this.channels = channels
   }
 }

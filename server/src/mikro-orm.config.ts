@@ -1,15 +1,24 @@
-import { __prod__ } from "./constants";
-import { MikroORM } from "@mikro-orm/core";
-import { TsMorphMetadataProvider } from "@mikro-orm/reflection";
-import "dotenv/config";
+import { __prod__ } from './constants'
+import { MikroORM } from '@mikro-orm/core'
+import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
+import path from 'path'
+import 'dotenv/config'
 
 export default {
-  dbName: "smtemp",
-  type: "postgresql",
-  entities: [__dirname + "/entities/*.ts"],
+  migrations: {
+    path: path.join(__dirname, './migrations'), // path to the folder with migrations
+    glob: '!(*.d).{js,ts}', // how to match migration files (all .js and .ts files, but not .d.ts)
+    allOrNothing: true, // if true, all migrations must be executed in one go
+    disableForeignKeys: true, // if true, foreign keys will be disabled during migration
+    snapshot: false, // whether to create a snapshot file
+  },
+  dbName: 'smtemp',
+  type: 'postgresql',
+  entities: [__dirname + '/entities/*.ts'],
   metadataProvider: TsMorphMetadataProvider,
   allowGlobalContext: true,
   user: process.env.PG_USER,
   password: process.env.PG_PASS,
   debug: !__prod__,
-} as Parameters<typeof MikroORM.init>[0];
+  // Type of MikroORM.init method.
+} as Parameters<typeof MikroORM.init>[0]
