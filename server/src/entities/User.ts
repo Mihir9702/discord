@@ -37,7 +37,7 @@ export class User {
   // One user can have many friends. Friends are users that are connected to the user.
   @Field(() => [User])
   @Property()
-  friends = new Collection<User>(this)
+  friends?: Collection<User>
 
   // The date the user was created
   @Field(() => String)
@@ -56,12 +56,4 @@ export class User {
   // One user can have many servers.
   @OneToMany(() => Server, user => user.users)
   servers = new Collection<Server>(this)
-
-  constructor(name: string, email: string, password: string, nameId: number, avatar: string) {
-    this.name = name
-    this.email = email
-    this.password = password
-    this.nameId = nameId
-    this.avatar = avatar
-  }
 }

@@ -9,11 +9,6 @@ export class UserResolver {
     return em.find(User, {})
   }
 
-  @Query(() => User, { nullable: true })
-  post(@Arg('id', () => Int) id: number, @Ctx() { em }: MyContext): Promise<User | null> {
-    return em.findOne(User, { id })
-  }
-
   // Create a new user 👶
   @Mutation(() => User)
   async createUser(

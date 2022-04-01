@@ -1,29 +1,29 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core'
 import { User } from './User'
 import { Server } from './Server'
+import { Field, Int } from 'type-graphql'
 
 @Entity()
 export class Message {
   // The primary key of the message
+  @Field(() => Int)
   @PrimaryKey()
   id!: number
 
-  @Property()
-  name!: string
-
   // The message content
+  @Field(() => String)
   @Property()
   content!: string
 
   // * I don't know if I will need this.
   // The user that sent the message
   @Property({ type: 'number' })
-  userId!: number
+  userId?: number
 
   // * I don't know if I will need this.
   // The server that the message was sent to
   @Property({ type: 'number' })
-  serverId!: number
+  serverId?: number
 
   // The date the user was created
   @Property()
@@ -35,15 +35,8 @@ export class Message {
 
   // The user that sent the message
   @ManyToOne(() => User)
-  user!: User
+  user?: User
 
   @ManyToOne(() => Server)
-  server!: Server
-
-  constructor(name: string, content: string, userId: number, serverId: number) {
-    this.name = name
-    this.content = content
-    this.userId = userId
-    this.serverId = serverId
-  }
+  server?: Server
 }
