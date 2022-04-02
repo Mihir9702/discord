@@ -11,10 +11,12 @@ export class User {
   id!: number
 
   // * fullname of the user: name@nameId
+  // * ! | name, username, password,
+  // * ? | email, nameId, friends,
 
   @Field(() => String)
   @Property()
-  name!: string
+  name?: string
 
   @Field(() => String)
   @Property({ type: 'text' })
@@ -22,7 +24,10 @@ export class User {
 
   @Field(() => String)
   @Property({ type: 'text' })
-  password?: string
+  username!: string
+
+  @Property({ type: 'text' })
+  password!: string
 
   // 4 digit number that is unique to each user
   @Field(() => Int)

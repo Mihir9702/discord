@@ -3,7 +3,7 @@ import { User } from './User'
 import { Message } from './Message'
 import { Field, ObjectType, Int } from 'type-graphql'
 
-ObjectType()
+@ObjectType()
 @Entity()
 export class Server {
   @Field(() => Int)

@@ -12,7 +12,7 @@ export default {
     disableForeignKeys: true, // if true, foreign keys will be disabled during migration
     snapshot: false, // whether to create a snapshot file
   },
-  dbName: 'smtemp',
+  dbName: 'imari',
   type: 'postgresql',
   entities: [__dirname + '/entities/*.ts'],
   metadataProvider: TsMorphMetadataProvider,

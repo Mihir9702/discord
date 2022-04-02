@@ -1,8 +1,9 @@
 import { Entity, PrimaryKey, Property, ManyToOne } from '@mikro-orm/core'
 import { User } from './User'
 import { Server } from './Server'
-import { Field, Int } from 'type-graphql'
+import { Field, Int, ObjectType } from 'type-graphql'
 
+@ObjectType()
 @Entity()
 export class Message {
   // The primary key of the message
