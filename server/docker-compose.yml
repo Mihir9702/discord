@@ -1,0 +1,20 @@
+version: '3'
+services:
+  web:
+    container_name: web
+    build: .
+    ports:
+      - '80:80'
+    volumes:
+      - .:/web
+  db:
+    image: postgres:latest
+    ports:
+      - '5432:5432'
+    container_name: db
+    restart: always
+    env_file:
+      - .env
+
+volumes:
+  db-data:

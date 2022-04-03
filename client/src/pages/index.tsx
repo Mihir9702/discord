@@ -1,7 +1,13 @@
+import Navbar from '@components/Navbar'
 import type { NextPage } from 'next'
 
 const Home: NextPage = () => {
-  return <></>
+  return (
+    <>
+      <Navbar />
+      {/* Hero Section */}
+    </>
+  )
 }
 
 export default Home

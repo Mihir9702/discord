@@ -1,4 +1,4 @@
-import { NextPage } from "next";
+import { NextPage } from 'next'
 
 const Home: NextPage = () => {
   return (
@@ -16,7 +16,7 @@ const Home: NextPage = () => {
         <h2>Users</h2>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Home;
+export default Home

@@ -2,7 +2,6 @@ import { __prod__ } from './constants'
 import { MikroORM } from '@mikro-orm/core'
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection'
 import path from 'path'
-import 'dotenv/config'
 
 export default {
   migrations: {
@@ -17,8 +16,8 @@ export default {
   entities: [__dirname + '/entities/*.ts'],
   metadataProvider: TsMorphMetadataProvider,
   allowGlobalContext: true,
-  user: process.env.PG_USER,
-  password: process.env.PG_PASS,
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
   debug: !__prod__,
   // Type of MikroORM.init method.
 } as Parameters<typeof MikroORM.init>[0]
