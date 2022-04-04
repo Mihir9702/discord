@@ -13,11 +13,13 @@ export default {
   },
   dbName: 'imari',
   type: 'postgresql',
+  host: 'localhost',
+  port: 5432,
   entities: [__dirname + '/entities/*.ts'],
   metadataProvider: TsMorphMetadataProvider,
   allowGlobalContext: true,
-  user: process.env.POSTGRES_USER,
-  password: process.env.POSTGRES_PASSWORD,
+  user: process.env.POSTGRES_USER || 'postgres',
+  password: process.env.POSTGRES_PASSWORD || 'postgres',
   debug: !__prod__,
   // Type of MikroORM.init method.
 } as Parameters<typeof MikroORM.init>[0]

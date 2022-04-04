@@ -31,6 +31,17 @@ class LoginInput {
 
 @Resolver()
 export class UserResolver {
+  // Find user by session id 🔎
+  @Query(() => User, { nullable: true })
+  async me(@Ctx() { req, em }: MyContext) {
+    if (!req.session.userId) {
+      return null
+    }
+    const user = await em.findOne(User, { id: req.session.userId })
+    return user
+  }
+
+  // Testing purposes only 🧪
   @Query(() => [User])
   users(@Ctx() { em }: MyContext): Promise<User[]> {
     return em.find(User, {})
@@ -68,6 +79,7 @@ export class UserResolver {
     return { ...newUser }
   }
 
+  // Login 💳
   @Mutation(() => User)
   async login(@Arg('params') params: LoginInput, @Ctx() { em, req }: MyContext): Promise<User> {
     // Find user
@@ -81,12 +93,12 @@ export class UserResolver {
       throw new Error('Invalid username or password')
     }
 
-    // @ts-ignore
     req.session.userId = user.id
 
     return user
   }
 
+  // ! Below is not complete 🤔
   // Update a user 🌀
   @Mutation(() => User)
   async updateUser(
