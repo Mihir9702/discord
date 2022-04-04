@@ -3,7 +3,7 @@ import Link from 'next/link'
 import logo from '@assets/logo.svg'
 import Image from 'next/image'
 
-const Navbar = () => {
+const Nav = () => {
   const [display, setDisplay] = useState('hidden')
   const [menu, setMenu] = useState(false)
 
@@ -17,7 +17,7 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="z-10 p-5 py-12 shadow-md md:flex md:inset-auto absolute w-full md:items-center">
+    <nav className="z-10 p-5 py-12 shadow-md md:flex md:inset-auto relative w-full md:items-center">
       <div className="flex items-center">
         <div className="w-max">
           <Link href="/">
@@ -118,4 +118,4 @@ const CloseIcon: React.FC = () => {
   )
 }
 
-export default Navbar
+export default Nav
