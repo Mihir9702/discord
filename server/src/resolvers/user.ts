@@ -15,11 +15,6 @@ class SignupInput {
   password!: string
 }
 
-class SignupResponse extends User {
-  @Field()
-  token?: string
-}
-
 @InputType()
 class LoginInput {
   @Field()
@@ -49,17 +44,15 @@ export class UserResolver {
 
   // Create a new user 👶
   @Mutation(() => User)
-  async signup(
-    @Arg('params') params: SignupInput,
-    @Ctx() { em }: MyContext,
-  ): Promise<SignupResponse> {
+  async signup(@Arg('params') params: SignupInput, @Ctx() { em, req }: MyContext): Promise<User> {
     // Find if user already exists
     const user = await em.findOne(User, { username: params.username.toLowerCase() })
 
     // Validation Checking
     if (user) throw new Error('Username already taken')
-    if (params.username.length < 4) throw new Error('Username must be at least 4 characters long')
-    if (params.password.length < 8) throw new Error('Password must be at least 8 characters long')
+    // ** Validation Checking OFF **
+    // if (params.username.length < 4) throw new Error('Username must be at least 4 characters long')
+    // if (params.password.length < 8) throw new Error('Password must be at least 8 characters long')
 
     // Hash password
     const hashedPassword = await hash(params.password, await genSalt(10))
@@ -76,7 +69,9 @@ export class UserResolver {
       throw new Error('Error creating user')
     }
 
-    return { ...newUser }
+    req.session.userId = newUser.id
+
+    return newUser
   }
 
   // Login 💳

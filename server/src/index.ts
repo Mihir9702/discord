@@ -1,12 +1,13 @@
 import 'reflect-metadata'
 import express from 'express'
 import mikroConfig from './mikro-orm.config'
+import session from 'express-session'
+import connectRedis from 'connect-redis'
+import cors from 'cors'
 import { MikroORM } from '@mikro-orm/core'
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
 import { createClient } from 'redis'
-import session from 'express-session'
-import connectRedis from 'connect-redis'
 import { __prod__ } from './constants'
 import { MyContext } from './types'
 
@@ -17,16 +18,19 @@ const main = async () => {
   const app = express()
 
   // ! Redis not working at the moment
-  // const RedisStore = connectRedis(session)
-  // const redisClient = createClient()
-  // redisClient.connect()
+  const RedisStore = connectRedis(session)
+  const redisClient = createClient()
+  redisClient.connect()
+
+  app.use(cors({ origin: 'http://localhost:3001', credentials: true }))
 
   app.use(
     session({
-      name: 'qid', // cookie name
+      name: 'dyx',
       // store: new RedisStore({
       //   client: redisClient,
       //   disableTouch: true, // disable touch to prevent session expiration
+      //   disableTTL: true, // disable ttl to prevent session expiration
       // }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
@@ -48,7 +52,7 @@ const main = async () => {
     context: ({ req, res }): MyContext => ({ em: orm.em, req, res }),
   })
 
-  apolloServer.applyMiddleware({ app })
+  apolloServer.applyMiddleware({ app, cors: false })
 
   app.listen(3000, () => console.log('🚀 Server started on http://localhost:3000'))
 }

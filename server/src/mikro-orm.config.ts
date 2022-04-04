@@ -11,9 +11,9 @@ export default {
     disableForeignKeys: true, // if true, foreign keys will be disabled during migration
     snapshot: false, // whether to create a snapshot file
   },
-  dbName: 'imari',
   type: 'postgresql',
   host: 'localhost',
+  dbName: 'imari',
   port: 5432,
   entities: [__dirname + '/entities/*.ts'],
   metadataProvider: TsMorphMetadataProvider,

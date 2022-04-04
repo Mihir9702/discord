@@ -17,7 +17,7 @@ const Nav = () => {
   }
 
   return (
-    <nav className="z-10 p-5 py-12 shadow-md md:flex md:inset-auto relative w-full md:items-center">
+    <nav className="z-10 p-5 py-12 shadow-lg lg:flex lg:inset-auto relative w-full lg:items-center">
       <div className="flex items-center">
         <div className="w-max">
           <Link href="/">
@@ -31,7 +31,7 @@ const Nav = () => {
         </div>
       </div>
       <ul
-        className={`${display} text-center text-xl relative w-full justify-center md:flex md:items-center`}
+        className={`${display} text-center text-xl relative w-full justify-center lg:flex lg:items-center`}
       >
         <ListLink href="/downlaod" text="Download" />
         <ListLink href="/about" text="About" />
@@ -39,20 +39,25 @@ const Nav = () => {
         <ListLink href="/roadmap" text="Roadmap" />
         <ListLink href="/contact" text="Contact" />
       </ul>
-      <div className={`text-center md:flex justify-end items-center`}>
-        <Link href="/signup">
-          <a className="text- hover:text-gray-900">
-            <span className="text-xl">Signup</span>
-          </a>
-        </Link>
-        <Link href="/login">
-          <a className="text-gray-800 hover:text-gray-900 ml-4">
-            <span className="text-xl border-2 border-gray-900 p-2 px-3 rounded-md">Login</span>
-          </a>
-        </Link>
-      </div>
       {/* Two links signup / login */}
-      <button className="pointer absolute top-0 right-0 p-8 md:hidden" onClick={handleMenuToggle}>
+      <div className={`text-center ${display} lg:flex justify-end items-center`}>
+        <div className="flex flex-col lg:flex-row gap-6">
+          <Link href="/signup">
+            <a className="text-gray-900 hover:text-gray-400">
+              <span className="text-xl">Signup</span>
+            </a>
+          </Link>
+          <Link href="/login">
+            <a className="text-gray-900 hover:text-gray-400">
+              <span className="text-xl p-2 px-3">Login</span>
+            </a>
+          </Link>
+        </div>
+      </div>
+      <button
+        className="pointer absolute top-0 right-0 p-8 py-14 lg:hidden"
+        onClick={handleMenuToggle}
+      >
         {menu ? <CloseIcon /> : <MenuIcon />}
       </button>
     </nav>
@@ -66,7 +71,7 @@ interface ListLink {
 
 const ListLink: React.FC<ListLink> = ({ href, text }) => {
   return (
-    <li className="mx-4 my-6 cursor-pointer md:my-0 text-gray-900 hover:text-gray-400">
+    <li className="mx-4 my-6 cursor-pointer lg:my-0 text-gray-900 hover:text-gray-400">
       <Link href={href}>
         <a>{text}</a>
       </Link>
