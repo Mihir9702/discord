@@ -11,13 +11,11 @@ import ExtraSection from '@components/ThirdSection'
 const Home: NextPage = () => {
   return (
     <>
-      <Nav />
       <HeroSection />
       <PreviewSection />
       <FeatureSection />
       <ExtraSection />
       <CallToAction />
-      <Footer />
     </>
   )
 }

@@ -26,6 +26,14 @@ class LoginInput {
 
 @Resolver()
 export class UserResolver {
+  // Testing purposes only 🧪 | ** REMOVE IN PROD **
+  ///////////////////////////////////////////////////
+  @Query(() => [User])
+  users(@Ctx() { em }: MyContext): Promise<User[]> {
+    return em.find(User, {})
+  }
+  ///////////////////////////////////////////////////
+
   // Find user by session id 🔎
   @Query(() => User, { nullable: true })
   async me(@Ctx() { req, em }: MyContext) {
@@ -36,57 +44,44 @@ export class UserResolver {
     return user
   }
 
-  // Testing purposes only 🧪
-  @Query(() => [User])
-  users(@Ctx() { em }: MyContext): Promise<User[]> {
-    return em.find(User, {})
-  }
-
   // Create a new user 👶
   @Mutation(() => User)
   async signup(@Arg('params') params: SignupInput, @Ctx() { em, req }: MyContext): Promise<User> {
     // Find if user already exists
-    const user = await em.findOne(User, { username: params.username.toLowerCase() })
+    const foundUser = await em.findOne(User, { username: params.username.toLowerCase() })
 
-    // Validation Checking
-    if (user) throw new Error('Username already taken')
-    // ** Validation Checking OFF **
-    // if (params.username.length < 4) throw new Error('Username must be at least 4 characters long')
-    // if (params.password.length < 8) throw new Error('Password must be at least 8 characters long')
+    if (foundUser) throw new Error('Username already taken')
+    if (params.username.length < 3) throw new Error('Username must be at least 3 characters')
+    if (params.password.length < 8) throw new Error('Password must be at least 8 characters')
 
-    // Hash password
     const hashedPassword = await hash(params.password, await genSalt(10))
 
-    // Create user
-    const newUser = em.create(User, {
+    const user = em.create(User, {
       ...params,
       password: hashedPassword,
     })
 
     try {
-      await em.persistAndFlush(newUser)
+      await em.persistAndFlush(user)
     } catch (err) {
       throw new Error('Error creating user')
     }
 
-    req.session.userId = newUser.id
+    req.session.userId = user.id
 
-    return newUser
+    return user
   }
 
   // Login 💳
   @Mutation(() => User)
   async login(@Arg('params') params: LoginInput, @Ctx() { em, req }: MyContext): Promise<User> {
-    // Find user
     const user = await em.findOne(User, { username: params.username.toLowerCase() })
 
-    // Compare password
+    if (!params.password) throw new Error('Password not provided')
+
     const valid = await compare(params.password, user!.password)
 
-    // Throw error if username or password is invalid
-    if (!user || !valid) {
-      throw new Error('Invalid username or password')
-    }
+    if (!user || !valid) throw new Error('Invalid username or password')
 
     req.session.userId = user.id
 
