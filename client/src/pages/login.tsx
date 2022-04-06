@@ -16,12 +16,16 @@ const Login: NextPage = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log(params)
+
     const response = await login({
       params,
     })
-    console.log(response)
-    setError(response.error?.graphQLErrors[0].message)
+
+    if (response.error) {
+      setError(response.error?.graphQLErrors[0].message)
+    } else {
+      router.push('/')
+    }
   }
 
   return (

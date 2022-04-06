@@ -1,85 +1,51 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import logo from '@assets/logo.svg'
 import Image from 'next/image'
+import { useMeQuery, useLogoutMutation } from '../generated/graphql'
+import NavWrapper from './NavWrapper'
 
 const Nav = () => {
   const [display, setDisplay] = useState('hidden')
   const [menu, setMenu] = useState(false)
 
-  const handleMenuToggle = () => {
-    setMenu(!menu)
-    if (!menu) {
-      setDisplay('block')
-    } else {
-      setDisplay('hidden')
-    }
+  // useLogoutMutation
+  const [, logout] = useLogoutMutation()
+  const handleLogout = async () => {
+    await logout()
   }
 
-  return (
-    <nav className="z-10 p-5 py-12 shadow-lg lg:flex lg:inset-auto relative w-full lg:items-center">
-      <div className="flex items-center">
-        <div className="w-max">
-          <Link href="/">
-            <a className="flex justify-center items-center gap-4 text-gray-800 hover:text-gray-900">
-              <div className="w-10">
-                <Image src={logo} alt="logo" />
-              </div>
-              <span className="text-2xl font-bold">Imari</span>
-            </a>
-          </Link>
-        </div>
-      </div>
-      <ul
-        className={`${display} text-center text-xl relative w-full justify-center lg:flex lg:items-center`}
-      >
-        <ListLink href="/downlaod" text="Download" />
-        <ListLink href="/about" text="About" />
-        <ListLink href="/projects" text="Projects" />
-        <ListLink href="/roadmap" text="Roadmap" />
-        <ListLink href="/contact" text="Contact" />
-      </ul>
-      {/* Two links signup / login */}
-      <div className={`text-center ${display} lg:flex justify-end items-center`}>
-        <div className="flex flex-col lg:flex-row gap-6">
-          <Link href="/signup">
-            <a className="text-gray-900 hover:text-gray-400">
-              <span className="text-xl">Signup</span>
-            </a>
-          </Link>
-          <Link href="/login">
-            <a className="text-gray-900 hover:text-gray-400">
-              <span className="text-xl p-2 px-3">Login</span>
-            </a>
-          </Link>
-        </div>
-      </div>
-      <button
-        className="pointer absolute top-0 right-0 p-8 py-14 lg:hidden"
-        onClick={handleMenuToggle}
-      >
-        {menu ? <CloseIcon /> : <MenuIcon />}
-      </button>
-    </nav>
-  )
-}
+  // User is not logged in
+  // get the cookie named 'dyx' and check if it's empty
+  // if it's empty, then the user is not logged in
 
-interface ListLink {
-  href: string
-  text: string
-}
-
-const ListLink: React.FC<ListLink> = ({ href, text }) => {
+  // return (
+  //   <NavWrapper>
+  //     <>
+  //       <Link href="/signup">
+  //         <a className="text-gray-900 hover:text-gray-400">
+  //           <span className="text-xl">Signup</span>
+  //         </a>
+  //       </Link>
+  //       <Link href="/login">
+  //         <a className="text-gray-900 hover:text-gray-400">
+  //           <span className="text-xl p-2 px-3">Login</span>
+  //         </a>
+  //       </Link>
+  //     </>
+  //   </NavWrapper>
+  // )
   return (
-    <li className="mx-4 my-6 cursor-pointer lg:my-0 text-gray-900 hover:text-gray-400">
-      <Link href={href}>
-        <a>{text}</a>
+    <NavWrapper>
+      <Link href="/me">
+        <a className="text-gray-900 hover:text-gray-400">
+          <span className="text-xl p-2 px-3">👉 Go to main</span>
+        </a>
       </Link>
-    </li>
+    </NavWrapper>
   )
 }
 
-const MenuIcon: React.FC = () => {
+export const MenuIcon: React.FC = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -101,7 +67,7 @@ const MenuIcon: React.FC = () => {
   )
 }
 
-const CloseIcon: React.FC = () => {
+export const CloseIcon: React.FC = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -34,6 +34,7 @@ export type Mutation = {
   deleteServer: Scalars['Boolean'];
   deleteUser: Scalars['Boolean'];
   login: User;
+  logout: Scalars['Boolean'];
   signup: User;
   updateMessage: Message;
   updateServer: Server;
@@ -139,12 +140,22 @@ export type LoginMutationVariables = Exact<{
 
 export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'User', id: number, name: string, username: string } };
 
+export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+
 export type SignupMutationVariables = Exact<{
   params: SignupInput;
 }>;
 
 
 export type SignupMutation = { __typename?: 'Mutation', signup: { __typename?: 'User', id: number, name: string, username: string, createdAt: string, updatedAt: string } };
+
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: number, username: string } | null };
 
 
 export const LoginDocument = gql`
@@ -160,6 +171,15 @@ export const LoginDocument = gql`
 export function useLoginMutation() {
   return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
 };
+export const LogoutDocument = gql`
+    mutation Logout {
+  logout
+}
+    `;
+
+export function useLogoutMutation() {
+  return Urql.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument);
+};
 export const SignupDocument = gql`
     mutation Signup($params: SignupInput!) {
   signup(params: $params) {
@@ -174,4 +194,16 @@ export const SignupDocument = gql`
 
 export function useSignupMutation() {
   return Urql.useMutation<SignupMutation, SignupMutationVariables>(SignupDocument);
+};
+export const MeDocument = gql`
+    query Me {
+  me {
+    id
+    username
+  }
+}
+    `;
+
+export function useMeQuery(options?: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'query'>) {
+  return Urql.useQuery<MeQuery>({ query: MeDocument, ...options });
 };

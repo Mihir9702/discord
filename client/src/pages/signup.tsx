@@ -12,12 +12,17 @@ const Signup: NextPage = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    console.log(params)
-    const response = await signup({
-      params,
-    })
-    console.log(response)
-    setError(response.error?.graphQLErrors[0].message)
+
+    console.log('params', params)
+    // @ts-ignore
+    const response = await signup(params)
+    console.log('response', response)
+
+    if (response.error) {
+      setError(response.error?.graphQLErrors[0].message)
+    } else {
+      router.push('/')
+    }
   }
 
   return (

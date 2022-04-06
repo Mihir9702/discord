@@ -2,6 +2,7 @@ import { Arg, Ctx, Query, Resolver, Int, Mutation, InputType, Field } from 'type
 import { User } from '../entities/User'
 import { MyContext } from '../types'
 import { hash, genSalt, compare } from 'bcryptjs'
+import { COOKIE } from '../constants'
 
 @InputType()
 class SignupInput {
@@ -116,5 +117,20 @@ export class UserResolver {
     } catch (err) {
       throw new Error('User not found')
     }
+  }
+
+  // Logout 🔓
+  @Mutation(() => Boolean)
+  async logout(@Ctx() { req, res }: MyContext): Promise<boolean> {
+    return new Promise(resolve =>
+      req.session.destroy(err => {
+        res.clearCookie(COOKIE)
+        if (err) {
+          console.log(err)
+          resolve(false)
+        }
+        resolve(true)
+      }),
+    )
   }
 }

@@ -8,7 +8,7 @@ import { MikroORM } from '@mikro-orm/core'
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
 import { createClient } from 'redis'
-import { __prod__ } from './constants'
+import { COOKIE, __prod__ } from './constants'
 import { MyContext } from './types'
 
 const main = async () => {
@@ -26,7 +26,7 @@ const main = async () => {
 
   app.use(
     session({
-      name: 'dyx',
+      name: COOKIE,
       // store: new RedisStore({
       //   client: redisClient,
       //   disableTouch: true, // disable touch to prevent session expiration

@@ -1,23 +1,10 @@
-import Nav from '@components/Nav'
-import HeroSection from '@components/HeroSection'
-import PreviewSection from '@components/PreviewSection'
-import FeatureSection from '@components/FeatureSection'
-import CallToAction from '@components/CallToAction'
-import Footer from '@components/Footer'
-import type { NextPage } from 'next'
-import ExtraSection from '@components/ThirdSection'
+import React from 'react'
+import { NextPage } from 'next'
+import ServerNavigation from '@components/ServerNavigation'
+import { motion, transform } from 'framer-motion'
 
-// * Rough layout of Home page
-const Home: NextPage = () => {
-  return (
-    <>
-      <HeroSection />
-      <PreviewSection />
-      <FeatureSection />
-      <ExtraSection />
-      <CallToAction />
-    </>
-  )
+const Index: NextPage = () => {
+  return <ServerNavigation />
 }
 
-export default Home
+export default Index
