@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "es2016",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "rootDir": "./",
+    "paths": {},
+    "resolveJsonModule": true,
+    "outDir": "./dist",
+    "declaration": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "exclude": ["node_modules", "**/*.d.ts", "dist"],
+  "include": ["./src/**/*.ts"]
+}
