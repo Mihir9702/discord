@@ -4,13 +4,6 @@ import Nav from "@components/Nav";
 import Footer from "@components/Footer";
 import "../styles/globals.css";
 import Head from "next/head";
-import { Cache, cacheExchange, QueryInput } from "@urql/exchange-graphcache";
-import {
-  MeDocument,
-  MeQuery,
-  LoginMutation,
-  SignupMutation,
-} from "../generated/graphql";
 
 const client = createClient({
   url: "http://localhost:3000/graphql",
@@ -19,7 +12,7 @@ const client = createClient({
   },
 });
 
-function MyApp({ Component, pageProps }: AppProps) {
+export default ({ Component, pageProps }: AppProps) => {
   return (
     <Provider value={client}>
       <Head>
@@ -33,6 +26,4 @@ function MyApp({ Component, pageProps }: AppProps) {
       {/* <Footer /> */}
     </Provider>
   );
-}
-
-export default MyApp;
+};

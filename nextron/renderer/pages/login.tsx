@@ -1,32 +1,33 @@
-import React from 'react'
-import Nav from '@components/Nav'
-import InputField from '@components/InputField'
-import { NextPage } from 'next'
-import { useRouter } from 'next/router'
-import { useLoginMutation } from 'src/generated/graphql'
-import { LoginInput } from '../generated/graphql'
+import React from "react";
+import InputField from "@components/InputField";
+import { useRouter } from "next/router";
+import { useLoginMutation } from "src/generated/graphql";
+import { LoginInput } from "../generated/graphql";
 
-const Login: NextPage = () => {
-  const [params, setParams] = React.useState<LoginInput>({ username: '', password: '' })
-  const [error, setError] = React.useState<string | undefined>(undefined)
+export default () => {
+  const [params, setParams] = React.useState<LoginInput>({
+    username: "",
+    password: "",
+  });
+  const [error, setError] = React.useState<string | undefined>(undefined);
 
-  const router = useRouter()
+  const router = useRouter();
 
-  const [, login] = useLoginMutation()
+  const [, login] = useLoginMutation();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
     const response = await login({
       params,
-    })
+    });
 
     if (response.error) {
-      setError(response.error?.graphQLErrors[0].message)
+      setError(response.error?.graphQLErrors[0].message);
     } else {
-      router.push('/')
+      router.push("/");
     }
-  }
+  };
 
   return (
     <form
@@ -54,7 +55,5 @@ const Login: NextPage = () => {
         Login
       </button>
     </form>
-  )
-}
-
-export default Login
+  );
+};

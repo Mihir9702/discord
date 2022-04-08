@@ -1,29 +1,32 @@
-import React from 'react'
-import InputField from '@components/InputField'
-import { NextPage } from 'next'
-import { useSignupMutation, SignupInput } from '../generated/graphql'
-import { useRouter } from 'next/router'
+import React from "react";
+import InputField from "@components/InputField";
+import { useSignupMutation, SignupInput } from "../generated/graphql";
+import { useRouter } from "next/router";
 
-const Signup: NextPage = () => {
-  const [, signup] = useSignupMutation()
-  const router = useRouter()
-  const [params, setParams] = React.useState<SignupInput>({ name: '', username: '', password: '' })
-  const [error, setError] = React.useState<string | undefined>(undefined)
+export default () => {
+  const [, signup] = useSignupMutation();
+  const router = useRouter();
+  const [params, setParams] = React.useState<SignupInput>({
+    name: "",
+    username: "",
+    password: "",
+  });
+  const [error, setError] = React.useState<string | undefined>(undefined);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    console.log('params', params)
+    console.log("params", params);
     // @ts-ignore
-    const response = await signup(params)
-    console.log('response', response)
+    const response = await signup(params);
+    console.log("response", response);
 
     if (response.error) {
-      setError(response.error?.graphQLErrors[0].message)
+      setError(response.error?.graphQLErrors[0].message);
     } else {
-      router.push('/')
+      router.push("/");
     }
-  }
+  };
 
   return (
     <form
@@ -57,7 +60,5 @@ const Signup: NextPage = () => {
         Signup
       </button>
     </form>
-  )
-}
-
-export default Signup
+  );
+};
