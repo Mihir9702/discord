@@ -16,6 +16,8 @@
     "electron-store": "^8.0.1",
     "framer-motion": "^6.2.9",
     "graphql": "^16.3.0",
+    "next-urql": "^3.3.2",
+    "react-is": "^18.0.0",
     "urql": "^2.2.0"
   },
   "devDependencies": {

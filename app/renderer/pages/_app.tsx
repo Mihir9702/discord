@@ -1,14 +1,8 @@
-import type { AppProps } from "next/app";
-import { createClient, Provider } from "urql";
-import "../styles/globals.css";
 import Head from "next/head";
-
-const client = createClient({
-  url: "http://localhost:3000/graphql",
-  fetchOptions: {
-    credentials: "include",
-  },
-});
+import { Provider } from "urql";
+import { client } from "../src/utils/createUrqlClient";
+import type { AppProps } from "next/app";
+import "../styles/globals.css";
 
 export default ({ Component, pageProps }: AppProps) => {
   return (

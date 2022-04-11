@@ -1,7 +1,6 @@
-mutation Login($params: LoginInput!) {
+mutation Login($params: Input!) {
   login(params: $params) {
     id
-    name
     username
   }
 }

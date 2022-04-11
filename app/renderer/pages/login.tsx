@@ -1,11 +1,11 @@
 import React from "react";
-import InputField from "../src/components/InputField";
+import Link from "next/link";
+import InputField from "renderer/src/components/InputField";
 import { useRouter } from "next/router";
-import { useLoginMutation } from "../src/generated/graphql";
-import { LoginInput } from "../src/generated/graphql";
+import { Input, useLoginMutation } from "renderer/src/generated/graphql";
 
 export default () => {
-  const [params, setParams] = React.useState<LoginInput>({
+  const [params, setParams] = React.useState<Input>({
     username: "",
     password: "",
   });
@@ -21,6 +21,7 @@ export default () => {
     const response = await login({
       params,
     });
+    console.log(response);
 
     if (response.error) {
       setError(response.error?.graphQLErrors[0].message);
@@ -49,6 +50,9 @@ export default () => {
           type="password"
           onChange={(e) => setParams({ ...params, password: e.target.value })}
         />
+        <Link href={"/signup"}>
+          <a className="text-blue-400 hover:underline">Signup</a>
+        </Link>
         <button
           type="submit"
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
