@@ -1,0 +1,8 @@
+mutation Send($params: MessageInput!) {
+  sendMessage(params: $params) {
+    id
+    content
+    senderId
+    createdAt
+  }
+}

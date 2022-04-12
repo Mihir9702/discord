@@ -1,0 +1,7 @@
+mutation CreateServer($params: ServerInput!) {
+  createServer(params: $params) {
+    id
+    name
+    ownerId
+  }
+}
