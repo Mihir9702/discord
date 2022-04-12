@@ -12,6 +12,7 @@ import {
 import { Server } from '../entities/Server'
 import { MyContext } from '../types'
 import { isAuth } from '../middleware/isAuth'
+import { generate } from '../helpers/genRand'
 
 @InputType()
 class ServerInput {
@@ -35,8 +36,10 @@ export class ServerResolver {
     @Arg('params') params: ServerInput,
     @Ctx() { req }: MyContext,
   ): Promise<Server> {
+    const _tag = generate()
     return Server.create({
       ...params,
+      tag: _tag,
       ownerId: req.session.userId,
     }).save()
   }

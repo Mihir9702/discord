@@ -1,5 +1,7 @@
+import { useRouter } from "next/router";
 import React from "react";
 import InputField from "../InputField";
+import { useCreateServerMutation } from "../../generated/graphql";
 
 interface Props {
   menu: () => void;
@@ -8,9 +10,23 @@ interface Props {
 const Create: React.FC<Props> = ({ menu }) => {
   const [name, setName] = React.useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [error, setError] = React.useState<string | undefined>(undefined);
+
+  const router = useRouter();
+
+  const [, create] = useCreateServerMutation();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(name);
+    const params = { name };
+
+    const response = await create({ params });
+
+    if (response.error) {
+      setError(response.error?.graphQLErrors[0].message);
+    } else {
+      router.push("/");
+    }
   };
 
   return (

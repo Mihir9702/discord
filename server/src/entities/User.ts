@@ -5,7 +5,6 @@ import {
   Column,
   Entity,
   OneToMany,
-  ManyToOne,
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
@@ -23,15 +22,19 @@ export class User extends BaseEntity {
   // * ! | username, password,
   // * ? | email, nameId, friends,
 
-  @Field(() => String)
+  @Field()
   @Column({ type: 'text' })
   username!: string
 
   @Column({ type: 'text' })
   password!: string
 
-  // 🔳 avatar of the user
   @Field()
+  @Column()
+  userId!: number
+
+  // 🔳 avatar of the user
+  @Field({ nullable: true })
   @Column({ nullable: true })
   avatar?: string
 

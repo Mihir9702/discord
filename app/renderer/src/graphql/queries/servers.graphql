@@ -2,6 +2,7 @@ query Servers {
   servers {
     id
     name
+    tag
     ownerId
   }
 }

@@ -21,6 +21,8 @@ if (isProd) {
     // closable: isProd ? true : false,
   });
 
+  mainWindow.webContents.session.clearStorageData();
+
   if (isProd) {
     await mainWindow.loadURL("app://./home.html");
   } else {

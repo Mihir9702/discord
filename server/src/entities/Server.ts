@@ -1,4 +1,4 @@
-import { Field, ObjectType, Int } from 'type-graphql'
+import { Field, ObjectType } from 'type-graphql'
 import { Message } from './Message'
 import { User } from './User'
 import {
@@ -30,6 +30,10 @@ export class Server extends BaseEntity {
   @Field()
   @Column({ nullable: true })
   icon?: string
+
+  @Field({ nullable: true })
+  @Column({ unique: true, nullable: true })
+  tag!: string
 
   @Field(() => [User])
   @Column({

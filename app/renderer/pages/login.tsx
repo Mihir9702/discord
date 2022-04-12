@@ -21,12 +21,11 @@ export default () => {
     const response = await login({
       params,
     });
-    console.log(response);
 
     if (response.error) {
       setError(response.error?.graphQLErrors[0].message);
     } else {
-      router.push("/");
+      router.push("/home");
     }
   };
 

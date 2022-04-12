@@ -18,7 +18,6 @@ export default () => {
 
     console.log("params", params);
     const response = await signup({ params });
-    console.log("response", response);
 
     if (response.error) {
       setError(response.error?.graphQLErrors[0].message);

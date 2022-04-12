@@ -8,10 +8,10 @@ export default () => {
   let body = null;
   const router = useRouter();
 
-  // if (fetching) body = <div>Loading...</div>;
-  // else if (!data?.me) {
-  //   router.push("/login");
-  // } else router.push("/home");
+  if (fetching) body = <div>Loading...</div>;
+  else if (!data?.me) {
+    router.push("/login");
+  } else router.push("/home");
 
   return (
     <nav className="text-white">

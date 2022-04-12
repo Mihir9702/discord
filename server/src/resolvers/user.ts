@@ -2,6 +2,7 @@ import { Arg, Ctx, Query, Resolver, Int, Mutation, InputType, Field } from 'type
 import { MyContext } from '../types'
 import { hash, genSalt, compare } from 'bcryptjs'
 import { User } from '../entities/User'
+import { generateNumber } from '../helpers/genRand'
 
 @InputType()
 class Input {
@@ -39,14 +40,17 @@ export class UserResolver {
     const foundUser = await User.findOne({ where: { username: params.username } })
 
     if (foundUser) throw new Error('Username already taken')
-    if (params.username.length < 3) throw new Error('Username must be at least 3 characters')
-    if (params.password.length < 8) throw new Error('Password must be at least 8 characters')
+    if (params.username.length < 2) throw new Error('Username must be at least 2 characters')
+    if (params.password.length < 4) throw new Error('Password must be at least 4 characters')
 
     const hashedPassword = await hash(params.password, await genSalt(10))
+
+    const randomId = generateNumber(4)
 
     const user = await User.create({
       username: params.username.toLowerCase(),
       password: hashedPassword,
+      userId: randomId,
     }).save()
 
     req.session.userId = user.id
