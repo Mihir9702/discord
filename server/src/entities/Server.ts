@@ -1,5 +1,15 @@
 import { Field, ObjectType, Int } from 'type-graphql'
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, BaseEntity } from 'typeorm'
+import { Message } from './Message'
+import { User } from './User'
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  OneToMany,
+  BaseEntity,
+  CreateDateColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 
 @ObjectType()
 @Entity()
@@ -22,6 +32,14 @@ export class Server extends BaseEntity {
   @Column()
   channels?: string
 
+  // Server can have many members.
+  @ManyToOne(() => User, user => user.servers)
+  members?: User
+
+  // Server can have many messages.
+  @OneToMany(() => Message, message => message.server)
+  messages?: Message
+
   // The date the user was created
   @Column()
   createdAt?: Date = new Date()
@@ -29,8 +47,4 @@ export class Server extends BaseEntity {
   // The date the user was updated
   @CreateDateColumn()
   updatedAt?: Date = new Date()
-
-  // One server can have many messages.
-  // @Column()
-  // messages = new Collection<Message>(this)
 }

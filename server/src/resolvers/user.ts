@@ -14,7 +14,7 @@ class Input {
 
 @Resolver()
 export class UserResolver {
-  // Testing purposes only 🧪 | ** REMOVE IN PROD **
+  // 🧪 Testing purposes only | ** REMOVE IN PROD **
   ///////////////////////////////////////////////////
   @Query(() => [User])
   async users(): Promise<User[]> {
@@ -22,7 +22,7 @@ export class UserResolver {
   }
   ///////////////////////////////////////////////////
 
-  // Find user by session id 🔎
+  // 🔎 Find user by session id
   @Query(() => User, { nullable: true })
   async me(@Ctx() { req }: MyContext): Promise<User | null> {
     if (!req.session.userId) {
@@ -32,7 +32,7 @@ export class UserResolver {
     return user
   }
 
-  // Create a new user 👶
+  // 👶 Create a new user
   @Mutation(() => User)
   async signup(@Arg('params') params: Input, @Ctx() { req }: MyContext): Promise<User> {
     // Find if user already exists
@@ -54,7 +54,7 @@ export class UserResolver {
     return user
   }
 
-  // Login 💳
+  // 🔒 Login
   @Mutation(() => User)
   async login(@Arg('params') params: Input, @Ctx() { req }: MyContext): Promise<User> {
     if (!params.username) throw new Error('Username not provided')
@@ -73,8 +73,7 @@ export class UserResolver {
     return user
   }
 
-  // ! Below is not complete 🤔
-  // Update a user 🌀
+  // 🌀 Update a user
   @Mutation(() => User)
   async updateUser(@Arg('id', () => Int) id: number, @Arg('params') params: Input): Promise<User> {
     const user = await User.findOne({ where: { id } })
@@ -89,7 +88,7 @@ export class UserResolver {
     return user
   }
 
-  // Delete a user ❌
+  // ❌ Delete a user
   @Mutation(() => Boolean)
   async deleteUser(@Arg('id', () => Int) id: number): Promise<boolean> {
     const user = await User.findOne({ where: { id } })
@@ -101,7 +100,7 @@ export class UserResolver {
     return true
   }
 
-  // Logout 🔓
+  // 🔓 Logout
   @Mutation(() => Boolean)
   async logout(@Ctx() { req }: MyContext): Promise<boolean> {
     await req.session.destroy(err => (err ? err : true))

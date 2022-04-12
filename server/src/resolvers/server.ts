@@ -8,7 +8,7 @@ export class ServerResolver {
     return Server.find()
   }
 
-  // Create a Server 💻
+  // 💻 Create a Server
   @Mutation(() => Server)
   async createServer(
     @Arg('id', () => Int) id: number,
@@ -17,7 +17,7 @@ export class ServerResolver {
     return Server.create({ id, name }).save()
   }
 
-  // Update a Server 🌀
+  // 🌀 Update a Server
   @Mutation(() => Server)
   async updateServer(
     @Arg('id', () => Int) id: number,
@@ -37,7 +37,7 @@ export class ServerResolver {
     return server
   }
 
-  // Delete a Server ❌
+  // ❌ Delete a Server
   @Mutation(() => Boolean)
   async deleteServer(@Arg('id', () => Int) id: number): Promise<boolean> {
     const server = await Server.findOne({ where: { id } })

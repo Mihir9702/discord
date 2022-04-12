@@ -1,19 +1,20 @@
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm'
-import { Field, ObjectType, Int } from 'type-graphql'
+import { Field, ObjectType } from 'type-graphql'
 import { Message } from './Message'
 import { Server } from './Server'
+import {
+  Column,
+  Entity,
+  OneToMany,
+  BaseEntity,
+  CreateDateColumn,
+  UpdateDateColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 
 @ObjectType()
 @Entity()
 export class User extends BaseEntity {
-  @Field(() => Int)
+  @Field()
   @PrimaryGeneratedColumn()
   id!: number
 
@@ -29,19 +30,22 @@ export class User extends BaseEntity {
   password!: string
 
   // 4 digit number that is unique to each user
-  @Field(() => Int)
-  @Column({ type: 'number', unique: true })
+  @Field()
+  @Column({ unique: true, nullable: true })
   nameId?: number
 
-  // avatar of the user
-  @Field(() => String)
-  @Column({ type: 'text' })
+  // 🔳 avatar of the user
+  @Field()
+  @Column({ nullable: true })
   avatar?: string
 
-  // One user can have many friends. Friends are users that are connected to the user.
-  // @Field(() => [User])
-  // @Column({ type: 'text' })
-  // friends?: Collection<User>
+  // 📧 One user can have many messages.
+  @OneToMany(() => Message, message => message.sender)
+  messages?: Message[]
+
+  // 🙌 One user can have many servers.
+  @OneToMany(() => Server, server => server.members)
+  servers?: Server[]
 
   // The date the user was created
   @Field(() => String)

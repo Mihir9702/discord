@@ -1,5 +1,23 @@
-import { Arg, Int, Query, Resolver } from 'type-graphql'
+import {
+  Arg,
+  Ctx,
+  Int,
+  Field,
+  Query,
+  Mutation,
+  Resolver,
+  InputType,
+  UseMiddleware,
+} from 'type-graphql'
 import { Message } from '../entities/Message'
+import { MyContext } from '../types'
+import { isAuth } from '../middleware/isAuth'
+
+@InputType()
+class MessageInput {
+  @Field()
+  content!: string
+}
 
 @Resolver()
 export class MessageResolver {
@@ -8,16 +26,20 @@ export class MessageResolver {
     return Message.find()
   }
 
-  // Send a Message 📲
-  @Query(() => Message)
+  // 📧 Send a Message
+  @Mutation(() => Message)
+  @UseMiddleware(isAuth)
   async sendMessage(
-    @Arg('id', () => Int) id: number,
-    @Arg('content', () => String) content: string,
+    @Arg('params') params: MessageInput,
+    @Ctx() { req }: MyContext,
   ): Promise<Message> {
-    return Message.create({ id, content }).save()
+    return Message.create({
+      ...params,
+      senderId: req.session.userId,
+    }).save()
   }
 
-  // Update a Message 🌀
+  // 🌀 Update a Message
   @Query(() => Message)
   async updateMessage(
     @Arg('id', () => Int) id: number,
@@ -37,7 +59,7 @@ export class MessageResolver {
     return message
   }
 
-  // Delete a Message ❌
+  // ❌ Delete a Message
   @Query(() => Boolean)
   async deleteMessage(@Arg('id', () => Int) id: number): Promise<boolean> {
     const message = await Message.findOne({ where: { id } })

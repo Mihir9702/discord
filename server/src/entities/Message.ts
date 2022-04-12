@@ -1,43 +1,47 @@
+import { Field, ObjectType } from 'type-graphql'
+import { User } from './User'
+import { Server } from './Server'
 import {
   Entity,
   Column,
+  ManyToOne,
   BaseEntity,
   UpdateDateColumn,
   CreateDateColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { Field, Int, ObjectType } from 'type-graphql'
 
 @ObjectType()
 @Entity()
 export class Message extends BaseEntity {
   // The primary key of the message
-  @Field(() => Int)
+  @Field()
   @PrimaryGeneratedColumn()
   id!: number
 
   // The message content
-  @Field(() => String)
-  @Column({ type: 'text' })
+  @Field()
+  @Column()
   content!: string
 
   // The user that sent the message
-  @Field(() => Int)
-  @Column({ type: 'number' })
-  userId?: number
+  @Field()
+  @Column()
+  senderId?: number
 
-  // The server that the message was sent to
-  @Field(() => Int)
-  @Column({ type: 'number' })
-  serverId?: number
+  @ManyToOne(() => User, user => user.messages)
+  sender?: User
+
+  @ManyToOne(() => Server, server => server.messages)
+  server?: Server
 
   // The date the user was created
-  @Field(() => Date)
+  @Field(() => String)
   @CreateDateColumn()
   createdAt?: Date = new Date()
 
   // The date the user was updated
-  @Field(() => Date)
+  @Field(() => String)
   @UpdateDateColumn()
   updatedAt?: Date = new Date()
 }

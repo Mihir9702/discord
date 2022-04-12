@@ -3,26 +3,17 @@ import express from 'express'
 import session from 'express-session'
 import connectRedis from 'connect-redis'
 import cors from 'cors'
+import db from './connect'
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
 import { createClient } from 'redis'
 import { COOKIE, __prod__ } from './constants'
 import { MyContext } from './types'
-import { DataSource } from 'typeorm'
 
 const main = async () => {
-  // create a connection using typeorm not mikro-orm dont worry about imports i will import later
-  const conn = await new DataSource({
-    type: 'postgres',
-    host: 'localhost',
-    port: 5432,
-    username: 'postgres',
-    password: 'postgres',
-    database: 'imari',
-    synchronize: true,
-    logging: true,
-    entities: [__dirname + '/entities/*.ts'],
-  })
+  // Connect to Database
+  await db.initialize()
+  await db.runMigrations()
 
   const app = express()
 
