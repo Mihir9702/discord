@@ -3,6 +3,8 @@
 @tailwind utilities;
 @tailwind variants;
 
+@import-normalize;
+
 html,
 body {
   margin: 0;

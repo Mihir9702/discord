@@ -1,15 +1,11 @@
 import React from "react";
+import Modal from "./Modal";
 
-const AddNavigation: React.FC = () => {
-  const [state, setState] = React.useState(true);
+type Props = { ds: boolean; setds: any };
+
+const AddNavigation: React.FC<Props> = ({ ds, setds }) => {
   const blah = () => {
-    setState(!state);
-
-    if (state) {
-      document.body.style.opacity = "0.5";
-    } else {
-      document.body.style.opacity = "1";
-    }
+    setds(!ds);
   };
 
   return (

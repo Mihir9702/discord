@@ -2,6 +2,7 @@ import React from "react";
 import Chat from "renderer/src/components/Chat";
 import ServerNavigation from "renderer/src/components/ServerNavigation";
 
+// ! this will be scrapped for a better home ui design
 export default () => {
   return (
     <div className="max-w-8xl mx-auto bg-gray-900">

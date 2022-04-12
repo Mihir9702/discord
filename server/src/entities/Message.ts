@@ -29,6 +29,10 @@ export class Message extends BaseEntity {
   @Column()
   senderId?: number
 
+  @Field()
+  @Column({ nullable: true })
+  serverId?: number
+
   @ManyToOne(() => User, user => user.messages)
   sender?: User
 

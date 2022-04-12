@@ -1,20 +1,44 @@
-import { Arg, Query, Resolver, Int, Mutation } from 'type-graphql'
+import {
+  Ctx,
+  Int,
+  Arg,
+  Field,
+  Query,
+  Resolver,
+  Mutation,
+  InputType,
+  UseMiddleware,
+} from 'type-graphql'
 import { Server } from '../entities/Server'
+import { MyContext } from '../types'
+import { isAuth } from '../middleware/isAuth'
+
+@InputType()
+class ServerInput {
+  @Field()
+  name!: string
+}
 
 @Resolver()
 export class ServerResolver {
+  // Get all the servers from a user
   @Query(() => [Server])
-  servers(): Promise<Server[]> {
-    return Server.find()
+  @UseMiddleware(isAuth)
+  async servers(@Ctx() { req }: MyContext): Promise<Server[]> {
+    return Server.find({ where: { ownerId: req.session.userId } })
   }
 
   // 💻 Create a Server
   @Mutation(() => Server)
+  @UseMiddleware(isAuth)
   async createServer(
-    @Arg('id', () => Int) id: number,
-    @Arg('name', () => String) name: string,
+    @Arg('params') params: ServerInput,
+    @Ctx() { req }: MyContext,
   ): Promise<Server> {
-    return Server.create({ id, name }).save()
+    return Server.create({
+      ...params,
+      ownerId: req.session.userId,
+    }).save()
   }
 
   // 🌀 Update a Server

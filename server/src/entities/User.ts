@@ -5,6 +5,7 @@ import {
   Column,
   Entity,
   OneToMany,
+  ManyToOne,
   BaseEntity,
   CreateDateColumn,
   UpdateDateColumn,
@@ -29,21 +30,18 @@ export class User extends BaseEntity {
   @Column({ type: 'text' })
   password!: string
 
-  // 4 digit number that is unique to each user
-  @Field()
-  @Column({ unique: true, nullable: true })
-  nameId?: number
-
   // 🔳 avatar of the user
   @Field()
   @Column({ nullable: true })
   avatar?: string
 
   // 📧 One user can have many messages.
+  @Field(() => [Message])
   @OneToMany(() => Message, message => message.sender)
   messages?: Message[]
 
-  // 🙌 One user can have many servers.
+  // Servers that the user is in
+  @Field(() => [Server])
   @OneToMany(() => Server, server => server.members)
   servers?: Server[]
 

@@ -5,39 +5,50 @@ import {
   Entity,
   Column,
   ManyToOne,
-  OneToMany,
   BaseEntity,
   CreateDateColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm'
 
+enum ServerRole {
+  MEMBER = 'MEMBER',
+  ADMIN = 'ADMIN',
+  OWNER = 'OWNER',
+}
+
 @ObjectType()
 @Entity()
 export class Server extends BaseEntity {
-  @Field(() => Int)
+  @Field()
   @PrimaryGeneratedColumn()
   id!: number
 
-  @Field(() => String)
+  @Field()
   @Column()
   name!: string
 
-  // icon of the server
-  @Field(() => String)
-  @Column()
+  @Field()
+  @Column({ nullable: true })
   icon?: string
 
-  // Server can have many channels.
-  @Field(() => [String])
-  @Column()
-  channels?: string
+  @Field(() => [User])
+  @Column({
+    type: 'enum',
+    enum: ServerRole,
+    default: ServerRole.MEMBER,
+  })
+  role!: ServerRole
 
-  // Server can have many members.
+  @Field()
+  @Column({ nullable: true })
+  ownerId!: number
+
+  // Server can have many members
   @ManyToOne(() => User, user => user.servers)
-  members?: User
+  members!: User
 
   // Server can have many messages.
-  @OneToMany(() => Message, message => message.server)
+  @ManyToOne(() => Message, message => message.server)
   messages?: Message
 
   // The date the user was created
