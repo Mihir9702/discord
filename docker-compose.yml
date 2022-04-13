@@ -13,8 +13,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=imari
-    volumes:
-      - ./pgData:/mnt/c/Program\ Files/PostgreSQL/14/data/
     ports:
       - '5432:5432'
     restart: always

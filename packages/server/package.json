@@ -1,6 +1,6 @@
 {
-  "name": "imari",
-  "version": "0.0.5",
+  "name": "@imari/server",
+  "version": "0.1.0",
   "description": "Messaging app - replica of Discord",
   "main": "src/index.ts",
   "scripts": {

@@ -1,8 +1,8 @@
 {
   "private": true,
-  "name": "imari",
+  "name": "@imari/client",
   "description": "discord clone",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "author": "Mihir Patel",
   "main": "app/background.js",
   "scripts": {
@@ -21,6 +21,8 @@
     "urql": "^2.2.0"
   },
   "devDependencies": {
+    "@imari/server": "^0.1.0",
+    "@imari/web": "^0.1.0",
     "@graphql-codegen/cli": "2.6.2",
     "@graphql-codegen/typescript": "2.4.8",
     "@graphql-codegen/typescript-operations": "2.3.5",

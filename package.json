@@ -1,0 +1,17 @@
+{
+  "name": "run3",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "lerna run dev",
+    "dev-client": "lerna run dev --scope={@imari/app,@imari/server}",
+    "dev-web": "lerna run dev --scope={@imari/web,@imari/server}",
+    "version": "lerna version --conventional-commits --yes",
+    "diff": "lerna diff"
+  },
+  "devDependencies": {
+    "lerna": "^4.0.0"
+  }
+}

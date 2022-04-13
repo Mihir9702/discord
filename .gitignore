@@ -1,5 +1,5 @@
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.js
 
@@ -7,15 +7,21 @@
 /coverage
 
 # next.js
-/.next/
+/packages/**/.next
 /out/
 
 # production
-/build
+build
+dist
+app
 
 # misc
 .DS_Store
 *.pem
+*.pid
+*.sock
+temp
+dump.rdb
 
 # debug
 npm-debug.log*
@@ -23,7 +29,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
+# env files
+*.env
 .env*.local
 
 # vercel

@@ -1,33 +1,33 @@
-import React from "react";
-import Link from "next/link";
-import InputField from "renderer/src/components/InputField";
-import { useRouter } from "next/router";
-import { Input, useLoginMutation } from "renderer/src/generated/graphql";
+import React from 'react'
+import Link from 'next/link'
+import InputField from 'src/tools/components/InputField'
+import { useRouter } from 'next/router'
+import { Input, useLoginMutation } from 'src/tools/generated/graphql'
 
 export default () => {
   const [params, setParams] = React.useState<Input>({
-    username: "",
-    password: "",
-  });
-  const [error, setError] = React.useState<string | undefined>(undefined);
+    username: '',
+    password: '',
+  })
+  const [error, setError] = React.useState<string | undefined>(undefined)
 
-  const router = useRouter();
+  const router = useRouter()
 
-  const [, login] = useLoginMutation();
+  const [, login] = useLoginMutation()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault()
 
     const response = await login({
       params,
-    });
+    })
 
     if (response.error) {
-      setError(response.error?.graphQLErrors[0].message);
+      setError(response.error?.graphQLErrors[0].message)
     } else {
-      router.push("/home");
+      router.push('/home')
     }
-  };
+  }
 
   return (
     <main className="flex justify-center items-center h-screen w-full">
@@ -49,7 +49,7 @@ export default () => {
           type="password"
           onChange={(e) => setParams({ ...params, password: e.target.value })}
         />
-        <Link href={"/signup"}>
+        <Link href={'/signup'}>
           <a className="text-blue-400 hover:underline">Signup</a>
         </Link>
         <button
@@ -60,5 +60,5 @@ export default () => {
         </button>
       </form>
     </main>
-  );
-};
+  )
+}
