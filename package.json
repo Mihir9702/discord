@@ -1,6 +1,6 @@
 {
   "name": "imari",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Discord Clone - Messaging App",
   "author": "Mihir Patel",
   "private": true,
@@ -18,7 +18,7 @@
     "build:client": "lerna run build --scope=@imari/client",
     "build:web": "lerna run build --scope=@imari/web",
     "build:server": "lerna run build --scope=@imari/server",
-    "publish": "lerna version --conventional-commits --yes && lerna publish --yes",
+    "version": "lerna version --conventional-commits",
     "diff": "lerna diff",
     "clean": "lerna clean --yes",
     "lerna-dockerize": "lerna-dockerize"
