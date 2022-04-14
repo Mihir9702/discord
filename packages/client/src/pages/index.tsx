@@ -1,17 +1,17 @@
-import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { useMeQuery } from "../src/generated/graphql";
+import React from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/router'
+import { useMeQuery } from '../tools/generated/graphql'
 
 export default () => {
-  const [{ data, fetching }] = useMeQuery();
-  let body = null;
-  const router = useRouter();
+  const [{ data, fetching }] = useMeQuery()
+  let body: JSX.Element | null = null
+  const router = useRouter()
 
-  if (fetching) body = <div>Loading...</div>;
+  if (fetching) body = <div>Loading...</div>
   else if (!data?.me) {
-    router.push("/login");
-  } else router.push("/home");
+    router.push('/login')
+  } else router.push('/home')
 
   return (
     <nav className="text-white">
@@ -37,5 +37,5 @@ export default () => {
         </ul>
       )}
     </nav>
-  );
-};
+  )
+}

@@ -4,11 +4,5 @@ node_modules
 
 temp
 
-./package.json
-./packages/server/package.json
-./packages/client/package.json
-./packages/server/dist
-./packages/common/dist
-./packages/server/.env.prod
-./packages/server/.env.example
-./ormconfig.json
+package.json
+packages/**/package.json

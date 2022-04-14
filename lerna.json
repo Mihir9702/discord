@@ -1,6 +1,8 @@
 {
   "packages": ["packages/*"],
-  "version": "0.0.0",
+  "version": "independent",
+  "npmClient": "yarn",
   "useWorkspaces": true,
-  "npmClient": "yarn"
+  "loglevel": true,
+  "stream": true
 }

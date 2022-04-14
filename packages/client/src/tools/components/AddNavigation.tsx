@@ -1,12 +1,11 @@
-import React from "react";
-import Modal from "./Modal";
+import React from 'react'
 
-type Props = { ds: boolean; setds: any };
+type Props = { ds: boolean; setds: any }
 
 const AddNavigation: React.FC<Props> = ({ ds, setds }) => {
   const blah = () => {
-    setds(!ds);
-  };
+    setds(!ds)
+  }
 
   return (
     <button className="nav-icon" onClick={blah}>
@@ -22,7 +21,7 @@ const AddNavigation: React.FC<Props> = ({ ds, setds }) => {
         <path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
       </svg>
     </button>
-  );
-};
+  )
+}
 
-export default AddNavigation;
+export default AddNavigation

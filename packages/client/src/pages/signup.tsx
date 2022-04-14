@@ -1,8 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
-import InputField from 'src/tools/components/InputField'
+import InputField from '../tools/components/InputField'
 import { useRouter } from 'next/router'
-import { Input, useSignupMutation } from 'src/tools/generated/graphql'
+import { Input, useSignupMutation } from '../tools/generated/graphql'
 
 export default () => {
   const [, signup] = useSignupMutation()

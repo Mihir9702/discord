@@ -1,9 +1,9 @@
-import { createClient } from "urql";
+import { createClient } from 'urql'
 
 export const client = createClient({
-  url: "http://localhost:3000/graphql",
+  url: 'http://localhost:3000/graphql',
   fetchOptions: {
-    credentials: "include" as const,
+    credentials: 'include' as const,
   },
   // * Exchanges / Caching soonTM
-});
+})

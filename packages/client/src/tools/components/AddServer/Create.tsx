@@ -1,33 +1,33 @@
-import { useRouter } from "next/router";
-import React from "react";
-import InputField from "../InputField";
-import { useCreateServerMutation } from "../../generated/graphql";
+import { useRouter } from 'next/router'
+import React from 'react'
+import InputField from '../InputField'
+import { useCreateServerMutation } from '../../generated/graphql'
 
 interface Props {
-  menu: () => void;
+  menu: () => void
 }
 
 const Create: React.FC<Props> = ({ menu }) => {
-  const [name, setName] = React.useState("");
+  const [name, setName] = React.useState('')
 
-  const [error, setError] = React.useState<string | undefined>(undefined);
+  const [, setError] = React.useState<string | undefined>(undefined)
 
-  const router = useRouter();
+  const router = useRouter()
 
-  const [, create] = useCreateServerMutation();
+  const [, create] = useCreateServerMutation()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const params = { name };
+    e.preventDefault()
+    const params = { name }
 
-    const response = await create({ params });
+    const response = await create({ params })
 
     if (response.error) {
-      setError(response.error?.graphQLErrors[0].message);
+      setError(response.error?.graphQLErrors[0].message)
     } else {
-      router.push("/");
+      router.push('/')
     }
-  };
+  }
 
   return (
     <div>
@@ -38,11 +38,7 @@ const Create: React.FC<Props> = ({ menu }) => {
         className="mt-6 border-2 p-6 flex flex-col gap-6 items-center bg-gray-500 rounded-lg shadow-2xl"
         onSubmit={handleSubmit}
       >
-        <InputField
-          label="Server Name"
-          name={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <InputField label="Server Name" name={name} onChange={(e) => setName(e.target.value)} />
         <button
           className="bg-gray-800 text-md p-2 rounded-full shadow-lg hover:bg-gray-700"
           type="submit"
@@ -51,7 +47,7 @@ const Create: React.FC<Props> = ({ menu }) => {
         </button>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default Create;
+export default Create

@@ -1,9 +1,7 @@
-import { motion } from "framer-motion";
+import React from 'react'
+import { motion } from 'framer-motion'
 
-const Backdrop = (props: {
-  children: React.ReactNode;
-  onClick: () => void;
-}) => {
+const Backdrop = (props: { children: React.ReactNode; onClick: () => void }) => {
   return (
     <motion.div
       className="fixed inset-0 z-50 w-full h-screen bg-gray-900"
@@ -14,7 +12,7 @@ const Backdrop = (props: {
     >
       {props.children}
     </motion.div>
-  );
-};
+  )
+}
 
-export default Backdrop;
+export default Backdrop

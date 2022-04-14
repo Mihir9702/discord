@@ -2,12 +2,15 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "target": "es5",
-    "lib": ["dom", "dom.iterable", "esnext"],
     "baseUrl": "./",
-    "allowJs": true,
+    "outDir": "dist",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
+    "allowJs": false,
+    "noImplicitAny": false,
     "moduleResolution": "node",
     "jsx": "preserve"
   },
-  "exclude": ["node_modules", "next/next.config.js", "app", "dist"]
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
 }

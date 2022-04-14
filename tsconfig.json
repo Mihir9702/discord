@@ -10,17 +10,15 @@
     "noImplicitThis": true,
     "alwaysStrict": true,
 
-    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "incremental": true,
+    "emitDecoratorMetadata": true,
 
     "esModuleInterop": true,
     "experimentalDecorators": true,
     "declaration": true,
-    "emitDecoratorMetadata": true,
-    "emitDeclarationOnly": true,
 
     "noUnusedLocals": true,
     "noUnusedParameters": true,

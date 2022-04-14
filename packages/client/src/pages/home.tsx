@@ -1,15 +1,15 @@
-import React from "react";
-import Chat from "../src/components/Chat";
-import ServerNavigation from "../src/components/ServerNavigation";
-import AddServer from "../src/components/AddServer";
-import Modal from "../src/components/Modal";
+import React from 'react'
+import Chat from '../tools/components/Chat'
+import ServerNavigation from '../tools/components/ServerNavigation'
+import AddServer from '../tools/components/AddServer'
+import Modal from '../tools/components/Modal'
 
 export default () => {
-  const [ds, setds] = React.useState(false);
+  const [ds, setds] = React.useState(false)
 
   const handleClose = () => {
-    setds(!ds);
-  };
+    setds(!ds)
+  }
 
   return (
     <div className={`max-w-8xl mx-auto bg-gray-900`}>
@@ -24,5 +24,5 @@ export default () => {
         <Chat />
       </div>
     </div>
-  );
-};
+  )
+}

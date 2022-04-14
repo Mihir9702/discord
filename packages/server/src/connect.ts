@@ -1,13 +1,14 @@
 import { __prod__ } from './constants'
-import path from 'path'
 import { DataSource } from 'typeorm'
+import path from 'path'
+import 'dotenv/config'
 
 export default new DataSource({
   type: 'postgres',
   host: 'localhost',
   port: 5432,
-  username: 'postgres',
-  password: 'postgres',
+  username: process.env.POSTGRES_USER || 'postgres',
+  password: process.env.POSTGRES_PASSWORD || 'postgres',
   database: 'imari',
   synchronize: true,
   logging: true,
