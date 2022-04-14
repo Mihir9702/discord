@@ -1,11 +1,11 @@
-import Link from "next/link";
-import React from "react";
-import { useServersQuery } from "../generated/graphql";
+import Link from 'next/link'
+import React from 'react'
+import { useServersQuery } from 'genql'
 
 const Servers = () => {
-  const [active, setActive] = React.useState(false);
+  const [active, setActive] = React.useState(false)
 
-  const [{ data }] = useServersQuery();
+  const [{ data }] = useServersQuery()
 
   return (
     <ul className="bg-zinc-800 p-[1.25rem]">
@@ -24,7 +24,7 @@ const Servers = () => {
         </div>
       ))}
     </ul>
-  );
-};
+  )
+}
 
-export default Servers;
+export default Servers

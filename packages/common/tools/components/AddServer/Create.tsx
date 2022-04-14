@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router'
 import React from 'react'
 import InputField from '../InputField'
-import { useCreateServerMutation } from '../../generated/graphql'
+import { useCreateServerMutation } from 'genql'
 
 interface Props {
   menu: () => void

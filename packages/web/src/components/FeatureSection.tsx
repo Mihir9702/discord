@@ -1,6 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
-import calls from '@assets/calls.svg'
+import calls from '../assets/calls.svg'
 
 const FeatureSection: React.FC = () => {
   return (

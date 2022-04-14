@@ -1,12 +1,16 @@
-import React, { FC, useState } from 'react'
+import React, { FC, JSXElementConstructor, ReactElement, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import ListLink from './ListLink'
-import logo from '@assets/logo.svg'
+import logo from '../assets/logo.svg'
 import { links } from './NavItems'
 import { MenuIcon, CloseIcon } from './Icons'
 
-const NavWrapper: FC = ({ children }) => {
+interface NavProps {
+  children: ReactElement<any, string | JSXElementConstructor<any>>
+}
+
+const NavWrapper: FC<NavProps> = ({ children }) => {
   const [display, setDisplay] = useState('hidden')
   const [menu, setMenu] = useState(false)
 

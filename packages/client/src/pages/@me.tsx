@@ -1,5 +1,5 @@
 import React from 'react'
-import Chat from '../tools/components/Chat'
+import Chat from '@comps/Chat'
 
 // ! this will be scrapped for a better home ui design
 export default () => {

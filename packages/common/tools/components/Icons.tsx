@@ -1,3 +1,5 @@
+import React from 'react'
+
 // 🍔 Menu Icon
 export const MenuIcon: React.FC = () => {
   return (

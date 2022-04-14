@@ -2,12 +2,11 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
-    "baseUrl": "./",
     "incremental": true,
     "module": "esnext",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "skipLibCheck": true
-  },
-  "exclude": ["src/tools/generated/*.ts"]
+    "skipLibCheck": true,
+    "allowJs": true
+  }
 }

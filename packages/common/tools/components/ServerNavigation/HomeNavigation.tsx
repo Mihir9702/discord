@@ -1,5 +1,5 @@
-import Link from "next/link";
-import React from "react";
+import React from 'react'
+import Link from 'next/link'
 
 const HomeNavigation = () => {
   return (
@@ -20,7 +20,7 @@ const HomeNavigation = () => {
         </a>
       </div>
     </Link>
-  );
-};
+  )
+}
 
-export default HomeNavigation;
+export default HomeNavigation

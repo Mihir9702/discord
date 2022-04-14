@@ -1,9 +1,9 @@
-import React from "react";
-import AddNavigation from "./AddNavigation";
-import HomeNavigation from "./HomeNavigation";
-import Servers from "./Servers";
+import React from 'react'
+import AddNavigation from './AddNavigation'
+import HomeNavigation from './HomeNavigation'
+import Servers from './Servers'
 
-type Props = { ds: boolean; setds: any };
+type Props = { ds: boolean; setds: any }
 
 const ServerNavigation: React.FC<Props> = ({ ds, setds }) => {
   return (
@@ -14,7 +14,7 @@ const ServerNavigation: React.FC<Props> = ({ ds, setds }) => {
       <hr className="border-gray-800 mb-3" />
       <AddNavigation ds={ds} setds={setds} />
     </nav>
-  );
-};
+  )
+}
 
-export default ServerNavigation;
+export default ServerNavigation

@@ -1,18 +1,8 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
-import { useMeQuery, useLogoutMutation } from '../generated/graphql'
 import NavWrapper from './NavWrapper'
 
 const Nav = () => {
-  const [] = useState('hidden')
-  const [] = useState(false)
-
-  // useLogoutMutation
-  const [, logout] = useLogoutMutation()
-  const handleLogout = async () => {
-    await logout()
-  }
   return (
     <NavWrapper>
       <Link href="/me">

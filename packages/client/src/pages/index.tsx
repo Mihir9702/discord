@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useMeQuery } from '../tools/generated/graphql'
+import { useMeQuery } from 'genql'
 
 export default () => {
   const [{ data, fetching }] = useMeQuery()

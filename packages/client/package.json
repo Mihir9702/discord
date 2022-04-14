@@ -11,8 +11,7 @@
     "build:win": "nextron build --win --ia64",
     "build:mac": "nextron build --mac --x64",
     "build:linux": "nextron build --linux",
-    "postinstall": "electron-builder",
-    "gen": "graphql-codegen --config codegen.yml"
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "electron-serve": "1.1.0",

@@ -1,8 +1,14 @@
 {
-  "packages": ["packages/*"],
+  "packages": [
+    "packages/*"
+  ],
   "version": "independent",
   "npmClient": "yarn",
   "useWorkspaces": true,
   "loglevel": true,
-  "stream": true
+  "stream": true,
+  "lerna-dockerize": {
+    "templateDockerfileName": "Dockerfile.template",
+    "baseDockerfileName": "Dockerfile.base"
+  }
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react'
 
 const Message: React.FC = () => {
   return (
@@ -9,13 +9,11 @@ const Message: React.FC = () => {
 
         <div className="flex flex-col items-start ml-8 gap-y-2">
           <h1 className="hover:underline">Person 👨</h1>
-          <span className="text-sm">
-            The message from the user will be displayed here 📭
-          </span>
+          <span className="text-sm">The message from the user will be displayed here 📭</span>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Message;
+export default Message

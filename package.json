@@ -1,6 +1,6 @@
 {
   "name": "imari",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Discord Clone - Messaging App",
   "author": "Mihir Patel",
   "private": true,
@@ -17,10 +17,13 @@
     "build:server": "lerna run build --scope=@imari/server",
     "start": "lerna run start",
     "version": "lerna version --conventional-commits --yes",
-    "diff": "lerna diff"
+    "diff": "lerna diff",
+    "lerna-dockerize": "lerna-dockerize"
   },
   "dependencies": {
     "@imari/client": "file:packages\\client",
+    "@imari/common": "file:packages\\common",
+    "@imari/controller": "file:packages\\controller",
     "@imari/server": "file:packages\\server",
     "@imari/web": "file:packages\\web"
   },
@@ -41,9 +44,10 @@
     "electron-builder": "20.0.0",
     "eslint": "8.12.0",
     "eslint-config-next": "12.1.3",
-    "framer-motion": "6.2.10",
+    "framer-motion": "^6.2.10",
     "graphql": "^15.3.0",
     "lerna": "^4.0.0",
+    "lerna-dockerize": "^0.9.1",
     "next": "12.1.5",
     "nextron": "8.0.0",
     "nodemon": "^2.0.15",
@@ -52,7 +56,7 @@
     "react-dom": "18.0.0",
     "tailwindcss": "3.0.24",
     "ts-node": "^10.7.0",
-    "typescript": "4.6.3",
+    "typescript": "^4.6.3",
     "urql": "2.2.0"
   }
 }

@@ -1,13 +1,12 @@
 import React from 'react'
-import Nav from '@components/Nav'
-import InputField from '@components/InputField'
+import InputField from '../components/InputField'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
-import { useLoginMutation } from 'src/generated/graphql'
-import { LoginInput } from '../generated/graphql'
+import { useLoginMutation } from 'genql'
+import { Input } from 'genql'
 
 const Login: NextPage = () => {
-  const [params, setParams] = React.useState<LoginInput>({ username: '', password: '' })
+  const [params, setParams] = React.useState<Input>({ username: '', password: '' })
   const [error, setError] = React.useState<string | undefined>(undefined)
 
   const router = useRouter()

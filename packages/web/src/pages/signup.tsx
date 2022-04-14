@@ -1,22 +1,19 @@
 import React from 'react'
-import InputField from '@components/InputField'
+import InputField from '@comps/InputField'
 import { NextPage } from 'next'
-import { useSignupMutation, SignupInput } from '../generated/graphql'
+import { useSignupMutation, Input } from 'genql'
 import { useRouter } from 'next/router'
 
 const Signup: NextPage = () => {
   const [, signup] = useSignupMutation()
   const router = useRouter()
-  const [params, setParams] = React.useState<SignupInput>({ name: '', username: '', password: '' })
+  const [params, setParams] = React.useState<Input>({ username: '', password: '' })
   const [error, setError] = React.useState<string | undefined>(undefined)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    console.log('params', params)
-    // @ts-ignore
-    const response = await signup(params)
-    console.log('response', response)
+    const response = await signup({ params })
 
     if (response.error) {
       setError(response.error?.graphQLErrors[0].message)
@@ -32,12 +29,6 @@ const Signup: NextPage = () => {
     >
       <h1>Signup</h1>
       {error && <p className="text-red-500 py-4">{error}</p>}
-      <InputField
-        name={params.name}
-        label="Name"
-        type="text"
-        onChange={(e) => setParams({ ...params, name: e.target.value })}
-      />
       <InputField
         name={params.username}
         label="Username"

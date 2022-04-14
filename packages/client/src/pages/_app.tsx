@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import { Provider } from 'urql'
-import { client } from '../tools/utils/createUrqlClient'
+import { client } from '@utils/urql'
 import type { AppProps } from 'next/app'
 import '../styles/globals.css'
 

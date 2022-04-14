@@ -5,5 +5,6 @@ export const client = createClient({
   fetchOptions: {
     credentials: 'include' as const,
   },
-  // * Exchanges / Caching soonTM
+
+  // * 😇 Exchanges / Caching soonTM
 })

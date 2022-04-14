@@ -2,7 +2,11 @@ node_modules
 
 .env
 
+dist
+app
 temp
+
+*.lock
 
 package.json
 packages/**/package.json

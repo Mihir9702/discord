@@ -1,8 +1,8 @@
 import React from 'react'
-import Chat from '../tools/components/Chat'
-import ServerNavigation from '../tools/components/ServerNavigation'
-import AddServer from '../tools/components/AddServer'
-import Modal from '../tools/components/Modal'
+import Chat from '@comps/Chat'
+import ServerNavigation from '@comps/ServerNavigation'
+import AddServer from '@comps/AddServer'
+import Modal from '@comps/Modal'
 
 export default () => {
   const [ds, setds] = React.useState(false)

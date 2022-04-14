@@ -1,0 +1,7 @@
+{
+  "name": "@imari/controller",
+  "version": "0.0.1",
+  "scripts": {
+    "gen": "graphql-codegen --config codegen.yml"
+  }
+}

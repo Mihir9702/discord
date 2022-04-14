@@ -1,6 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
-import preview from '@assets/preview.svg'
+import preview from '../assets/preview.svg'
 
 const PreviewSection: React.FC = () => {
   return (

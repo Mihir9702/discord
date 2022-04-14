@@ -1,8 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
-import InputField from '../tools/components/InputField'
+import InputField from '@comps/InputField'
 import { useRouter } from 'next/router'
-import { Input, useLoginMutation } from '../tools/generated/graphql'
+import { Input, useLoginMutation } from 'genql'
 
 export default () => {
   const [params, setParams] = React.useState<Input>({

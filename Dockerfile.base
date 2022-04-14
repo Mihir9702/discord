@@ -1,0 +1,10 @@
+# This is the base dockerfile. Here the base image is pulled and the ras setup is done for the project.
+FROM node:16 as base
+
+COPY ./package.json ./
+
+RUN npm install
+
+COPY ./lerna.json ./
+
+CMD ["lerna", "bootstrap"]
