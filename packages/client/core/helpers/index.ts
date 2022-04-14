@@ -1,5 +1,3 @@
-import createWindow from './create-window';
+import createWindow from './createWindow'
 
-export {
-  createWindow,
-};
+export { createWindow }

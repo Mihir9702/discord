@@ -12,7 +12,7 @@ import {
 import { Server } from '../entities/Server'
 import { MyContext } from '../types'
 import { isAuth } from '../middleware/isAuth'
-import { generate } from '../helpers/genRand'
+import { generate } from '@utils/rand'
 
 @InputType()
 class ServerInput {

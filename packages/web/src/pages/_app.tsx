@@ -2,15 +2,9 @@ import Head from 'next/head'
 import Nav from '../components/Nav'
 import Footer from '../components/Footer'
 import type { AppProps } from 'next/app'
-import { createClient, Provider } from 'urql'
+import { Provider } from 'urql'
+import { client } from '@utils/urql'
 import '../../styles/globals.css'
-
-const client = createClient({
-  url: 'http://localhost:3000/graphql',
-  fetchOptions: {
-    credentials: 'include',
-  },
-})
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (

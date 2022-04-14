@@ -1,16 +1,23 @@
 import { screen, BrowserWindow, BrowserWindowConstructorOptions } from 'electron'
 import Store from 'electron-store'
 
+interface Window {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export default (windowName: string, options: BrowserWindowConstructorOptions): BrowserWindow => {
   const key = 'window-state'
   const name = `window-state-${windowName}`
   const store = new Store({ name })
   const defaultSize = {
-    width: options.width,
-    height: options.height,
+    width: options.width || 800,
+    height: options.height || 600,
   }
   let state = {}
-  let win
+  let win: BrowserWindow
 
   const restore = () => store.get(key, defaultSize)
 
@@ -25,7 +32,7 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
     }
   }
 
-  const windowWithinBounds = (windowState, bounds) => {
+  const windowWithinBounds = (windowState: Window, bounds: Window) => {
     return (
       windowState.x >= bounds.x &&
       windowState.y >= bounds.y &&
@@ -42,7 +49,7 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
     })
   }
 
-  const ensureVisibleOnSomeDisplay = (windowState) => {
+  const ensureVisibleOnSomeDisplay = (windowState: Window) => {
     const visible = screen.getAllDisplays().some((display) => {
       return windowWithinBounds(windowState, display.bounds)
     })
@@ -61,7 +68,7 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
     store.set(key, state)
   }
 
-  state = ensureVisibleOnSomeDisplay(restore())
+  state = ensureVisibleOnSomeDisplay(restore() as Window)
 
   const browserOptions: BrowserWindowConstructorOptions = {
     ...options,

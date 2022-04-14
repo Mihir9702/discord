@@ -2,7 +2,7 @@ import { Arg, Ctx, Query, Resolver, Int, Mutation, InputType, Field } from 'type
 import { MyContext } from '../types'
 import { hash, genSalt, compare } from 'bcryptjs'
 import { User } from '../entities/User'
-import { generateNumber } from '../helpers/genRand'
+import { generateNumber } from '@utils/rand'
 
 @InputType()
 class Input {
@@ -107,7 +107,7 @@ export class UserResolver {
   // 🔓 Logout
   @Mutation(() => Boolean)
   async logout(@Ctx() { req }: MyContext): Promise<boolean> {
-    await req.session.destroy(err => (err ? err : true))
+    await req.session.destroy((err) => (err ? err : true))
 
     return true
   }

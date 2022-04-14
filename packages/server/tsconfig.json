@@ -3,8 +3,16 @@
   "compilerOptions": {
     "target": "es2016",
     "module": "commonjs",
-    "rootDir": "./",
-    "paths": {},
-    "outDir": "./dist"
-  }
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "outDir": "./dist",
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "moduleResolution": "node",
+    "jsx": "preserve",
+    "incremental": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
 }

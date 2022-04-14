@@ -5,7 +5,6 @@
 
     "baseUrl": "./",
     "rootDir": "./",
-    "outDir": "./dist",
 
     "strict": true,
     "noImplicitAny": true,
@@ -30,7 +29,7 @@
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
-      "genql": ["./packages/controller/generated/graphql.ts"],
+      "genql": ["packages/controller/generated/graphql.ts"],
       "@utils/*": ["packages/common/tools/utilities/*"],
       "@comps/*": ["packages/common/tools/components/*"]
     }
