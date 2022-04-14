@@ -1,6 +1,6 @@
 {
   "name": "@imari/server",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "dist/index.js",
   "author": "Mihir Patel",
   "description": "Server for imari",
@@ -24,9 +24,9 @@
     "typeorm": "^0.3.6"
   },
   "devDependencies": {
-    "typescript": "^4.6.3",
+    "eslint": "^8.13.0",
     "nodemon": "^2.0.15",
     "ts-node": "^10.7.0",
-    "eslint": "^8.13.0"
+    "typescript": "^4.6.3"
   }
 }
