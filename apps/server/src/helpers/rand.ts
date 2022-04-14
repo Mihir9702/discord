@@ -1,4 +1,4 @@
-function randomString(length: number): string {
+export function randomString(length: number): string {
   let result = ''
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   const charactersLength = characters.length
@@ -8,15 +8,15 @@ function randomString(length: number): string {
   return result
 }
 
-function randomNumber(min: number, max: number): number {
+export function randomNumber(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min) + min)
 }
 
-function randomizeArray(array: any[]): any[] {
+export function randomizeArray(array: any[]): any[] {
   return array.sort(() => Math.random() - 0.5)
 }
 
-function generateNumber(length: number): number {
+export function generateNumber(length: number): number {
   const nums: number[] = []
 
   for (let i = 0; i < length; i++) {
@@ -26,7 +26,7 @@ function generateNumber(length: number): number {
   return parseInt(nums.join(''))
 }
 
-function generate(): string {
+export function generate(): string {
   const str1 = randomString(randomNumber(2, 3))
   const str2 = randomString(randomNumber(2, 3))
 
@@ -37,5 +37,3 @@ function generate(): string {
 
   return random.join('')
 }
-
-export { randomString, randomNumber, randomizeArray, generateNumber, generate }
