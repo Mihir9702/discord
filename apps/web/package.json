@@ -1,0 +1,20 @@
+{
+  "name": "@imari/web",
+  "version": "0.0.3",
+  "author": "Mihir Patel",
+  "description": "Website for imari",
+  "scripts": {
+    "dev": "next dev -p 4000",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "framer-motion": "^6.2.10",
+    "graphql": "^15.3.0",
+    "next": "12.1.5",
+    "react": "18.0.0",
+    "react-dom": "18.0.0",
+    "urql": "2.2.0"
+  }
+}

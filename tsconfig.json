@@ -6,6 +6,7 @@
     "baseUrl": "./",
     "rootDir": "./",
 
+    "allowJs": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -26,12 +27,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-
-    "paths": {
-      "genql": ["packages/controller/generated/graphql.ts"],
-      "@utils/*": ["packages/common/tools/utilities/*"],
-      "@comps/*": ["packages/common/tools/components/*"]
-    }
-  }
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["packages/**/*.ts", "packages/**/*.tsx", "apps/**/*.ts", "apps/**/*.tsx"]
 }

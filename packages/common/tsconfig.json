@@ -1,13 +1,13 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "outDir": "dist",
-    "module": "esnext",
+    "outDir": "./build",
+    "module": "ES6",
+    "noImplicitAny": false,
     "moduleResolution": "node",
     "jsx": "preserve"
   },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "**/*.d.ts", "**/*.js", "**/*.jsx"]
+  "exclude": ["./build"]
 }
