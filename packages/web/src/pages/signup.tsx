@@ -1,5 +1,5 @@
 import React from 'react'
-import InputField from 'packages/common/components/InputField'
+import InputField from '../components/InputField'
 import { NextPage } from 'next'
 import { useSignupMutation, Input } from 'packages/controller/dist/generated/graphql'
 import { useRouter } from 'next/router'

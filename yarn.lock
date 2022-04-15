@@ -1520,8 +1520,8 @@
   resolved "https://registry.npmjs.org/@iarna/toml/-/toml-2.2.5.tgz"
   integrity sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==
 
-"@imari/client@file:apps/client":
-  version "0.0.3"
+"@imari/client@file:packages/client":
+  version "0.0.4"
   dependencies:
     electron-serve "1.1.0"
     electron-store "8.0.1"
@@ -1532,18 +1532,6 @@
     react-dom "18.0.0"
     urql "2.2.0"
 
-"@imari/common@file:packages/common":
-  version "0.0.3"
-  dependencies:
-    autoprefixer "10.4.4"
-    framer-motion "^6.2.10"
-    graphql "^15.3.0"
-    next "12.1.5"
-    react "18.0.0"
-    react-dom "18.0.0"
-    tailwindcss "3.0.24"
-    urql "2.2.0"
-
 "@imari/controller@file:packages/controller":
   version "0.0.3"
   dependencies:
@@ -1551,8 +1539,8 @@
     graphql-tag "^2.12.6"
     urql "2.2.0"
 
-"@imari/server@file:apps/server":
-  version "0.0.3"
+"@imari/server@file:packages/server":
+  version "0.0.4"
   dependencies:
     apollo-server-express "^3.6.7"
     bcryptjs "^2.4.3"
@@ -1566,8 +1554,8 @@
     type-graphql "1.1.1"
     typeorm "^0.3.6"
 
-"@imari/web@file:apps/web":
-  version "0.0.3"
+"@imari/web@file:packages/web":
+  version "0.0.4"
   dependencies:
     framer-motion "^6.2.10"
     graphql "^15.3.0"

@@ -5,8 +5,7 @@
   "author": "Mihir Patel",
   "private": true,
   "workspaces": [
-    "packages/*",
-    "apps/*"
+    "packages/*"
   ],
   "scripts": {
     "boot": "lerna bootstrap --concurrency=1",
@@ -24,11 +23,10 @@
     "lerna-dockerize": "lerna-dockerize"
   },
   "dependencies": {
-    "@imari/client": "file:apps\\client",
-    "@imari/common": "file:packages\\common",
+    "@imari/client": "file:packages\\client",
     "@imari/controller": "file:packages\\controller",
-    "@imari/server": "file:apps\\server",
-    "@imari/web": "file:apps\\web"
+    "@imari/server": "file:packages\\server",
+    "@imari/web": "file:packages\\web"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "2.6.2",
