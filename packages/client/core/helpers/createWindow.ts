@@ -13,8 +13,8 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
   const name = `window-state-${windowName}`
   const store = new Store({ name })
   const defaultSize = {
-    width: options.width || 800,
-    height: options.height || 600,
+    width: options.width,
+    height: options.height,
   }
   let state = {}
   let win: BrowserWindow
@@ -44,8 +44,8 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
   const resetToDefaults = () => {
     const bounds = screen.getPrimaryDisplay().bounds
     return Object.assign({}, defaultSize, {
-      x: (bounds.width - defaultSize.width) / 2,
-      y: (bounds.height - defaultSize.height) / 2,
+      x: (bounds.width - defaultSize.width!) / 2,
+      y: (bounds.height - defaultSize.height!) / 2,
     })
   }
 

@@ -8,7 +8,7 @@ const Servers = () => {
   const [{ data }] = useServersQuery()
 
   return (
-    <ul className="bg-zinc-800 p-[1.25rem]">
+    <ul>
       {data?.servers?.map((server) => (
         <div key={server.id}>
           <li className={`hover:${() => setActive(!active)}`}>
