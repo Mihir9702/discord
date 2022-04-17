@@ -1,6 +1,6 @@
 {
   "name": "@imari/server",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "author": "Mihir Patel",
   "description": "Server for imari",
