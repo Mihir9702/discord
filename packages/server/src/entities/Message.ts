@@ -1,6 +1,6 @@
 import { Field, ObjectType } from 'type-graphql'
 import { User } from './User'
-import { Server } from './Server'
+import { TextChannel } from './TextChannel'
 import {
   Entity,
   Column,
@@ -33,11 +33,16 @@ export class Message extends BaseEntity {
   @Column({ nullable: true })
   serverId?: number
 
-  @ManyToOne(() => User, user => user.messages)
+  @ManyToOne(() => User, (user) => user.messages)
   sender?: User
 
-  @ManyToOne(() => Server, server => server.messages)
-  server?: Server
+  // The text channel the message was sent in
+  @Field()
+  @Column()
+  textChannelId!: number
+
+  @ManyToOne(() => TextChannel, (textChannel) => textChannel.messages)
+  textChannel!: TextChannel
 
   // The date the user was created
   @Field(() => String)

@@ -25,7 +25,7 @@ export class UserResolver {
 
   // 🔎 Find user by session id
   @Query(() => User, { nullable: true })
-  async me(@Ctx() { req }: MyContext): Promise<User | null> {
+  async user(@Ctx() { req }: MyContext): Promise<User | null> {
     if (!req.session.userId) {
       return null
     }

@@ -1,5 +1,5 @@
 import { Field, ObjectType } from 'type-graphql'
-import { Message } from './Message'
+import { TextChannel } from './TextChannel'
 import { User } from './User'
 import {
   Entity,
@@ -48,12 +48,13 @@ export class Server extends BaseEntity {
   ownerId!: number
 
   // Server can have many members
-  @ManyToOne(() => User, user => user.servers)
+  @ManyToOne(() => User, (user) => user.servers)
   members!: User
 
-  // Server can have many messages.
-  @ManyToOne(() => Message, message => message.server)
-  messages?: Message
+  // Server can have many textchannels
+  @Field(() => [TextChannel])
+  @ManyToOne(() => TextChannel, (textChannel) => textChannel.servers)
+  textChannels?: TextChannel
 
   // The date the user was created
   @Column()

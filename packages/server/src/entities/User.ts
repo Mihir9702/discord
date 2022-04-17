@@ -10,6 +10,7 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm'
+import { TextChannel } from './TextChannel'
 
 @ObjectType()
 @Entity()
@@ -17,10 +18,6 @@ export class User extends BaseEntity {
   @Field()
   @PrimaryGeneratedColumn()
   id!: number
-
-  // * fullname of the user: name@nameId
-  // * ! | username, password,
-  // * ? | email, nameId, friends,
 
   @Field()
   @Column({ type: 'text' })
@@ -33,20 +30,24 @@ export class User extends BaseEntity {
   @Column()
   userId!: number
 
-  // 🔳 avatar of the user
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  avatar?: string
+  @Field()
+  @Column()
+  displayName!: string
 
   // 📧 One user can have many messages.
   @Field(() => [Message])
-  @OneToMany(() => Message, message => message.sender)
+  @OneToMany(() => Message, (message) => message.sender)
   messages?: Message[]
 
   // Servers that the user is in
   @Field(() => [Server])
-  @OneToMany(() => Server, server => server.members)
+  @OneToMany(() => Server, (server) => server.members)
   servers?: Server[]
+
+  // Text Channels that the user is in
+  @Field(() => [TextChannel])
+  @OneToMany(() => TextChannel, (textChannel) => textChannel.users)
+  textChannels?: TextChannel[]
 
   // The date the user was created
   @Field(() => String)
