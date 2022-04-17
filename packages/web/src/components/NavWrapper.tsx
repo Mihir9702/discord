@@ -2,7 +2,7 @@ import React, { FC, JSXElementConstructor, ReactElement, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import ListLink from './ListLink'
-import logo from '../assets/logo.svg'
+import logo from '../assets/logo.png'
 import { links } from './NavItems'
 import { MenuIcon, CloseIcon } from './Icons'
 
@@ -24,15 +24,14 @@ const NavWrapper: FC<NavProps> = ({ children }) => {
   }
 
   return (
-    <nav className="z-10 p-5 py-12 shadow-lg lg:flex lg:inset-auto relative w-full lg:items-center">
+    <nav className="bg-dark-400 text-text z-10 p-5 py-12 shadow-lg lg:flex lg:inset-auto relative w-full lg:items-center">
       <div className="flex items-center">
         <div className="w-max">
           <Link href="/">
-            <a className="flex justify-center items-center gap-4 text-gray-800 hover:text-gray-900">
-              <div className="w-10">
-                <Image src={logo} alt="logo" />
+            <a className="flex justify-center items-center gap-4 text-text hover:text-blue-900">
+              <div className="w-16">
+                <Image src={logo} alt="logo" className="logo rounded-full" />
               </div>
-              <span className="text-2xl font-bold">Imari</span>
             </a>
           </Link>
         </div>

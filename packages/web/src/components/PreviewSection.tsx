@@ -4,7 +4,7 @@ import preview from '../assets/preview.svg'
 
 const PreviewSection: React.FC = () => {
   return (
-    <section className="bg-gray-50 py-4">
+    <section className="bg-dark-300 text-text py-4">
       <div className="mx-auto px-4 py-28">
         <div className="flex flex-wrap">
           <div className="w-full lg:w-1/2">

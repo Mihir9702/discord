@@ -1,5 +1,5 @@
 import React from 'react'
-import { SearchIcon } from './Icons'
+import { SearchIcon } from '../../../web/src/components/Icons'
 
 const Search: React.FC = () => {
   const handleSearch = () => {

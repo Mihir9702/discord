@@ -4,7 +4,7 @@ import calls from '../assets/calls.svg'
 
 const FeatureSection: React.FC = () => {
   return (
-    <section className="bg-gray-100 py-4">
+    <section className="bg-dark-200 text-text py-4">
       <div className="mx-auto px-4 py-28">
         <div className="flex flex-wrap">
           <div className="w-full flex flex-col justify-center text-center items-center lg:w-1/2 p-4">

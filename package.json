@@ -11,7 +11,7 @@
     "boot": "lerna bootstrap --concurrency=1",
     "dev": "lerna run dev",
     "dev:app": "lerna run dev --scope=@imari/{client,server}",
-    "dev:web": "lerna run dev --scope=@imari/{web,server}",
+    "dev:web": "lerna run dev --scope=@imari/web",
     "dev:server": "lerna run dev --scope=@imari/server",
     "build": "lerna run build",
     "build:client": "lerna run build --scope=@imari/client",
