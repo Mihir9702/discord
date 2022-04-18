@@ -76,7 +76,7 @@ export class UserResolver {
 
     const user = await User.findOne({ where: { username: params.username } })
 
-    if (!user) throw new Error('Invalid username or password')
+    if (!user) throw new Error('User not found')
 
     const valid = await compare(params.password, user!.password)
 

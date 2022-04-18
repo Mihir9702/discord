@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import React from 'react'
+import React, { useEffect } from 'react'
 import InputField from '../InputField'
 import { useCreateServerMutation } from 'packages/controller/dist/generated/graphql'
 
@@ -25,7 +25,7 @@ const Create: React.FC<Props> = ({ menu }) => {
     if (response.error) {
       setError(response.error?.graphQLErrors[0].message)
     } else {
-      router.push('/')
+      router.push('/home')
     }
   }
 

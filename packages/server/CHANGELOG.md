@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 0.2.0 (2022-04-18)
+
+
+### Bug Fixes
+
+* :hammer: paths / tsconfig + types for electron client creation ([2183a26](https://github.com/Mihir9702/Imari/commit/2183a2616102d36e4edea3e32b47d837812613ca))
+
+
+### Features
+
+* :fire: added text channels entity ([9ecaf9b](https://github.com/Mihir9702/Imari/commit/9ecaf9bd834fe41b30380303b763dc76913e6882))
+* random display names ([0a75330](https://github.com/Mihir9702/Imari/commit/0a7533085a6dca5200127a49cb302a60f06e3a0d))
+
+
+
+
+
 # 0.1.0 (2022-04-17)
 
 

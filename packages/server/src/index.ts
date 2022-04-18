@@ -15,7 +15,7 @@ const main = async () => {
 
   const app = express()
 
-  app.use(cors({ origin: '*', credentials: true }))
+  app.use(cors({ origin: 'http://localhost:8888', credentials: true }))
 
   app.use(
     session({
