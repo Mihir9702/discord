@@ -26,7 +26,8 @@
     "@imari/client": "file:packages\\client",
     "@imari/controller": "file:packages\\controller",
     "@imari/server": "file:packages\\server",
-    "@imari/web": "file:packages\\web"
+    "@imari/web": "file:packages\\web",
+    "unique-names-generator": "^4.7.1"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "2.6.2",

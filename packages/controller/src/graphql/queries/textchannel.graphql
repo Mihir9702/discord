@@ -1,0 +1,7 @@
+query TextChannel {
+  id
+  name
+  users {
+    id
+  }
+}

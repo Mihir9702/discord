@@ -3,6 +3,7 @@ import { MyContext } from '../types'
 import { hash, genSalt, compare } from 'bcryptjs'
 import { User } from '../entities/User'
 import { generateNumber } from '../helpers/rand'
+import { adjectives, colors, Config, uniqueNamesGenerator } from 'unique-names-generator'
 
 @InputType()
 class Input {
@@ -47,10 +48,19 @@ export class UserResolver {
 
     const randomId = generateNumber(4)
 
+    const config: Config = {
+      dictionaries: [adjectives, colors],
+      separator: '-',
+      length: 2,
+    }
+
+    const randomName = uniqueNamesGenerator(config)
+
     const user = await User.create({
       username: params.username.toLowerCase(),
       password: hashedPassword,
       userId: randomId,
+      displayName: randomName,
     }).save()
 
     req.session.userId = user.id

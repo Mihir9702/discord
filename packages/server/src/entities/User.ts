@@ -31,7 +31,7 @@ export class User extends BaseEntity {
   userId!: number
 
   @Field()
-  @Column()
+  @Column({ type: 'text' })
   displayName!: string
 
   // 📧 One user can have many messages.
