@@ -1,8 +1,9 @@
 import React from 'react'
-import Chat from '../components/Chat'
-import ServerNavigation from '../components/ServerNavigation'
 import AddServer from '../components/AddServer'
+import Chat from '../components/Chat'
+import MidColContent from '../components/MidColContent'
 import Modal from '../components/Modal'
+import ServerNavigation from '../components/ServerNavigation'
 
 export default () => {
   const [ds, setds] = React.useState(false)
@@ -20,7 +21,7 @@ export default () => {
       )}
       <div className="fixed z-10 inset-0 -left-10 shadow-md right-auto px-8 overflow-y-auto">
         <ServerNavigation ds={ds} setds={setds} />
-        <div className="bg-gray-900 z-20 inset-0 fixed left-20 ml-2 text-center text-gray-100 shadow-md right-auto px-28 overflow-y-auto" />
+        <MidColContent />
         <Chat />
       </div>
     </div>

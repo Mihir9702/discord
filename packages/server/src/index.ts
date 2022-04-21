@@ -1,8 +1,10 @@
 import 'reflect-metadata'
 import express from 'express'
 import session from 'express-session'
-import cors from 'cors'
 import db from './connect'
+import cors from 'cors'
+// import * as redis from 'redis'
+// import connectRedis from 'connect-redis'
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
 import { COOKIE, __prod__ } from './constants'
@@ -13,17 +15,28 @@ const main = async () => {
   await db.initialize()
   await db.runMigrations()
 
+  // const redisStore = connectRedis(session)
+  // const redisClient = redis.createClient()
+  // await redisClient.connect()
+
   const app = express()
 
-  app.use(cors({ origin: 'http://localhost:8888', credentials: true }))
+  app.use(cors({ origin: 'https://studio.apollographql.com', credentials: true }))
+  // app.use(cors({ origin: 'https://localhost:8888', credentials: true }))
 
   app.use(
     session({
       name: COOKIE,
+      // store: new redisStore({
+      //   client: redisClient,
+      //   disableTouch: true,
+      //   disableTTL: true,
+      // }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
-        sameSite: 'lax', // csrf
+        sameSite: 'none', // csrf
+        secure: 'auto', // cookie only works in https
         // secure: __prod__, // cookie only works in https
       },
       saveUninitialized: false, // don't create session until something stored
