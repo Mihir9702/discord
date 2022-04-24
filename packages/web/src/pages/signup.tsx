@@ -1,7 +1,7 @@
 import React from 'react'
 import InputField from '../components/InputField'
 import { NextPage } from 'next'
-import { useSignupMutation, Input } from 'packages/controller/dist/generated/graphql'
+import { useSignupMutation, Input } from '../graphql'
 import { useRouter } from 'next/router'
 
 const Signup: NextPage = () => {

@@ -1,15 +1,15 @@
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useMeQuery } from 'packages/controller/dist/generated/graphql'
+import { useUserQuery } from '../graphql'
 
 export default () => {
-  const [{ data, fetching }] = useMeQuery()
+  const [{ data, fetching }] = useUserQuery()
   let body: JSX.Element | null = null
   const router = useRouter()
 
   if (fetching) body = <div>Loading...</div>
-  else if (!data?.me) {
+  else if (!data?.user) {
     router.push('/login')
   } else router.push('/home')
 

@@ -2,8 +2,8 @@ import React from 'react'
 import InputField from '../components/InputField'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
-import { useLoginMutation } from 'packages/controller/dist/generated/graphql'
-import { Input } from 'packages/controller/dist/generated/graphql'
+import { useLoginMutation } from '../graphql'
+import { Input } from '../graphql'
 
 const Login: NextPage = () => {
   const [params, setParams] = React.useState<Input>({ username: '', password: '' })

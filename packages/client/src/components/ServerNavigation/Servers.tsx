@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import React from 'react'
-import { useServersQuery } from 'packages/controller/dist/generated/graphql'
+import { useServersQuery } from '../../graphql'
 
 const Servers = () => {
   const [active, setActive] = React.useState(false)

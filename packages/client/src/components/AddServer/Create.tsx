@@ -1,7 +1,7 @@
+import React from 'react'
 import { useRouter } from 'next/router'
-import React, { useEffect } from 'react'
 import InputField from '../InputField'
-import { useCreateServerMutation } from 'packages/controller/dist/generated/graphql'
+import { useCreateServerMutation } from '../../graphql'
 
 interface Props {
   menu: () => void
