@@ -3,12 +3,13 @@ import express from 'express'
 import session from 'express-session'
 import db from './connect'
 import cors from 'cors'
-import * as redis from 'redis'
+import { createClient } from 'redis'
 import connectRedis from 'connect-redis'
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
-import { COOKIE, __prod__ } from './constants'
+import { __prod__, COOKIE } from './constants'
 import { MyContext } from './types'
+import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
 
 const main = async () => {
   // Connect to Database
@@ -18,13 +19,11 @@ const main = async () => {
   const app = express()
 
   const RedisStore = connectRedis(session)
-  const RedisClient = redis.createClient({
-    legacyMode: true,
-  })
+  const RedisClient = createClient({ legacyMode: true })
 
   await RedisClient.connect()
 
-  app.set('trust proxy', 1)
+  app.set('trust proxy', __prod__)
 
   app.use(
     cors({
@@ -39,7 +38,6 @@ const main = async () => {
       store: new RedisStore({
         client: RedisClient,
         disableTouch: true,
-        disableTTL: true,
       }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
@@ -59,6 +57,7 @@ const main = async () => {
       validate: false,
     }),
     context: ({ req, res }): MyContext => ({ req, res }),
+    plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
   })
 
   await apolloServer.start()
