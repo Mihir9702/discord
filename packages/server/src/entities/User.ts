@@ -1,6 +1,7 @@
 import { Field, ObjectType } from 'type-graphql'
 import { Message } from './Message'
 import { Server } from './Server'
+import { TextChannel } from './TextChannel'
 import {
   Column,
   Entity,
@@ -10,7 +11,6 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm'
-import { TextChannel } from './TextChannel'
 
 @ObjectType()
 @Entity()
@@ -48,6 +48,11 @@ export class User extends BaseEntity {
   @Field(() => [TextChannel])
   @OneToMany(() => TextChannel, (textChannel) => textChannel.users)
   textChannels?: TextChannel[]
+
+  // Friends of the user
+  @Field(() => [User])
+  @OneToMany(() => User, (user) => user.friends)
+  friends?: User[]
 
   // The date the user was created
   @Field(() => String)

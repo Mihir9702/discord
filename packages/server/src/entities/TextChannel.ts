@@ -1,16 +1,16 @@
 import { Field, ObjectType } from 'type-graphql'
-import {
-  BaseEntity,
-  Column,
-  CreateDateColumn,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm'
 import { Message } from './Message'
 import { User } from './User'
 import { Server } from './Server'
+import {
+  Column,
+  Entity,
+  OneToMany,
+  BaseEntity,
+  CreateDateColumn,
+  UpdateDateColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm'
 
 @ObjectType()
 @Entity()

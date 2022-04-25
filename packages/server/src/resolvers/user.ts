@@ -1,9 +1,20 @@
-import { Arg, Ctx, Query, Resolver, Int, Mutation, InputType, Field } from 'type-graphql'
+import {
+  Arg,
+  Ctx,
+  Int,
+  Field,
+  Query,
+  Resolver,
+  Mutation,
+  InputType,
+  UseMiddleware,
+} from 'type-graphql'
 import { MyContext } from '../types'
 import { hash, genSalt, compare } from 'bcryptjs'
 import { User } from '../entities/User'
 import { generateNumber } from '../helpers/rand'
 import { adjectives, colors, Config, uniqueNamesGenerator } from 'unique-names-generator'
+import { isAuth } from '../middleware/isAuth'
 
 @InputType()
 class Input {
@@ -122,5 +133,14 @@ export class UserResolver {
     await req.session.destroy((err) => (err ? err : true))
 
     return true
+  }
+
+  // Friends list
+  @Query(() => [User])
+  @UseMiddleware(isAuth)
+  async friends(@Ctx() { req }: MyContext): Promise<User[] | undefined> {
+    const user = await User.findOne({ where: { id: req.session.userId } })
+
+    return user?.friends
   }
 }
