@@ -25,6 +25,15 @@ class Input {
   password!: string
 }
 
+@InputType()
+class AddFriendInput {
+  @Field()
+  displayName!: string
+
+  @Field()
+  userId!: number
+}
+
 @Resolver()
 export class UserResolver {
   // 🧪 Testing purposes only | ** REMOVE IN PROD **
@@ -142,5 +151,27 @@ export class UserResolver {
     const user = await User.findOne({ where: { id: req.session.userId } })
 
     return user?.friends
+  }
+
+  // Add a friend
+  @Mutation(() => User)
+  @UseMiddleware(isAuth)
+  async addFriend(@Arg('params') params: AddFriendInput, @Ctx() { req }: MyContext): Promise<User> {
+    const user = await User.findOne({ where: { id: req.session.userId } })
+
+    if (!user) throw new Error('User not found')
+
+    const friend = User.createQueryBuilder('user')
+      .where('user.displayName = :displayName', { displayName: params.displayName })
+      .andWhere('user.userId = :userId', { userId: params.displayName })
+      .getOne()
+
+    if (!friend) throw new Error('User not found')
+
+    user?.friends?.push(friend as any)
+
+    await user.save()
+
+    return user
   }
 }

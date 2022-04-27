@@ -93,6 +93,7 @@ export type MutationUpdateUserArgs = {
 export type Query = {
   __typename?: 'Query';
   deleteMessage: Scalars['Boolean'];
+  friends: Array<User>;
   messages: Array<Message>;
   servers: Array<Server>;
   updateMessage: Message;
@@ -141,6 +142,7 @@ export type User = {
   __typename?: 'User';
   createdAt: Scalars['String'];
   displayName: Scalars['String'];
+  friends: Array<User>;
   id: Scalars['Float'];
   messages: Array<Message>;
   servers: Array<Server>;
@@ -182,6 +184,11 @@ export type SignupMutationVariables = Exact<{
 
 
 export type SignupMutation = { __typename?: 'Mutation', signup: { __typename?: 'User', id: number, username: string, createdAt: string, updatedAt: string } };
+
+export type FriendsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type FriendsQuery = { __typename?: 'Query', user?: { __typename?: 'User', friends: Array<{ __typename?: 'User', id: number, displayName: string }> } | null };
 
 export type ServersQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -255,6 +262,20 @@ export const SignupDocument = gql`
 
 export function useSignupMutation() {
   return Urql.useMutation<SignupMutation, SignupMutationVariables>(SignupDocument);
+};
+export const FriendsDocument = gql`
+    query Friends {
+  user {
+    friends {
+      id
+      displayName
+    }
+  }
+}
+    `;
+
+export function useFriendsQuery(options?: Omit<Urql.UseQueryArgs<FriendsQueryVariables>, 'query'>) {
+  return Urql.useQuery<FriendsQuery>({ query: FriendsDocument, ...options });
 };
 export const ServersDocument = gql`
     query Servers {
