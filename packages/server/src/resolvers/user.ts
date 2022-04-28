@@ -26,7 +26,7 @@ class Input {
 }
 
 @InputType()
-class AddFriendInput {
+class FriendInput {
   @Field()
   displayName!: string
 
@@ -138,8 +138,9 @@ export class UserResolver {
 
   // 🔓 Logout
   @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
   async logout(@Ctx() { req }: MyContext): Promise<boolean> {
-    await req.session.destroy((err) => (err ? err : true))
+    req.session.destroy((err) => (err ? err : true))
 
     return true
   }
@@ -153,10 +154,42 @@ export class UserResolver {
     return user?.friends
   }
 
-  // Add a friend
+  // Send a friend request
   @Mutation(() => User)
   @UseMiddleware(isAuth)
-  async addFriend(@Arg('params') params: AddFriendInput, @Ctx() { req }: MyContext): Promise<User> {
+  async sendFriendRequest(
+    @Arg('params') params: FriendInput,
+    @Ctx() { req }: MyContext,
+  ): Promise<User> {
+    const user = await User.findOne({ where: { id: req.session.userId } })
+
+    if (!user) throw new Error('User not found')
+
+    // * setting friend as any to avoid type error because I don't know how to fix it yet
+    // ? friend: Promise<User | null>
+    // ? friendRequests: User[]
+
+    const friend = User.createQueryBuilder('user')
+      .where('user.displayName = :displayName', { displayName: params.displayName })
+      .andWhere('user.userId = :userId', { userId: params.displayName })
+      .getOne()
+
+    if (!friend) throw new Error('User not found')
+
+    user.friendRequests?.push(friend as any)
+
+    await user.save()
+
+    return user
+  }
+
+  // Accept a friend request
+  @Mutation(() => User)
+  @UseMiddleware(isAuth)
+  async acceptFriendRequest(
+    @Arg('params') params: FriendInput,
+    @Ctx() { req }: MyContext,
+  ): Promise<User> {
     const user = await User.findOne({ where: { id: req.session.userId } })
 
     if (!user) throw new Error('User not found')
@@ -168,10 +201,45 @@ export class UserResolver {
 
     if (!friend) throw new Error('User not found')
 
-    user?.friends?.push(friend as any)
+    user.friends?.push(friend as any)
 
     await user.save()
 
     return user
+  }
+
+  // Decline a friend request
+  @Mutation(() => User)
+  @UseMiddleware(isAuth)
+  async declineFriendRequest(
+    @Arg('params') params: FriendInput,
+    @Ctx() { req }: MyContext,
+  ): Promise<User> {
+    const user = await User.findOne({ where: { id: req.session.userId } })
+
+    if (!user) throw new Error('User not found')
+
+    const friend = User.createQueryBuilder('user')
+      .where('user.displayName = :displayName', { displayName: params.displayName })
+      .andWhere('user.userId = :userId', { userId: params.displayName })
+
+    if (!friend) throw new Error('User not found')
+
+    user.friendRequests = user.friendRequests?.filter(
+      (friendRequest) => friendRequest !== (friend as any),
+    )
+
+    await user.save()
+
+    return user
+  }
+
+  // Get all friend requests
+  @Query(() => [User])
+  @UseMiddleware(isAuth)
+  async friendRequests(@Ctx() { req }: MyContext): Promise<User[] | undefined> {
+    const user = await User.findOne({ where: { id: req.session.userId } })
+
+    return user?.friendRequests
   }
 }

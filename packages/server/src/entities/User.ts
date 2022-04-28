@@ -49,6 +49,11 @@ export class User extends BaseEntity {
   @OneToMany(() => TextChannel, (textChannel) => textChannel.users)
   textChannels?: TextChannel[]
 
+  // Friend requests
+  @Field(() => [User])
+  @OneToMany(() => User, (user) => user.friendRequests)
+  friendRequests?: User[]
+
   // Friends of the user
   @Field(() => [User])
   @OneToMany(() => User, (user) => user.friends)

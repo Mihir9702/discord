@@ -15,7 +15,7 @@ export type Scalars = {
   Float: number;
 };
 
-export type AddFriendInput = {
+export type FriendInput = {
   displayName: Scalars['String'];
   userId: Scalars['Float'];
 };
@@ -42,12 +42,14 @@ export type MessageInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  addFriend: User;
+  acceptFriendRequest: User;
   createServer: Server;
+  declineFriendRequest: User;
   deleteServer: Scalars['Boolean'];
   deleteUser: Scalars['Boolean'];
   login: User;
   logout: Scalars['Boolean'];
+  sendFriendRequest: User;
   sendMessage: Message;
   signup: User;
   updateServer: Server;
@@ -55,13 +57,18 @@ export type Mutation = {
 };
 
 
-export type MutationAddFriendArgs = {
-  params: AddFriendInput;
+export type MutationAcceptFriendRequestArgs = {
+  params: FriendInput;
 };
 
 
 export type MutationCreateServerArgs = {
   params: ServerInput;
+};
+
+
+export type MutationDeclineFriendRequestArgs = {
+  params: FriendInput;
 };
 
 
@@ -77,6 +84,11 @@ export type MutationDeleteUserArgs = {
 
 export type MutationLoginArgs = {
   params: Input;
+};
+
+
+export type MutationSendFriendRequestArgs = {
+  params: FriendInput;
 };
 
 
@@ -104,6 +116,7 @@ export type MutationUpdateUserArgs = {
 export type Query = {
   __typename?: 'Query';
   deleteMessage: Scalars['Boolean'];
+  friendRequests: Array<User>;
   friends: Array<User>;
   messages: Array<Message>;
   servers: Array<Server>;
@@ -153,6 +166,7 @@ export type User = {
   __typename?: 'User';
   createdAt: Scalars['String'];
   displayName: Scalars['String'];
+  friendRequests: Array<User>;
   friends: Array<User>;
   id: Scalars['Float'];
   messages: Array<Message>;
@@ -163,12 +177,12 @@ export type User = {
   username: Scalars['String'];
 };
 
-export type AddFriendMutationVariables = Exact<{
-  params: AddFriendInput;
+export type AcceptFriendRequestMutationVariables = Exact<{
+  params: FriendInput;
 }>;
 
 
-export type AddFriendMutation = { __typename?: 'Mutation', addFriend: { __typename?: 'User', id: number, displayName: string } };
+export type AcceptFriendRequestMutation = { __typename?: 'Mutation', acceptFriendRequest: { __typename?: 'User', id: number, displayName: string } };
 
 export type CreateServerMutationVariables = Exact<{
   params: ServerInput;
@@ -176,6 +190,13 @@ export type CreateServerMutationVariables = Exact<{
 
 
 export type CreateServerMutation = { __typename?: 'Mutation', createServer: { __typename?: 'Server', id: number, name: string, ownerId: number } };
+
+export type DeclineFriendRequestMutationVariables = Exact<{
+  params: FriendInput;
+}>;
+
+
+export type DeclineFriendRequestMutation = { __typename?: 'Mutation', declineFriendRequest: { __typename?: 'User', id: number, displayName: string } };
 
 export type LoginMutationVariables = Exact<{
   params: Input;
@@ -196,12 +217,24 @@ export type SendMutationVariables = Exact<{
 
 export type SendMutation = { __typename?: 'Mutation', sendMessage: { __typename?: 'Message', id: number, content: string, senderId: number, createdAt: string } };
 
+export type SendFriendRequestMutationVariables = Exact<{
+  params: FriendInput;
+}>;
+
+
+export type SendFriendRequestMutation = { __typename?: 'Mutation', sendFriendRequest: { __typename?: 'User', id: number, displayName: string } };
+
 export type SignupMutationVariables = Exact<{
   params: Input;
 }>;
 
 
 export type SignupMutation = { __typename?: 'Mutation', signup: { __typename?: 'User', id: number, username: string, createdAt: string, updatedAt: string } };
+
+export type FriendRequestsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type FriendRequestsQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: number, friendRequests: Array<{ __typename?: 'User', id: number, displayName: string, userId: number }> } | null };
 
 export type FriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -219,17 +252,17 @@ export type UserQueryVariables = Exact<{ [key: string]: never; }>;
 export type UserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: number, userId: number, username: string, displayName: string } | null };
 
 
-export const AddFriendDocument = gql`
-    mutation AddFriend($params: AddFriendInput!) {
-  addFriend(params: $params) {
+export const AcceptFriendRequestDocument = gql`
+    mutation AcceptFriendRequest($params: FriendInput!) {
+  acceptFriendRequest(params: $params) {
     id
     displayName
   }
 }
     `;
 
-export function useAddFriendMutation() {
-  return Urql.useMutation<AddFriendMutation, AddFriendMutationVariables>(AddFriendDocument);
+export function useAcceptFriendRequestMutation() {
+  return Urql.useMutation<AcceptFriendRequestMutation, AcceptFriendRequestMutationVariables>(AcceptFriendRequestDocument);
 };
 export const CreateServerDocument = gql`
     mutation CreateServer($params: ServerInput!) {
@@ -243,6 +276,18 @@ export const CreateServerDocument = gql`
 
 export function useCreateServerMutation() {
   return Urql.useMutation<CreateServerMutation, CreateServerMutationVariables>(CreateServerDocument);
+};
+export const DeclineFriendRequestDocument = gql`
+    mutation DeclineFriendRequest($params: FriendInput!) {
+  declineFriendRequest(params: $params) {
+    id
+    displayName
+  }
+}
+    `;
+
+export function useDeclineFriendRequestMutation() {
+  return Urql.useMutation<DeclineFriendRequestMutation, DeclineFriendRequestMutationVariables>(DeclineFriendRequestDocument);
 };
 export const LoginDocument = gql`
     mutation Login($params: Input!) {
@@ -279,6 +324,18 @@ export const SendDocument = gql`
 export function useSendMutation() {
   return Urql.useMutation<SendMutation, SendMutationVariables>(SendDocument);
 };
+export const SendFriendRequestDocument = gql`
+    mutation SendFriendRequest($params: FriendInput!) {
+  sendFriendRequest(params: $params) {
+    id
+    displayName
+  }
+}
+    `;
+
+export function useSendFriendRequestMutation() {
+  return Urql.useMutation<SendFriendRequestMutation, SendFriendRequestMutationVariables>(SendFriendRequestDocument);
+};
 export const SignupDocument = gql`
     mutation Signup($params: Input!) {
   signup(params: $params) {
@@ -292,6 +349,22 @@ export const SignupDocument = gql`
 
 export function useSignupMutation() {
   return Urql.useMutation<SignupMutation, SignupMutationVariables>(SignupDocument);
+};
+export const FriendRequestsDocument = gql`
+    query FriendRequests {
+  user {
+    id
+    friendRequests {
+      id
+      displayName
+      userId
+    }
+  }
+}
+    `;
+
+export function useFriendRequestsQuery(options?: Omit<Urql.UseQueryArgs<FriendRequestsQueryVariables>, 'query'>) {
+  return Urql.useQuery<FriendRequestsQuery>({ query: FriendRequestsDocument, ...options });
 };
 export const FriendsDocument = gql`
     query Friends {

@@ -3,7 +3,7 @@ import AddNavigation from './AddNavigation'
 import HomeNavigation from './HomeNavigation'
 import Servers from './Servers'
 
-type Props = { ds: boolean; setds: any }
+type Props = { ds?: boolean; setds?: any }
 
 const ServerNavigation: React.FC<Props> = ({ ds, setds }) => {
   return (

@@ -1,6 +1,0 @@
-mutation AddFriend($params: AddFriendInput!) {
-  addFriend(params: $params) {
-    id
-    displayName
-  }
-}

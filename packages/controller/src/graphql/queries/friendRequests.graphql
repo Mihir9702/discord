@@ -1,0 +1,10 @@
+query FriendRequests {
+  user {
+    id
+    friendRequests {
+      id
+      displayName
+      userId
+    }
+  }
+}

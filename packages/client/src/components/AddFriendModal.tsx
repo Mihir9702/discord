@@ -1,6 +1,6 @@
 import React from 'react'
-import { useAddFriendMutation } from '../graphql'
 import Modal from './Modal'
+import { useSendFriendRequestMutation } from '../graphql'
 
 interface AddFriendModalProps {
   handleClose: () => void
@@ -9,7 +9,7 @@ interface AddFriendModalProps {
 const AddFriendModal: React.FC<AddFriendModalProps> = ({ handleClose }) => {
   const [input, setInput] = React.useState<string>('')
 
-  const [, addFriend] = useAddFriendMutation()
+  const [, addFriend] = useSendFriendRequestMutation()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

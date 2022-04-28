@@ -1,0 +1,6 @@
+mutation AcceptFriendRequest($params: FriendInput!) {
+  acceptFriendRequest(params: $params) {
+    id
+    displayName
+  }
+}

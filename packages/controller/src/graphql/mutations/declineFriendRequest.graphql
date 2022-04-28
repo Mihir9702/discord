@@ -1,0 +1,6 @@
+mutation DeclineFriendRequest($params: FriendInput!) {
+  declineFriendRequest(params: $params) {
+    id
+    displayName
+  }
+}

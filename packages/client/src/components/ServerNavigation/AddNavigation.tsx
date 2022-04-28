@@ -1,6 +1,6 @@
 import React from 'react'
 
-type Props = { ds: boolean; setds: any }
+type Props = { ds?: boolean; setds?: any }
 
 const AddNavigation: React.FC<Props> = ({ ds, setds }) => {
   const blah = () => {

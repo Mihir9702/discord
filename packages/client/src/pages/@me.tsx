@@ -2,11 +2,16 @@ import React from 'react'
 import Chat from '../components/Chat'
 import { useFriendsQuery } from '../graphql'
 import AddFriendModal from '../components/AddFriendModal'
+import Friends from '../components/Friends'
+import ServerNavigation from '../components/ServerNavigation'
 
-// ! this will be scrapped for a better home ui design
+// ! ServerNavigation's Add button is not working. No props, no state.
+// * Will integrate state management for this later.
+
 export default () => {
   const [{ data, fetching }] = useFriendsQuery()
-  const [ds, setds] = React.useState(false)
+  const [friendModal, setFriendModal] = React.useState(false)
+  const [friendDisplay, setFriendDisplay] = React.useState(true)
 
   let body: any = ''
 
@@ -29,29 +34,34 @@ export default () => {
   }
 
   const handleClose = () => {
-    setds(!ds)
+    setFriendModal(!friendModal)
   }
 
   return (
     <div className="max-w-8xl mx-auto bg-gray-900">
       <div className="fixed z-10 inset-0 -left-10 shadow-md right-auto px-8 overflow-y-auto">
-        {/* <ServerNavigation /> */}
+        <ServerNavigation />
         <div className="bg-gray-900 z-20 inset-0 fixed left-20 ml-2 text-center text-gray-100 right-auto w-56 p-2 shadow-md overflow-y-auto">
-          <div className="hover:bg-gray-800 mt-4 rounded-md cursor-pointer">👨 Friends</div>
+          <button
+            className="hover:bg-gray-800 mt-4 w-full h-8 rounded-md cursor-pointer"
+            onClick={() => setFriendDisplay(!friendDisplay)}
+          >
+            👨 Friends
+          </button>
           <hr className="my-4 border-gray-800 mx-auto" />
           <p className="text-left uppercase text-sm relative my-4">
             Direct Messages
             <button
               className="absolute left-auto right-0 cursor-pointer"
-              onClick={() => setds(!ds)}
+              onClick={() => setFriendModal(!friendModal)}
             >
               ➕
             </button>
           </p>
-          {ds && <AddFriendModal handleClose={handleClose} />}
+          {friendModal && <AddFriendModal handleClose={handleClose} />}
           <div className="flex flex-col">{body}</div>
         </div>
-        <Chat />
+        {friendDisplay ? <Friends /> : <Chat />}
       </div>
     </div>
   )
