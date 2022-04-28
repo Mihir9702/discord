@@ -1,6 +1,7 @@
 import React from 'react'
-import SendMessage from './Chat/SendMessage'
-import { useFriendRequestsQuery } from '../graphql'
+import { useFriendRequestsQuery } from '../../graphql'
+import Accept from './Accept'
+import Decline from './Decline'
 
 // ! this will be scrapped for a better ui design
 
@@ -19,9 +20,8 @@ const Friends = () => {
               <div className="bg-gray-500 p-4 rounded-full" />
               <span>DisplayName</span>
 
-              <button className="bg-blue-500 p-2 rounded-md">Accept</button>
-
-              <button className="bg-red-500 p-2 rounded-md">Decline</button>
+              <Accept fr={fr} />
+              <Decline fr={fr} />
             </div>
           ))}
         </div>
