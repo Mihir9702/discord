@@ -169,9 +169,9 @@ export class UserResolver {
     // ? friend: Promise<User | null>
     // ? friendRequests: User[]
 
-    const friend = User.createQueryBuilder('user')
+    const friend = await User.createQueryBuilder('user')
       .where('user.displayName = :displayName', { displayName: params.displayName })
-      .andWhere('user.userId = :userId', { userId: params.displayName })
+      .andWhere('user.userId = :userId', { userId: params.userId })
       .getOne()
 
     if (!friend) throw new Error('User not found')
@@ -196,7 +196,7 @@ export class UserResolver {
 
     const friend = User.createQueryBuilder('user')
       .where('user.displayName = :displayName', { displayName: params.displayName })
-      .andWhere('user.userId = :userId', { userId: params.displayName })
+      .andWhere('user.userId = :userId', { userId: params.userId })
       .getOne()
 
     if (!friend) throw new Error('User not found')
@@ -221,7 +221,7 @@ export class UserResolver {
 
     const friend = User.createQueryBuilder('user')
       .where('user.displayName = :displayName', { displayName: params.displayName })
-      .andWhere('user.userId = :userId', { userId: params.displayName })
+      .andWhere('user.userId = :userId', { userId: params.userId })
 
     if (!friend) throw new Error('User not found')
 

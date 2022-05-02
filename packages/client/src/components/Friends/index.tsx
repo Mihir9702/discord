@@ -9,19 +9,21 @@ const Friends = () => {
   const [{ data }] = useFriendRequestsQuery()
 
   return (
-    <div className="home-chat-background z-10 inset-0 fixed left-72 ml-6 text-center text-gray-100 shadow-md right-auto overflow-y-auto">
-      <div className="bg-blue-900 flex flex-col z-20 inset-0 top-auto mx-auto">
-        <div className="w-screen absolute left-0 bg-background">
+    <div className="w-5/6 h-screen fixed right-0 top-0 text-text overflow-y-scroll">
+      <div className="flex flex-col z-20 top-auto">
+        <div className="bg-background">
           {data?.user?.friendRequests?.map((fr) => (
             <div
-              className="flex items-center gap-x-12 text-center bg-background hover:bg-gray-800 p-2 rounded-md"
-              key={fr.id}
+              className="flex items-center justify-around gap-x-16 text-center bg-background hover:bg-gray-800 p-6 rounded-md"
+              key={fr.userId}
             >
               <div className="bg-gray-500 p-4 rounded-full" />
-              <span>DisplayName</span>
+              <span>{fr.displayName}</span>
 
-              <Accept fr={fr} />
-              <Decline fr={fr} />
+              <div className="flex gap-6">
+                <Accept fr={fr} />
+                <Decline fr={fr} />
+              </div>
             </div>
           ))}
         </div>

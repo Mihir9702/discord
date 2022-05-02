@@ -20,8 +20,11 @@ const Decline = ({ fr }: { fr: FriendInput }) => {
   }
 
   return (
-    <button className="bg-red-500 p-2 rounded-md" onClick={() => declineFR(fr)}>
-      Decline
+    <button
+      className="p-2 border-2 border-red-500 rounded-full hover:bg-red-400 transition-all"
+      onClick={() => declineFR(fr)}
+    >
+      ❌
     </button>
   )
 }

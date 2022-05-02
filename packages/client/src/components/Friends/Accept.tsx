@@ -20,8 +20,11 @@ const Accept = ({ fr }: { fr: FriendInput }) => {
   }
 
   return (
-    <button className="bg-blue-500 p-2 rounded-md" onClick={() => acceptFR(fr)}>
-      Accept
+    <button
+      className="border-2 border-green-500 p-2 rounded-full hover:bg-green-400 transition-all"
+      onClick={() => acceptFR(fr)}
+    >
+      ✔
     </button>
   )
 }
