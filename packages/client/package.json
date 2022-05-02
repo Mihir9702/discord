@@ -1,6 +1,6 @@
 {
   "name": "@imari/client",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "app/background.js",
   "author": "Mihir Patel",
   "description": "Desktop app for imari",

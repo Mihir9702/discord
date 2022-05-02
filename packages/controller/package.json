@@ -1,6 +1,6 @@
 {
   "name": "@imari/controller",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "main": "generated/graphql.ts",
   "description": "A GraphQL API controller",
   "scripts": {
