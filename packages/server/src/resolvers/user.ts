@@ -145,13 +145,24 @@ export class UserResolver {
     return true
   }
 
-  // Friends list
+  // 🎯 Friends
   @Query(() => [User])
   @UseMiddleware(isAuth)
   async friends(@Ctx() { req }: MyContext): Promise<User[] | undefined> {
     const user = await User.findOne({ where: { id: req.session.userId } })
 
     return user?.friends
+  }
+
+  // 🔔 Add a friend
+  @Query(() => [User])
+  @UseMiddleware(isAuth)
+  async friendRequests(@Ctx() { req }: MyContext): Promise<User[] | undefined> {
+    if (!req.session.userId) throw new Error('User not found')
+
+    const user = await User.findOne({ where: { id: req.session.userId } })
+
+    return user?.friendRequests
   }
 
   // Send a friend request
@@ -163,8 +174,6 @@ export class UserResolver {
   ): Promise<User> {
     const user = await User.findOne({ where: { id: req.session.userId } })
 
-    if (!user) throw new Error('User not found')
-
     // * setting friend as any to avoid type error because I don't know how to fix it yet
     // ? friend: Promise<User | null>
     // ? friendRequests: User[]
@@ -174,13 +183,28 @@ export class UserResolver {
       .andWhere('user.userId = :userId', { userId: params.userId })
       .getOne()
 
-    if (!friend) throw new Error('User not found')
+    if (!user || !friend) throw new Error('User not found')
 
-    user.friendRequests?.push(friend as any)
+    console.log('User: ', user)
+    console.log('Friend: ', friend)
 
-    await user.save()
+    // The user information should be stored in the friend's friendRequests array
+    // The friend does not need to be stored in the user because it is already stored in the friend's friendRequests array
+    // The friend will see the friend request and can accept or decline it and only then the user will have the friend in his friends array
 
-    return user
+    if (friend.friends?.includes(user)) throw new Error('User is already a friend')
+
+    if (friend.friendRequests?.includes(user))
+      throw new Error('User has already sent a friend request')
+
+    // ! Friend's friendRequests array is not being updated because it is not being used anywhere
+    friend.friendRequests?.push(user)
+
+    await friend.save()
+
+    console.log('Friend requests: ', friend.friendRequests)
+
+    return friend
   }
 
   // Accept a friend request
@@ -189,7 +213,7 @@ export class UserResolver {
   async acceptFriendRequest(
     @Arg('params') params: FriendInput,
     @Ctx() { req }: MyContext,
-  ): Promise<User> {
+  ): Promise<User | null> {
     const user = await User.findOne({ where: { id: req.session.userId } })
 
     if (!user) throw new Error('User not found')
@@ -201,11 +225,12 @@ export class UserResolver {
 
     if (!friend) throw new Error('User not found')
 
-    user.friends?.push(friend as any)
+    friend.then((f) => {
+      f?.friends?.push(friend as any)
+      f?.save()
+    })
 
-    await user.save()
-
-    return user
+    return friend
   }
 
   // Decline a friend request
@@ -232,14 +257,5 @@ export class UserResolver {
     await user.save()
 
     return user
-  }
-
-  // Get all friend requests
-  @Query(() => [User])
-  @UseMiddleware(isAuth)
-  async friendRequests(@Ctx() { req }: MyContext): Promise<User[] | undefined> {
-    const user = await User.findOne({ where: { id: req.session.userId } })
-
-    return user?.friendRequests
   }
 }

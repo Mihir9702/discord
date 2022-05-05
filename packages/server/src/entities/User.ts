@@ -10,6 +10,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryGeneratedColumn,
+  OneToOne,
 } from 'typeorm'
 
 @ObjectType()
@@ -50,13 +51,13 @@ export class User extends BaseEntity {
   textChannels?: TextChannel[]
 
   // Friend requests
-  @Field(() => [User])
-  @OneToMany(() => User, (user) => user.friendRequests)
+  @Field(() => [User], { nullable: true })
+  @OneToOne(() => User, (user) => user.friendRequests)
   friendRequests?: User[]
 
   // Friends of the user
   @Field(() => [User])
-  @OneToMany(() => User, (user) => user.friends)
+  @OneToOne(() => User, (user) => user.friends)
   friends?: User[]
 
   // The date the user was created
