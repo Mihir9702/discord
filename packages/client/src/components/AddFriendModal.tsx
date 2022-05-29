@@ -9,7 +9,7 @@ interface AddFriendModalProps {
 const AddFriendModal: React.FC<AddFriendModalProps> = ({ handleClose }) => {
   const [input, setInput] = React.useState<string>('')
 
-  const [, addFriend] = useSendFriendRequestMutation()
+  const [sendFriendRequest, addFriend] = useSendFriendRequestMutation()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -19,7 +19,11 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ handleClose }) => {
       userId: Number(input.split('#')[1]),
     }
 
-    await addFriend({ params })
+    const response = await addFriend({ params })
+
+    console.log('response.data.sendFriendRequest', response.data?.sendFriendRequest)
+
+    console.log('sendFriendRequest', sendFriendRequest)
 
     handleClose()
   }

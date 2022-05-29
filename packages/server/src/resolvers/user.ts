@@ -34,6 +34,11 @@ class FriendInput {
   userId!: number
 }
 
+interface FriendRequestPromise {
+  user: User
+  friend: User
+}
+
 @Resolver()
 export class UserResolver {
   // 🧪 Testing purposes only | ** REMOVE IN PROD **
@@ -154,6 +159,11 @@ export class UserResolver {
     return user?.friends
   }
 
+  /*
+    Friend requests
+    ******************************************************************************************
+  */
+
   // 🔔 Add a friend
   @Query(() => [User])
   @UseMiddleware(isAuth)
@@ -171,40 +181,22 @@ export class UserResolver {
   async sendFriendRequest(
     @Arg('params') params: FriendInput,
     @Ctx() { req }: MyContext,
-  ): Promise<User> {
+  ): Promise<FriendRequestPromise> {
+    // Find the user
     const user = await User.findOne({ where: { id: req.session.userId } })
 
-    // * setting friend as any to avoid type error because I don't know how to fix it yet
-    // ? friend: Promise<User | null>
-    // ? friendRequests: User[]
-
-    const friend = await User.createQueryBuilder('user')
-      .where('user.displayName = :displayName', { displayName: params.displayName })
-      .andWhere('user.userId = :userId', { userId: params.userId })
-      .getOne()
+    // Find the friend
+    const friend = await User.findOne({ where: { id: params.userId } })
 
     if (!user || !friend) throw new Error('User not found')
 
-    console.log('User: ', user)
-    console.log('Friend: ', friend)
+    user.friendRequests?.push(friend)
+    await user?.save()
 
-    // The user information should be stored in the friend's friendRequests array
-    // The friend does not need to be stored in the user because it is already stored in the friend's friendRequests array
-    // The friend will see the friend request and can accept or decline it and only then the user will have the friend in his friends array
-
-    if (friend.friends?.includes(user)) throw new Error('User is already a friend')
-
-    if (friend.friendRequests?.includes(user))
-      throw new Error('User has already sent a friend request')
-
-    // ! Friend's friendRequests array is not being updated because it is not being used anywhere
     friend.friendRequests?.push(user)
+    await friend?.save()
 
-    await friend.save()
-
-    console.log('Friend requests: ', friend.friendRequests)
-
-    return friend
+    return { user, friend }
   }
 
   // Accept a friend request
@@ -213,24 +205,20 @@ export class UserResolver {
   async acceptFriendRequest(
     @Arg('params') params: FriendInput,
     @Ctx() { req }: MyContext,
-  ): Promise<User | null> {
+  ): Promise<FriendRequestPromise> {
     const user = await User.findOne({ where: { id: req.session.userId } })
 
-    if (!user) throw new Error('User not found')
+    const friend = await User.findOne({ where: { id: params.userId } })
 
-    const friend = User.createQueryBuilder('user')
-      .where('user.displayName = :displayName', { displayName: params.displayName })
-      .andWhere('user.userId = :userId', { userId: params.userId })
-      .getOne()
+    if (!user || !friend) throw new Error('User not found')
 
-    if (!friend) throw new Error('User not found')
+    user.friends?.push(friend)
+    await user?.save()
 
-    friend.then((f) => {
-      f?.friends?.push(friend as any)
-      f?.save()
-    })
+    friend.friends?.push(user)
+    await friend?.save()
 
-    return friend
+    return { user, friend }
   }
 
   // Decline a friend request
@@ -239,23 +227,25 @@ export class UserResolver {
   async declineFriendRequest(
     @Arg('params') params: FriendInput,
     @Ctx() { req }: MyContext,
-  ): Promise<User> {
+  ): Promise<FriendRequestPromise> {
     const user = await User.findOne({ where: { id: req.session.userId } })
 
-    if (!user) throw new Error('User not found')
+    const friend = await User.findOne({ where: { id: params.userId } })
 
-    const friend = User.createQueryBuilder('user')
-      .where('user.displayName = :displayName', { displayName: params.displayName })
-      .andWhere('user.userId = :userId', { userId: params.userId })
-
-    if (!friend) throw new Error('User not found')
+    if (!user || !friend) throw new Error('User not found')
 
     user.friendRequests = user.friendRequests?.filter(
-      (friendRequest) => friendRequest !== (friend as any),
+      (friendRequest) => friendRequest.id !== friend.id,
     )
 
     await user.save()
 
-    return user
+    friend.friendRequests = friend.friendRequests?.filter(
+      (friendRequest) => friendRequest.id !== user.id,
+    )
+
+    await friend.save()
+
+    return { user, friend }
   }
 }
