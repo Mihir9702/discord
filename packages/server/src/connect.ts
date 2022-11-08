@@ -8,7 +8,7 @@ export default new DataSource({
   port: 5432,
   username: process.env.POSTGRES_USER || 'postgres',
   password: process.env.POSTGRES_PASSWORD || 'postgres',
-  database: 'imari',
+  database: 'connect',
   synchronize: true,
   logging: true,
   entities: [path.join(__dirname, 'entities/**/*.ts')],

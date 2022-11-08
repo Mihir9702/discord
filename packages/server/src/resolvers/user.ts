@@ -52,7 +52,7 @@ export class UserResolver {
   // 🔎 Find user by session id
   @Query(() => User, { nullable: true })
   async user(@Ctx() { req }: MyContext): Promise<User | null> {
-    if (!req.session.userId) {
+    if (req.session.userId) {
       return null
     }
     const user = await User.findOne({ where: { id: req.session.userId } })
@@ -109,7 +109,7 @@ export class UserResolver {
 
     req.session.userId = user.id
 
-    console.log(req.session)
+    // console.log(req.session)
 
     return user
   }

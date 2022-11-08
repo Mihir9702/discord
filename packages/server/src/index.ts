@@ -3,11 +3,11 @@ import express from 'express'
 import session from 'express-session'
 import db from './connect'
 import cors from 'cors'
-import { createClient } from 'redis'
-import connectRedis from 'connect-redis'
+// import { createClient } from 'redis'
+// import connectRedis from 'connect-redis'
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
-import { __prod__, COOKIE } from './constants'
+import { __prod__ } from './constants'
 import { MyContext } from './types'
 import { ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core'
 
@@ -18,10 +18,10 @@ const main = async () => {
 
   const app = express()
 
-  const RedisStore = connectRedis(session)
-  const RedisClient = createClient({ legacyMode: true })
+  // const RedisStore = connectRedis(session)
+  // const RedisClient = createClient({ legacyMode: true })
 
-  await RedisClient.connect()
+  // await RedisClient.connect()
 
   app.set('trust proxy', __prod__)
 
@@ -34,22 +34,32 @@ const main = async () => {
 
   app.use(
     session({
-      name: COOKIE,
-      store: new RedisStore({
-        client: RedisClient,
-        disableTouch: true,
-      }),
-      cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: true,
-        sameSite: 'lax', // csrf
-        secure: __prod__, // cookie only works in https
-      },
-      saveUninitialized: false, // don't create session until something stored
-      secret: (process.env.SESSION_SECRET as string) || 'akwljdlkawmdlkawjdoiajkl',
-      resave: false, // do not save session if unmodified
+      secret: 'keyboard cat',
+      resave: false,
+      saveUninitialized: true,
+      cookie: { secure: true },
     }),
   )
+
+  // app
+  //   .use
+  // session({
+  //   name: COOKIE,
+  //   store: new RedisStore({
+  //     client: RedisClient,
+  //     disableTouch: true,
+  //   }),
+  //   cookie: {
+  //     maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
+  //     httpOnly: true,
+  //     sameSite: 'lax', // csrf
+  //     secure: __prod__, // cookie only works in https
+  //   },
+  //   saveUninitialized: false, // don't create session until something stored
+  //   secret: (process.env.SESSION_SECRET as string) || 'akwljdlkawmdlkawjdoiajkl',
+  //   resave: false, // do not save session if unmodified
+  // }),
+  // ()
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
