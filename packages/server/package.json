@@ -1,9 +1,9 @@
 {
-  "name": "@imari/server",
+  "name": "@connect/server",
   "version": "0.4.0",
   "main": "dist/index.js",
   "author": "Mihir Patel",
-  "description": "Server for imari",
+  "description": "Server for Connect",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",

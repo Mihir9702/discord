@@ -1,9 +1,9 @@
 {
-  "name": "@imari/client",
+  "name": "@connect/client",
   "version": "0.3.0",
   "main": "app/background.js",
   "author": "Mihir Patel",
-  "description": "Desktop app for imari",
+  "description": "Desktop app for connect",
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",

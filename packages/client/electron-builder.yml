@@ -1,5 +1,5 @@
-appId: github.com/Mihir9702/Imari
-productName: imari
+appId: github.com/Mihir9702/Connect
+productName: connect
 copyright: Copyright © 2022 Mihir Patel
 directories:
   output: dist

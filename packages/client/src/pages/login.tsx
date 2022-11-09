@@ -22,7 +22,7 @@ export default () => {
       params,
     })
 
-    if (response.error) {
+    if (response.error?.graphQLErrors[0]) {
       setError(response.error?.graphQLErrors[0].message)
     } else {
       router.push('/home')

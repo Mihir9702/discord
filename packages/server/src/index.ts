@@ -3,8 +3,8 @@ import express from 'express'
 import session from 'express-session'
 import db from './connect'
 import cors from 'cors'
-import { createClient } from 'redis'
-import connectRedis from 'connect-redis'
+// import { createClient } from 'redis'
+// import connectRedis from 'connect-redis'
 import { ApolloServer } from 'apollo-server-express'
 import { buildSchema } from 'type-graphql'
 import { __prod__, COOKIE } from './constants'
@@ -18,10 +18,10 @@ const main = async () => {
 
   const app = express()
 
-  const RedisStore = connectRedis(session)
-  const RedisClient = createClient({ legacyMode: true })
+  // const RedisStore = connectRedis(session)
+  // const RedisClient = createClient({ legacyMode: true })
 
-  await RedisClient.connect()
+  // await RedisClient.connect()
 
   app.set('trust proxy', __prod__)
 
@@ -35,10 +35,6 @@ const main = async () => {
   app.use(
     session({
       name: COOKIE,
-      store: new RedisStore({
-        client: RedisClient,
-        disableTouch: true,
-      }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,

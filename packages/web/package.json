@@ -1,8 +1,8 @@
 {
-  "name": "@imari/web",
+  "name": "@connect/web",
   "version": "0.3.0",
   "author": "Mihir Patel",
-  "description": "Website for imari",
+  "description": "Website for Connect",
   "scripts": {
     "dev": "next dev -p 4000",
     "build": "next build",

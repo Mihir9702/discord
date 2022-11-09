@@ -75,8 +75,7 @@ export class UserResolver {
 
     const config: Config = {
       dictionaries: [adjectives, colors],
-      separator: '-',
-      length: 2,
+      length: 1,
     }
 
     const randomName = uniqueNamesGenerator(config)

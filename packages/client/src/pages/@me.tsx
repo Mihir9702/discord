@@ -43,10 +43,10 @@ export default () => {
         <ServerNavigation />
         <div className="bg-gray-900 z-20 inset-0 fixed left-20 ml-2 text-center text-gray-100 right-auto w-56 p-2 shadow-md overflow-y-auto">
           <button
-            className="hover:bg-gray-800 mt-4 w-full h-8 rounded-md cursor-pointer"
+            className="hover:bg-gray-800 selection:bg-gray-800 mt-4 w-full h-8 rounded-md cursor-pointer"
             onClick={() => setFriendDisplay(!friendDisplay)}
           >
-            👨 Friends
+            Friends
           </button>
           <hr className="my-4 border-gray-800 mx-auto" />
           <p className="text-left uppercase text-sm relative my-4">

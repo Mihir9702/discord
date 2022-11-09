@@ -4,11 +4,17 @@ import { UserContext } from '../UserContext'
 const UserDisplay = () => {
   const user = useContext(UserContext)
 
+  if (!user) {
+    return <div></div>
+  }
+
   return (
     <div className="bg-background absolute bottom-0 p-4 w-full left-0 flex justify-evenly items-center">
       <span className="p-4 bg-dark rounded-full" />
-      <h1>{user?.displayName}</h1>
-      <span className="hover:text-gray-50 cursor-default">&#9959;</span>
+      <div className="flex-1 text-left pl-4">
+        <h1 className="text-sm">{user.displayName}</h1>
+        <h2 className="text-sm">#{user.userId}</h2>
+      </div>
     </div>
   )
 }
