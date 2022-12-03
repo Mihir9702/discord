@@ -1,6 +1,8 @@
 import React, { useContext } from 'react'
 import { UserContext } from '../UserContext'
 
+// ! Hydration error when getting user context
+
 const UserDisplay = () => {
   const user = useContext(UserContext)
 
