@@ -108,7 +108,8 @@ export class UserResolver {
 
     req.session.userId = user.id
 
-    console.log(req.session)
+    console.log(`Session: ${req.session}`)
+    // console.log(`Cookie: ${req.cookies}`)
 
     return user
   }
