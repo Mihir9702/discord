@@ -85,6 +85,7 @@ export class UserResolver {
       password: hashedPassword,
       userId: randomId,
       displayName: randomName,
+      status: 'online',
     }).save()
 
     req.session.userId = user.id

@@ -13,7 +13,7 @@ const Friends = () => {
     <div className="w-max text-text overflow-y-scroll">
       <div className="flex flex-col z-20 top-auto">
         <div className="bg-background ">
-          <Header />
+          {/* <Header /> */}
           {data?.user &&
             data.user.friendRequests?.map((fr) => (
               <div

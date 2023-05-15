@@ -35,6 +35,10 @@ export class User extends BaseEntity {
   @Column({ type: 'text' })
   displayName!: string
 
+  @Field()
+  @Column({ type: 'text', default: 'online' })
+  status!: string
+
   // 📧 One user can have many messages.
   @Field(() => [Message])
   @OneToMany(() => Message, (message) => message.sender)

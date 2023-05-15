@@ -6,7 +6,9 @@ import Friends from '../components/Friends'
 import ServerNavigation from '../components/ServerNavigation'
 import Search from '../components/Search'
 import UserMidOptions from '../components/UserMidOptions'
-import Skeleton from '../components/Skeleton'
+import { RegularSkeleton, UserSkeleton } from '../components/Skeleton'
+import Header from '../components/Friends/Header'
+import ThirdSection from '../components/ThirdSection'
 
 // ! ServerNavigation's Add button is not working. No props, no state.
 // * Will integrate state management for this later.
@@ -15,6 +17,8 @@ export default () => {
   const [{ data, fetching }] = useFriendsQuery()
   const [friendModal, setFriendModal] = React.useState(false)
   const [friendDisplay, setFriendDisplay] = React.useState(true)
+
+  const states = {}
 
   let body: any = ''
 
@@ -39,6 +43,13 @@ export default () => {
   const handleClose = () => {
     setFriendModal(!friendModal)
   }
+
+  const dms = (
+    <div className="flex justify-between items-center text-gray-400 hover:text-gray-200">
+      <p className="my-5">DIRECT MESSAGES</p>
+      <p className="cursor-pointer">➕</p>
+    </div>
+  )
 
   // return (
   //   <div className="max-w-8xl mx-auto bg-gray-900">
@@ -72,21 +83,41 @@ export default () => {
   // First section: check links
   // Second section: search bar, option links, replace skeleton w/ real data
   return (
-    <main className="flex">
+    <main className="flex h-screen">
       {/* FIRST SECTION */}
-      <section className="bg-gray-800 w-[100px] h-screen">
+      <section className="bg-gray-900 w-[100px]">
         <ServerNavigation />
       </section>
 
       {/* SECOND SECTION */}
-      <section className="w-[280px] mx-4 h-screen">
+      <section className="w-[280px] mx-4 flex flex-col">
         <Search />
         <UserMidOptions />
-        <Skeleton />
+        {dms}
+        <RegularSkeleton />
       </section>
 
       {/* THIRD SECTION */}
-      <section className="w-full h-screen"></section>
+      <section className="w-full flex flex-col">
+        <ThirdSection />
+        <div className="flex flex-col gap-[1.5rem] mt-6">
+          <div className="flex flex-col text-gray-400 mx-4 gap-2">
+            <h1>ADD FRIEND</h1>
+            <p>You can add a friend using their Imari Tag. It'S CaSe SeNsItIvE</p>
+            <form>
+              <input
+                className="w-96 px-3 py-2 bg-background rounded-xl focus:outline-0"
+                type="text"
+                placeholder="Username#0000"
+              />
+            </form>
+          </div>
+          <div className="flex flex-col text-gray-400 mx-4 gap-4">
+            <h1>ACTIVE NOW</h1>
+            <UserSkeleton />
+          </div>
+        </div>
+      </section>
       {/* Add it here and change to component later */}
     </main>
   )

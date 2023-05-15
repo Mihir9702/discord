@@ -8,6 +8,6 @@
     "moduleResolution": "node",
     "jsx": "preserve"
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "src/graphql.ts"],
   "exclude": ["node_modules"]
 }

@@ -13,7 +13,7 @@ const Servers = () => {
         <div key={server.id}>
           <li className={`hover:${() => setActive(!active)}`}>
             <Link href={`/servers/${server.id}`}>
-              <div className="server-icon p-5 w-16 my-3 m-auto bg-gray-900 text-gray-100 hover:bg-gray-800 transition-all duration-300 cursor-pointer select-none">
+              <div className="nav-icon p-5 w-16 my-3 m-auto bg-gray-900 text-gray-100 hover:bg-gray-800 transition-all duration-300 cursor-pointer select-none">
                 <div className="relative flex justify-center items-center mx-auto">
                   {/* Server Icon */}
                   {server.name.charAt(0)}

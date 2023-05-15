@@ -14,10 +14,10 @@ if (isProd) {
   await app.whenReady()
 
   const mainWindow = createWindow('main', {
-    width: 1000,
+    width: 1024,
     height: 600,
-    minWidth: 800,
-    minHeight: 600,
+    minWidth: 960,
+    minHeight: 512,
   })
 
   mainWindow.webContents.session.clearStorageData()
