@@ -15,8 +15,8 @@ const Header: React.FC = () => {
   const handleFriendRequest = (params: { displayName: string; userId: number }) => {}
 
   return (
-    <div className={`flex justify-center flex-col ${hScreen}`}>
-      <section className="text-white py-2 flex justify-end gap-2 text-lg">
+    <div className={`flex justify-center flex-col`}>
+      <section className="text-white py-2 flex justify-end gap-2 text-lg w-max border-2 border-white">
         <button className="text-sm font-bold p-2 rounded-lg hover:bg-blue-600" onClick={() => {}}>
           Online
         </button>

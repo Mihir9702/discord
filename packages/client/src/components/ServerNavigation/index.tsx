@@ -7,7 +7,7 @@ type Props = { ds?: boolean; setds?: any }
 
 const ServerNavigation: React.FC<Props> = ({ ds, setds }) => {
   return (
-    <nav className="server-nav lg:text-sm z-20 lg:leading-6 p-5 relative">
+    <nav className="lg:text-sm z-20 lg:leading-6 p-5">
       <HomeNavigation />
       <hr className="border-gray-800 mt-3" />
       <Servers />

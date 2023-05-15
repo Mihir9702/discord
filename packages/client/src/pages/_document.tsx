@@ -1,4 +1,4 @@
-import { Html, Head, Main, NextScript } from "next/document";
+import { Html, Head, Main, NextScript } from 'next/document'
 
 export default () => {
   return (
@@ -8,14 +8,14 @@ export default () => {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Nunito+Sans&family=Varela+Round&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Varela+Round&display=swap"
           rel="stylesheet"
-        ></link>
+        />
       </Head>
       <body>
         <Main />
         <NextScript />
       </body>
     </Html>
-  );
-};
+  )
+}
