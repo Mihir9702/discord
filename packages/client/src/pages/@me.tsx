@@ -41,7 +41,7 @@ export default () => {
     <div className="max-w-8xl mx-auto bg-gray-900">
       <div className="fixed z-10 inset-0 -left-10 shadow-md right-auto px-8 overflow-y-auto">
         <ServerNavigation />
-        <div className="bg-gray-900 z-20 inset-0 fixed left-20 ml-2 text-center text-gray-100 right-auto w-56 p-2 shadow-md overflow-y-auto">
+        <div className="bg-gray-600 z-20 inset-0 fixed left-20 ml-2 text-center text-gray-100 right-auto w-56 p-2 shadow-md overflow-y-auto">
           <button
             className="hover:bg-gray-800 selection:bg-gray-800 mt-4 w-full h-8 rounded-md cursor-pointer"
             onClick={() => setFriendDisplay(!friendDisplay)}
@@ -49,7 +49,7 @@ export default () => {
             Friends
           </button>
           <hr className="my-4 border-gray-800 mx-auto" />
-          <p className="text-left uppercase text-sm relative my-4">
+          <div className="text-left uppercase text-sm relative my-4">
             Direct Messages
             <button
               className="absolute left-auto right-0 cursor-pointer"
@@ -57,7 +57,7 @@ export default () => {
             >
               ➕
             </button>
-          </p>
+          </div>
           {friendModal && <AddFriendModal handleClose={handleClose} />}
           <div className="flex flex-col">{body}</div>
         </div>

@@ -16,7 +16,7 @@ const Header: React.FC = () => {
 
   return (
     <div className={`flex justify-center flex-col ${hScreen}`}>
-      <p className="text-white py-2 flex justify-end gap-2 text-lg">
+      <section className="text-white py-2 flex justify-end gap-2 text-lg">
         <button className="text-sm font-bold p-2 rounded-lg hover:bg-blue-600" onClick={() => {}}>
           Online
         </button>
@@ -46,7 +46,7 @@ const Header: React.FC = () => {
         </button>
         <p className="hover:bg-gray-700 p-1 rounded-md cursor-pointer">💬</p>
         <p className="hover:bg-gray-700 p-1 rounded-md cursor-pointer">🎯</p>
-      </p>
+      </section>
       {add && (
         <div className="my-2 h-full">
           <div className="bg-slate-500 p-4 flex justify-center">

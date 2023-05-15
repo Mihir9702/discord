@@ -35,10 +35,10 @@ const Login: NextPage = () => {
   )
 
   return (
-    <section className="grid place-items-center my-52">
+    <section className="flex justify-center bg-[#181A1B] items-center my-52 ">
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col justify-center items-center gap-8 w-min bg-gray-800 p-8 rounded-xl"
+        className="flex flex-col justify-center items-center gap-8 bg-gray-800 p-8 rounded-xl"
       >
         {header}
         {error && <p className="text-red-500 py-4">{error}</p>}
