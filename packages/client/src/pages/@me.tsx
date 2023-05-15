@@ -74,12 +74,12 @@ export default () => {
   return (
     <main className="flex">
       {/* FIRST SECTION */}
-      <section className="bg-gray-800 w-[110px] h-screen">
+      <section className="bg-gray-800 w-[100px] h-screen">
         <ServerNavigation />
       </section>
 
       {/* SECOND SECTION */}
-      <section className="w-[280px] h-screen">
+      <section className="w-[280px] mx-4 h-screen">
         <Search />
         <UserMidOptions />
         <Skeleton />
