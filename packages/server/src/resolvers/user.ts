@@ -41,30 +41,26 @@ interface FriendRequestPromise {
 
 @Resolver()
 export class UserResolver {
-  // 🧪 Testing purposes only | ** REMOVE IN PROD **
-  ///////////////////////////////////////////////////
   @Query(() => [User])
   async users(): Promise<User[]> {
-    return User.find()
+    return await User.find()
   }
-  ///////////////////////////////////////////////////
 
-  // 🔎 Find user by session id
   @Query(() => User, { nullable: true })
   async user(@Ctx() { req }: MyContext): Promise<User | null> {
-    if (!req.session.userId) {
+    if (!req.session.id) {
       return null
     }
-    const user = await User.findOne({ where: { id: req.session.userId } })
+    const user = await User.findOne({ where: { username: req.session.username } })
     return user
   }
 
-  // 👶 Create a new user
   @Mutation(() => User)
   async signup(@Arg('params') params: Input, @Ctx() { req }: MyContext): Promise<User> {
-    // Find if user already exists
     const foundUser = await User.findOne({ where: { username: params.username } })
+    const checkUser = await User.findOne({ where: { username: req.session.username } })
 
+    if (checkUser) throw new Error('Already logged in')
     if (foundUser) throw new Error('Username already taken')
     if (params.username.length < 2) throw new Error('Username must be at least 2 characters')
     if (params.password.length < 4) throw new Error('Password must be at least 4 characters')
@@ -88,12 +84,9 @@ export class UserResolver {
       status: 'online',
     }).save()
 
-    req.session.userId = user.id
-
     return user
   }
 
-  // 🔒 Login
   @Mutation(() => User)
   async login(@Arg('params') params: Input, @Ctx() { req }: MyContext): Promise<User> {
     if (!params.username) throw new Error('Username not provided')
@@ -107,15 +100,11 @@ export class UserResolver {
 
     if (!valid) throw new Error('Invalid username or password')
 
-    req.session.userId = user.id
-
-    console.log(`Session: ${req.session}`)
-    // console.log(`Cookie: ${req.cookies}`)
+    req.session.username = user.username
 
     return user
   }
 
-  // 🌀 Update a user
   @Mutation(() => User)
   async updateUser(@Arg('id', () => Int) id: number, @Arg('params') params: Input): Promise<User> {
     const user = await User.findOne({ where: { id } })
@@ -130,7 +119,6 @@ export class UserResolver {
     return user
   }
 
-  // ❌ Delete a user
   @Mutation(() => Boolean)
   async deleteUser(@Arg('id', () => Int) id: number): Promise<boolean> {
     const user = await User.findOne({ where: { id } })
@@ -142,7 +130,6 @@ export class UserResolver {
     return true
   }
 
-  // 🔓 Logout
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async logout(@Ctx() { req }: MyContext): Promise<boolean> {
@@ -151,65 +138,67 @@ export class UserResolver {
     return true
   }
 
-  // 🎯 Friends
   @Query(() => [User])
   @UseMiddleware(isAuth)
   async friends(@Ctx() { req }: MyContext): Promise<User[] | undefined> {
-    const user = await User.findOne({ where: { id: req.session.userId } })
+    const user = await User.findOne({ where: { username: req.session.username } })
 
-    return user?.friends
+    if (!user) throw new Error('User not found @friends')
+
+    return user.friends
   }
 
-  /*
-    Friend requests
-    ******************************************************************************************
-  */
-
-  // 🔔 Add a friend
   @Query(() => [User])
   @UseMiddleware(isAuth)
   async friendRequests(@Ctx() { req }: MyContext): Promise<User[] | undefined> {
-    if (!req.session.userId) throw new Error('User not found')
+    const user = await User.findOne({ where: { username: req.session.username } })
 
-    const user = await User.findOne({ where: { id: req.session.userId } })
-
-    return user?.friendRequests
+    console.log('FRIENDS', user?.friendRequests?.length)
+    return user?.friendRequests as User[]
   }
 
-  // Send a friend request
   @Mutation(() => User)
   @UseMiddleware(isAuth)
   async sendFriendRequest(
     @Arg('params') params: FriendInput,
     @Ctx() { req }: MyContext,
-  ): Promise<FriendRequestPromise> {
-    // Find the user
-    const user = await User.findOne({ where: { id: req.session.userId } })
+  ): Promise<User> {
+    const user = await User.findOne({ where: { username: req.session.username } })
 
-    // Find the friend
-    const friend = await User.findOne({ where: { id: params.userId } })
+    const friend = await User.createQueryBuilder('user')
+      .where('user.displayName = :displayName', { displayName: params.displayName })
+      .andWhere('user.userId = :userId', { userId: params.userId })
+      .getOne()
+
+    if (!friend) throw new Error('friend not found')
+    if (friend) console.log('FOUND FRIEND', friend)
 
     if (!user || !friend) throw new Error('User not found')
 
-    user.friendRequests?.push(friend)
-    await user?.save()
+    console.log('USER FOUND', user)
+    console.log('FRIEND FOUND', friend.friendRequests?.length)
 
-    friend.friendRequests?.push(user)
-    await friend?.save()
+    // friend.friendRequests?.push(user)
+    // friend.friendRequests?.map(u => {
+    // 	if (u.displayName === user.displayName) {
+    // 		return 'friend already have'
+    // 	} else friend.friendRequests?.push(user)
+    // })
 
-    return { user, friend }
+    return await User.save(friend)
   }
 
-  // Accept a friend request
   @Mutation(() => User)
   @UseMiddleware(isAuth)
   async acceptFriendRequest(
     @Arg('params') params: FriendInput,
     @Ctx() { req }: MyContext,
   ): Promise<FriendRequestPromise> {
-    const user = await User.findOne({ where: { id: req.session.userId } })
+    const user = await User.findOne({ where: { username: req.session.username } })
 
-    const friend = await User.findOne({ where: { id: params.userId } })
+    const friend = await User.findOne({
+      where: { displayName: params.displayName } && { userId: params.userId },
+    })
 
     if (!user || !friend) throw new Error('User not found')
 
@@ -222,14 +211,13 @@ export class UserResolver {
     return { user, friend }
   }
 
-  // Decline a friend request
   @Mutation(() => User)
   @UseMiddleware(isAuth)
   async declineFriendRequest(
     @Arg('params') params: FriendInput,
     @Ctx() { req }: MyContext,
   ): Promise<FriendRequestPromise> {
-    const user = await User.findOne({ where: { id: req.session.userId } })
+    const user = await User.findOne({ where: { username: req.session.username } })
 
     const friend = await User.findOne({ where: { id: params.userId } })
 

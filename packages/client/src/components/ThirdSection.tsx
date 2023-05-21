@@ -19,7 +19,8 @@ export default () => {
 
   const [{ data }] = useFriendsQuery()
 
-  if (!data?.user) {
+  console.log([onlineFriends, allFriends, pending, blocked, addFriends])
+  if (!data?.user?.friends) {
     return <Header handler={stateHandler} />
   }
 
@@ -34,6 +35,7 @@ export default () => {
     <>
       <Header handler={stateHandler} />
       {onlineFriends &&
+        friends.online &&
         friends.online.map(() => {
           return (
             <div className="bg-gray-900">

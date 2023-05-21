@@ -9,6 +9,7 @@
     "resolveJsonModule": true,
     "moduleResolution": "node",
     "forceConsistentCasingInFileNames": true,
+    "preserveSymlinks": true,
     "outDir": ".",
     "skipLibCheck": true
   },

@@ -47,19 +47,59 @@ const Header: React.FC<HC> = ({ handler }) => {
           <Image src={Smile} alt="smiley-face" />
           Friends
         </div>
-        <button onClick={() => handler.setOF}>
+        <button
+          onClick={() => {
+            handler.setOF(true)
+            handler.setALL(false)
+            handler.setPF(false)
+            handler.setBF(false)
+            handler.setADD(false)
+          }}
+        >
           <p className="hover:bg-gray-800 px-1 cursor-pointer ml-4">Online</p>
         </button>
-        <button onClick={() => handler.setALL}>
+        <button
+          onClick={() => {
+            handler.setOF(false)
+            handler.setALL(true)
+            handler.setPF(false)
+            handler.setBF(false)
+            handler.setADD(false)
+          }}
+        >
           <p className="hover:bg-gray-800 px-1 cursor-pointer ml-4">All</p>
         </button>
-        <button onClick={() => handler.setPF}>
+        <button
+          onClick={() => {
+            handler.setOF(false)
+            handler.setALL(false)
+            handler.setPF(true)
+            handler.setBF(false)
+            handler.setADD(false)
+          }}
+        >
           <p className="hover:bg-gray-800 px-1 cursor-pointer ml-4">Pending</p>
         </button>
-        <button onClick={() => handler.setBF}>
+        <button
+          onClick={() => {
+            handler.setOF(false)
+            handler.setALL(false)
+            handler.setPF(false)
+            handler.setBF(true)
+            handler.setADD(false)
+          }}
+        >
           <p className="hover:bg-gray-800 px-1 cursor-pointer ml-4">Blocked</p>
         </button>
-        <button onClick={() => handler.setADD}>
+        <button
+          onClick={() => {
+            handler.setOF(false)
+            handler.setALL(false)
+            handler.setPF(false)
+            handler.setBF(false)
+            handler.setADD(true)
+          }}
+        >
           <p className="text-green-500 hover:bg-gray-800 hover:text-green-600 px-1 cursor-pointer">
             Add Friend
           </p>

@@ -26,7 +26,7 @@ export class ServerResolver {
   @Query(() => [Server])
   @UseMiddleware(isAuth)
   async servers(@Ctx() { req }: MyContext): Promise<Server[]> {
-    return Server.find({ where: { ownerId: req.session.userId } })
+    return Server.find({ where: { ownerId: req.session.username } })
   }
 
   // 💻 Create a Server
@@ -40,7 +40,7 @@ export class ServerResolver {
     return Server.create({
       ...params,
       tag: _tag,
-      ownerId: req.session.userId,
+      ownerId: req.session.username,
     }).save()
   }
 

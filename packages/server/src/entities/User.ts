@@ -10,7 +10,6 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   PrimaryGeneratedColumn,
-  OneToOne,
 } from 'typeorm'
 
 @ObjectType()
@@ -35,41 +34,40 @@ export class User extends BaseEntity {
   @Column({ type: 'text' })
   displayName!: string
 
-  @Field()
+  @Field({ defaultValue: 'online' })
   @Column({ type: 'text', default: 'online' })
   status!: string
 
-  // 📧 One user can have many messages.
   @Field(() => [Message])
   @OneToMany(() => Message, (message) => message.sender)
   messages?: Message[]
 
-  // Servers that the user is in
   @Field(() => [Server])
   @OneToMany(() => Server, (server) => server.members)
   servers?: Server[]
 
-  // Text Channels that the user is in
   @Field(() => [TextChannel])
   @OneToMany(() => TextChannel, (textChannel) => textChannel.users)
   textChannels?: TextChannel[]
 
-  // Friend requests
-  @Field(() => [User], { nullable: true })
-  @OneToOne(() => User, (user) => user.friendRequests)
-  friendRequests?: User[]
+  // @Field(() => [User], { nullable: true })
+  // @Column('text', { array: true, nullable: true })
+  // friendRequests?: User[]
 
-  // Friends of the user
-  @Field(() => [User])
-  @OneToOne(() => User, (user) => user.friends)
+  @Field(() => [User], { nullable: true })
+  @Column('text', { array: true, nullable: true })
+  friendRequests?: User[] | undefined
+
+  // @Column('text', { array: true, nullable: true })
+  // @OneToMany(() => User, (user) => user.id)
+  @Field(() => [User], { nullable: true })
+  @Column('text', { array: true, nullable: true })
   friends?: User[]
 
-  // The date the user was created
   @Field(() => String)
   @CreateDateColumn()
   createdAt?: Date = new Date()
 
-  // The date the user was updated
   @Field(() => String)
   @UpdateDateColumn()
   updatedAt?: Date = new Date()

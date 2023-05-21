@@ -3,6 +3,7 @@ import express from 'express'
 import session from 'express-session'
 import db from './connect'
 import cors from 'cors'
+import path from 'path'
 // import { createClient } from 'redis'
 // import connectRedis from 'connect-redis'
 import { ApolloServer } from 'apollo-server-express'
@@ -49,7 +50,7 @@ const main = async () => {
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [__dirname + '/resolvers/*.ts'],
+      resolvers: [path.join(__dirname + '/resolvers/*.ts')],
       validate: false,
     }),
     context: ({ req, res }): MyContext => ({ req, res }),

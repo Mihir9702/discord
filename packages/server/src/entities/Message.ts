@@ -27,7 +27,7 @@ export class Message extends BaseEntity {
   // The user that sent the message
   @Field()
   @Column()
-  senderId?: number
+  senderId?: string
 
   @Field()
   @Column({ nullable: true })

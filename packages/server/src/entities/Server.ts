@@ -43,9 +43,9 @@ export class Server extends BaseEntity {
   })
   role!: ServerRole
 
-  @Field()
+  @Field({ nullable: true })
   @Column({ nullable: true })
-  ownerId!: number
+  ownerId?: string
 
   // Server can have many members
   @ManyToOne(() => User, (user) => user.servers)

@@ -21,6 +21,7 @@ const Login: NextPage = () => {
     })
 
     if (response.error) {
+      console.log(response.error.graphQLErrors[0].message)
       setError(response.error?.graphQLErrors[0].message)
     } else {
       router.push('/')
@@ -33,6 +34,8 @@ const Login: NextPage = () => {
       <h3 className="text-lg whitespace-nowrap">Testing my dev skills like Madara</h3>
     </div>
   )
+
+  console.log(params)
 
   return (
     <section className="flex justify-center bg-[#181A1B] items-center my-52 ">

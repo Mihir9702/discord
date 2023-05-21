@@ -26,20 +26,18 @@ export class MessageResolver {
     return Message.find()
   }
 
-  // 📧 Send a Message
   @Mutation(() => Message)
   @UseMiddleware(isAuth)
   async sendMessage(
     @Arg('params') params: MessageInput,
     @Ctx() { req }: MyContext,
   ): Promise<Message> {
-    return Message.create({
+    return await Message.create({
       ...params,
-      senderId: req.session.userId,
+      senderId: req.session.username,
     }).save()
   }
 
-  // 🌀 Update a Message
   @Query(() => Message)
   async updateMessage(
     @Arg('id', () => Int) id: number,
@@ -59,7 +57,6 @@ export class MessageResolver {
     return message
   }
 
-  // ❌ Delete a Message
   @Query(() => Boolean)
   async deleteMessage(@Arg('id', () => Int) id: number): Promise<boolean> {
     const message = await Message.findOne({ where: { id } })

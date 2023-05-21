@@ -1,23 +1,25 @@
 import React from 'react'
-// import HeroSection from '../components/HeroSection'
-// import PreviewSection from '../components/PreviewSection'
-// import FeatureSection from '../components/FeatureSection'
-// import CallToAction from '../components/CallToAction'
-// import ExtraSection from '../components/ThirdSection'
-import Login from './login'
+import { useUserQuery } from '../graphql'
+import { useRouter } from 'next/router'
+import Link from 'next/link'
 
 // * Rough layout of Home page
 export default () => {
-  return (
-    <main className="">
-      {/* 
-				- redirect pages login/signup
-				- home page what?
-				- build out @me
-				- test req in playground
-				- copy styles from figma ish
-			*/}
-      <Login />
-    </main>
+  const [{ data, fetching }] = useUserQuery()
+  let main: JSX.Element | null = null
+  const router = useRouter()
+
+  if (fetching) main = <div>Loading...</div>
+  else if (!data?.user) {
+    router.push('/login')
+  } else router.push('/home')
+
+  main = (
+    <>
+      <Link href="/signup">Signup</Link>
+      <Link href="/login">Login</Link>
+    </>
   )
+
+  return main
 }

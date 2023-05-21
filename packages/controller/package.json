@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "graphql": "latest",
-    "graphql-tag": "latest",
-    "urql": "latest"
+    "urql": "latest",
+    "graphql-tag-ts": "^1.1.16"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "latest",
