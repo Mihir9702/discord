@@ -12,11 +12,11 @@ export default () => {
 
   const [{ data }] = useUserQuery()
 
+  const user = data?.user
+
   const handleClose = () => {
     setds(!ds)
   }
-
-  const user = data?.user
 
   return (
     <UserContext.Provider value={user}>

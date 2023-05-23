@@ -8,8 +8,6 @@ const client = createClient({
       'x-forwarded-proto': 'https',
     },
   },
-
-  // * 😇 Exchanges / Caching soonTM
 })
 
 export default client
