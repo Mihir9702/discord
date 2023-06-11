@@ -23,7 +23,9 @@ app
 temp
 dump.rdb
 
-
+# .lock
+package-lock.json
+yarn.lock
 
 # debug
 npm-debug.log*

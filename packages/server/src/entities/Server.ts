@@ -1,5 +1,5 @@
 import { Field, ObjectType } from 'type-graphql'
-import { TextChannel } from './TextChannel'
+import { Channel } from './Channel'
 import { User } from './User'
 import {
   Entity,
@@ -8,13 +8,10 @@ import {
   BaseEntity,
   CreateDateColumn,
   PrimaryGeneratedColumn,
+  OneToOne,
 } from 'typeorm'
-
-enum ServerRole {
-  MEMBER = 'MEMBER',
-  ADMIN = 'ADMIN',
-  OWNER = 'OWNER',
-}
+import { ServerRole } from '../types'
+import { generateNumber } from '../helpers/rand'
 
 @ObjectType()
 @Entity()
@@ -29,11 +26,11 @@ export class Server extends BaseEntity {
 
   @Field()
   @Column({ nullable: true })
-  icon?: string
+  icon!: string
 
-  @Field({ nullable: true })
+  @Field()
   @Column({ unique: true, nullable: true })
-  tag!: string
+  link!: string
 
   @Field(() => [User])
   @Column({
@@ -43,24 +40,54 @@ export class Server extends BaseEntity {
   })
   role!: ServerRole
 
-  @Field({ nullable: true })
-  @Column({ nullable: true })
-  ownerId?: string
+  @Field()
+  @Column({ unique: true })
+  serverId!: number
 
-  // Server can have many members
-  @ManyToOne(() => User, (user) => user.servers)
-  members!: User
+  @Field(() => User)
+  @OneToOne(() => User, (user) => user.id)
+  ownerId!: User
 
-  // Server can have many textchannels
-  @Field(() => [TextChannel])
-  @ManyToOne(() => TextChannel, (textChannel) => textChannel.servers)
-  textChannels?: TextChannel
+  @Field(() => [User])
+  @ManyToOne(() => User, (user) => user.id)
+  members?: User[]
 
-  // The date the user was created
+  @Field(() => [Channel])
+  @ManyToOne(() => Channel, (channel) => channel.channelId)
+  channels?: Channel[]
+
   @Column()
   createdAt?: Date = new Date()
 
-  // The date the user was updated
   @CreateDateColumn()
   updatedAt?: Date = new Date()
+
+  getName() {
+    return this.name
+  }
+
+  getIcon() {
+    return this.icon
+  }
+
+  getLink() {
+    return this.link
+  }
+
+  getMembers() {
+    return this.members
+  }
+
+  getChannels() {
+    return this.channels
+  }
+
+  async init() {
+    return await Channel.create({
+      name: 'general',
+      messages: [],
+      users: [this.ownerId],
+      channelId: generateNumber(10),
+    }).save()
+  }
 }

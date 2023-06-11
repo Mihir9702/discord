@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { __prod__ } from './constants'
 import { DataSource } from 'typeorm'
 import path from 'path'
@@ -6,10 +7,10 @@ export default new DataSource({
   type: 'postgres',
   host: 'localhost',
   port: 5432,
-  username: process.env.POSTGRES_USER || 'postgres',
-  password: process.env.POSTGRES_PASSWORD || 'postgres',
+  username: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASS,
   database: 'connect',
   synchronize: true,
-  logging: true,
+  // logging: true,
   entities: [path.join(__dirname, 'entities/**/*.ts')],
 })

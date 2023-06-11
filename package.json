@@ -29,6 +29,7 @@
     "@connect/web": "file:packages\\web",
     "connect-redis": "^6.1.3",
     "redis": "^4.0.6",
+    "socket.io": "^4.6.2",
     "unique-names-generator": "^4.7.1"
   },
   "devDependencies": {

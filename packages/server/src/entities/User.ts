@@ -1,7 +1,7 @@
 import { Field, ObjectType } from 'type-graphql'
 import { Message } from './Message'
 import { Server } from './Server'
-import { TextChannel } from './TextChannel'
+import { Channel } from './Channel'
 import {
   Column,
   Entity,
@@ -11,6 +11,7 @@ import {
   UpdateDateColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm'
+import { FriendRequest } from '../types'
 
 @ObjectType()
 @Entity()
@@ -32,36 +33,30 @@ export class User extends BaseEntity {
 
   @Field()
   @Column({ type: 'text' })
-  displayName!: string
+  nameId!: string
 
   @Field({ defaultValue: 'online' })
   @Column({ type: 'text', default: 'online' })
   status!: string
 
-  @Field(() => [Message])
-  @OneToMany(() => Message, (message) => message.sender)
+  @Field(() => [Message], { nullable: true })
+  @OneToMany(() => Message, (message) => message.ownerId)
   messages?: Message[]
 
-  @Field(() => [Server])
+  @Field(() => [Server], { nullable: true })
   @OneToMany(() => Server, (server) => server.members)
   servers?: Server[]
 
-  @Field(() => [TextChannel])
-  @OneToMany(() => TextChannel, (textChannel) => textChannel.users)
-  textChannels?: TextChannel[]
-
-  // @Field(() => [User], { nullable: true })
-  // @Column('text', { array: true, nullable: true })
-  // friendRequests?: User[]
+  @Field(() => [Channel], { nullable: true })
+  @OneToMany(() => Channel, (channel) => channel.users)
+  channels?: Channel[]
 
   @Field(() => [User], { nullable: true })
-  @Column('text', { array: true, nullable: true })
-  friendRequests?: User[] | undefined
+  @OneToMany(() => User, (user) => user.id)
+  friendRequests?: FriendRequest[]
 
-  // @Column('text', { array: true, nullable: true })
-  // @OneToMany(() => User, (user) => user.id)
   @Field(() => [User], { nullable: true })
-  @Column('text', { array: true, nullable: true })
+  @OneToMany(() => User, (user) => user.id)
   friends?: User[]
 
   @Field(() => String)
@@ -71,4 +66,20 @@ export class User extends BaseEntity {
   @Field(() => String)
   @UpdateDateColumn()
   updatedAt?: Date = new Date()
+
+  getServers() {
+    return this.servers
+  }
+
+  getFriends() {
+    return this.friends
+  }
+
+  getFriendRequests() {
+    return this.friendRequests
+  }
+
+  getFriendChannels() {
+    return this.channels && this.channels.filter((ch) => ch.users.length === 2)
+  }
 }

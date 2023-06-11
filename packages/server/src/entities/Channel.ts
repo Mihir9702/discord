@@ -1,7 +1,6 @@
 import { Field, ObjectType } from 'type-graphql'
 import { Message } from './Message'
 import { User } from './User'
-import { Server } from './Server'
 import {
   Column,
   Entity,
@@ -14,38 +13,40 @@ import {
 
 @ObjectType()
 @Entity()
-export class TextChannel extends BaseEntity {
+export class Channel extends BaseEntity {
   @Field()
   @PrimaryGeneratedColumn()
   id!: number
 
-  // The name of the channel
   @Field()
   @Column()
-  name?: string
+  name!: string
 
-  // Users in the channel
+  @Field()
+  @Column({ nullable: true })
+  serverId?: number
+
+  @Field()
+  @Column()
+  channelId!: number
+
   @Field(() => [User])
-  @OneToMany(() => User, (user) => user.textChannels)
+  @OneToMany(() => User, (user) => user.id)
   users!: User[]
 
-  // Messages in the channel
   @Field(() => [Message])
-  @OneToMany(() => Message, (message) => message.textChannel)
-  messages?: Message
+  @OneToMany(() => Message, (message) => message.channelId)
+  messages?: Message[]
 
-  // Server the channel belongs to
-  @Field(() => Server)
-  @OneToMany(() => Server, (server) => server.textChannels)
-  servers?: Server
-
-  // The date the user was created
   @Field(() => String)
   @CreateDateColumn()
   createdAt?: Date = new Date()
 
-  // The date the user was updated
   @Field(() => String)
   @UpdateDateColumn()
   updatedAt?: Date = new Date()
+
+  getMessages() {
+    return this.messages
+  }
 }

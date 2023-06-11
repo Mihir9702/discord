@@ -35,5 +35,5 @@ export function generate(): string {
 
   const random = randomizeArray([str1, str2, num1, num2])
 
-  return random.join('')
+  return random.join('').toString()
 }

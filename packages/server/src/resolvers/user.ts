@@ -15,28 +15,18 @@ import { User } from '../entities/User'
 import { generateNumber } from '../helpers/rand'
 import { adjectives, colors, Config, uniqueNamesGenerator } from 'unique-names-generator'
 import { isAuth } from '../middleware/isAuth'
+import db from '../connect'
 
 @InputType()
 class Input {
-  @Field()
-  username!: string
-
-  @Field()
-  password!: string
+  @Field() username!: string
+  @Field() password!: string
 }
 
 @InputType()
 class FriendInput {
-  @Field()
-  displayName!: string
-
-  @Field()
-  userId!: number
-}
-
-interface FriendRequestPromise {
-  user: User
-  friend: User
+  @Field() nameId!: string
+  @Field() userId!: number
 }
 
 @Resolver()
@@ -47,21 +37,17 @@ export class UserResolver {
   }
 
   @Query(() => User, { nullable: true })
+  @UseMiddleware(isAuth)
   async user(@Ctx() { req }: MyContext): Promise<User | null> {
-    if (!req.session.id) {
-      return null
-    }
-    const user = await User.findOne({ where: { username: req.session.username } })
-    return user
+    return await User.findOne({ where: { id: req.session.idx } })
   }
 
   @Mutation(() => User)
-  async signup(@Arg('params') params: Input, @Ctx() { req }: MyContext): Promise<User> {
-    const foundUser = await User.findOne({ where: { username: params.username } })
-    const checkUser = await User.findOne({ where: { username: req.session.username } })
+  async signup(@Arg('params') params: Input): Promise<User> {
+    if (await User.findOne({ where: { username: params.username } })) {
+      throw new Error('Username already taken')
+    }
 
-    if (checkUser) throw new Error('Already logged in')
-    if (foundUser) throw new Error('Username already taken')
     if (params.username.length < 2) throw new Error('Username must be at least 2 characters')
     if (params.password.length < 4) throw new Error('Password must be at least 4 characters')
 
@@ -80,7 +66,7 @@ export class UserResolver {
       username: params.username.toLowerCase(),
       password: hashedPassword,
       userId: randomId,
-      displayName: randomName,
+      nameId: randomName,
       status: 'online',
     }).save()
 
@@ -100,61 +86,37 @@ export class UserResolver {
 
     if (!valid) throw new Error('Invalid username or password')
 
-    req.session.username = user.username
+    req.session.idx = user.id
 
     return user
   }
 
-  @Mutation(() => User)
+  @Mutation(() => User) // todo
   async updateUser(@Arg('id', () => Int) id: number, @Arg('params') params: Input): Promise<User> {
-    const user = await User.findOne({ where: { id } })
+    const u = await User.findOne({ where: { id } })
+    if (!u) throw new Error('User not found')
 
-    if (!user) throw new Error('User not found')
+    if (params.username) u.username = params.username
+    if (params.password) u.password = params.password
 
-    if (params.username) user.username = params.username
-    if (params.password) user.password = params.password
-
-    await user.save()
-
-    return user
+    await User.save(u)
+    return u
   }
 
   @Mutation(() => Boolean)
-  async deleteUser(@Arg('id', () => Int) id: number): Promise<boolean> {
-    const user = await User.findOne({ where: { id } })
+  @UseMiddleware(isAuth)
+  async deleteUser(@Ctx() { req }: MyContext): Promise<boolean> {
+    const u = await User.findOne({ where: { id: req.session.idx } })
+    if (!u) throw new Error('User not found')
 
-    if (!user) throw new Error('User not found')
-
-    await user.remove()
-
+    await User.remove(u)
     return true
   }
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async logout(@Ctx() { req }: MyContext): Promise<boolean> {
-    req.session.destroy((err) => (err ? err : true))
-
-    return true
-  }
-
-  @Query(() => [User])
-  @UseMiddleware(isAuth)
-  async friends(@Ctx() { req }: MyContext): Promise<User[] | undefined> {
-    const user = await User.findOne({ where: { username: req.session.username } })
-
-    if (!user) throw new Error('User not found @friends')
-
-    return user.friends
-  }
-
-  @Query(() => [User])
-  @UseMiddleware(isAuth)
-  async friendRequests(@Ctx() { req }: MyContext): Promise<User[] | undefined> {
-    const user = await User.findOne({ where: { username: req.session.username } })
-
-    console.log('FRIENDS', user?.friendRequests?.length)
-    return user?.friendRequests as User[]
+    return req.session.destroy((err) => (err ? err : true)) ? true : false
   }
 
   @Mutation(() => User)
@@ -163,29 +125,31 @@ export class UserResolver {
     @Arg('params') params: FriendInput,
     @Ctx() { req }: MyContext,
   ): Promise<User> {
-    const user = await User.findOne({ where: { username: req.session.username } })
+    const uid = await User.findOne({ where: { id: req.session.idx } })
 
-    const friend = await User.createQueryBuilder('user')
-      .where('user.displayName = :displayName', { displayName: params.displayName })
-      .andWhere('user.userId = :userId', { userId: params.userId })
-      .getOne()
+    const fid: User | undefined = await db
+      .getRepository(User)
+      .createQueryBuilder('uid')
+      .where('uid.nameId = :nameId', { nameId: params.nameId })
+      .andWhere('uid.userId = :userId', { userId: params.userId })
+      .getRawOne()
 
-    if (!friend) throw new Error('friend not found')
-    if (friend) console.log('FOUND FRIEND', friend)
+    if (uid === null) throw new Error('send friend request - no user')
+    if (fid === undefined) throw new Error('send friend request - no friend')
+    if (fid) console.log('FOUND FRIEND', fid)
 
-    if (!user || !friend) throw new Error('User not found')
+    fid && fid.friendRequests
+      ? fid.friendRequests.push({ uid, status: 'pending' })
+      : (fid.friendRequests = [{ uid, status: 'pending' }])
 
-    console.log('USER FOUND', user)
-    console.log('FRIEND FOUND', friend.friendRequests?.length)
+    uid && uid.friendRequests
+      ? uid.friendRequests.push({ uid: fid, status: 'received' })
+      : (uid.friendRequests = [{ uid: fid, status: 'received' }])
 
-    // friend.friendRequests?.push(user)
-    // friend.friendRequests?.map(u => {
-    // 	if (u.displayName === user.displayName) {
-    // 		return 'friend already have'
-    // 	} else friend.friendRequests?.push(user)
-    // })
+    await User.save(uid)
+    await User.save(fid)
 
-    return await User.save(friend)
+    return uid
   }
 
   @Mutation(() => User)
@@ -193,22 +157,29 @@ export class UserResolver {
   async acceptFriendRequest(
     @Arg('params') params: FriendInput,
     @Ctx() { req }: MyContext,
-  ): Promise<FriendRequestPromise> {
-    const user = await User.findOne({ where: { username: req.session.username } })
+  ): Promise<User> {
+    const uid = await User.findOne({ where: { id: req.session.idx } })
 
-    const friend = await User.findOne({
-      where: { displayName: params.displayName } && { userId: params.userId },
-    })
+    const fid: User | undefined = await db
+      .getRepository(User)
+      .createQueryBuilder('uid')
+      .where('uid.nameId = :nameId', { nameId: params.nameId })
+      .andWhere('uid.userId = :userId', { userId: params.userId })
+      .getRawOne()
 
-    if (!user || !friend) throw new Error('User not found')
+    if (uid === null) throw new Error('accept friend request - no user')
+    if (fid === undefined) throw new Error('accept friend request - no friend')
 
-    user.friends?.push(friend)
-    await user?.save()
+    fid.friendRequests = fid.friendRequests && fid.friendRequests.filter((fr) => fr.uid !== uid)
+    uid.friendRequests = uid.friendRequests && uid.friendRequests.filter((fr) => fr.uid !== fid)
 
-    friend.friends?.push(user)
-    await friend?.save()
+    uid && uid.friends ? uid.friends.push(fid) : (uid.friends = [fid])
+    fid && fid.friends ? fid.friends.push(uid) : (fid.friends = [uid])
 
-    return { user, friend }
+    await User.save(uid)
+    await User.save(fid)
+
+    return uid
   }
 
   @Mutation(() => User)
@@ -216,25 +187,25 @@ export class UserResolver {
   async declineFriendRequest(
     @Arg('params') params: FriendInput,
     @Ctx() { req }: MyContext,
-  ): Promise<FriendRequestPromise> {
-    const user = await User.findOne({ where: { username: req.session.username } })
+  ): Promise<User> {
+    const uid = await User.findOne({ where: { id: req.session.idx } })
 
-    const friend = await User.findOne({ where: { id: params.userId } })
+    const fid: User | undefined = await db
+      .getRepository(User)
+      .createQueryBuilder('uid')
+      .where('uid.nameId = :nameId', { nameId: params.nameId })
+      .andWhere('uid.userId = :userId', { userId: params.userId })
+      .getRawOne()
 
-    if (!user || !friend) throw new Error('User not found')
+    if (uid === null) throw new Error('delete friend request - no user')
+    if (fid === undefined) throw new Error('delete friend request - no friend')
 
-    user.friendRequests = user.friendRequests?.filter(
-      (friendRequest) => friendRequest.id !== friend.id,
-    )
+    fid.friendRequests = fid.friendRequests && fid.friendRequests.filter((fr) => fr.uid !== uid)
+    uid.friendRequests = uid.friendRequests && uid.friendRequests.filter((fr) => fr.uid !== fid)
 
-    await user.save()
+    await User.save(uid)
+    await User.save(fid)
 
-    friend.friendRequests = friend.friendRequests?.filter(
-      (friendRequest) => friendRequest.id !== user.id,
-    )
-
-    await friend.save()
-
-    return { user, friend }
+    return uid
   }
 }
