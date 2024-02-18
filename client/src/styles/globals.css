@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@tailwind variants;
+
+:root {
+  --black: #0d1117;
+  --white: #ffffff;
+  --darkgreen: #12191a;
+}
+
+body {
+  @apply m-0 p-0 w-full h-full box-border bg-background;
+  font-family: "gg sans Normal", cursive;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* h1 {
+  font-family: "gg sans Normal", cursive;
+} */
+
+@media (min-width: 1200px) {
+  .hidden-1200 {
+    display: block;
+  }
+}
+
+label {
+  font-family: "gg sans Normal", cursive;
+  font-weight: 700;
+}
+
+@layer components {
+  .display-icon {
+    @apply bg-background text-gray-400;
+    @apply rounded-[50%] transition-all;
+    /* @apply shadow-md shadow-black; */
+    @apply max-w-[48px] max-h-[48px];
+  }
+
+  .hover-icon {
+    @apply text-gray-300 bg-lightblue transition-all rounded-2xl;
+  }
+}
+
+.hover-text {
+  @apply text-white;
+  @apply hover:text-text hover:transition-all;
+}
+
+.server-icon {
+  @apply display-icon;
+
+  @apply w-[48px] h-[48px];
+  @apply text-md text-center text-gray-100 font-sans;
+}
+
+.server-icon:hover {
+  @apply hover-icon;
+}
+
+.servers {
+  @apply overflow-y-auto max-h-screen w-full justify-center min-w-[72px] max-w-[72px];
+}
+
+.servers::-webkit-scrollbar {
+  background-color: transparent;
+  width: 0px;
+}
+
+.mid-col {
+  @apply border-l border-r border-r-lightdark border-l-lightdark;
+  @apply relative w-full h-screen justify-between min-w-[240px] max-w-[240px] z-10 flex flex-col;
+  @apply bg-mid;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-col-reverse {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.status-status {
+  @apply rounded-full w-3 h-3 absolute bottom-0 right-1;
+}
+
+.status-button {
+  @apply p-2 gap-3 font-gg;
+  @apply rounded cursor-pointer;
+  @apply flex items-center w-full;
+  @apply text-gray-200 hover:bg-highlight;
+}
+
+.bg-image {
+  @apply bg-cover bg-center bg-no-repeat;
+  background-image: url("../assets/bg.png");
+}
+
+.bg-discord {
+  @apply rounded-2xl bg-cover bg-center bg-no-repeat w-16 h-16;
+  background-image: url("../assets/icon.png");
+}
+
+::-webkit-scrollbar {
+  width: 0.3vw;
+  background-color: #fff;
+}
+
+main::-webkit-scrollbar {
+  width: 0vw;
+}
+
+section::-webkit-scrollbar {
+  width: 0vw;
+}
+
+textarea::-webkit-scrollbar {
+  width: 0vw;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--darkgreen);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: lightslategray;
+}

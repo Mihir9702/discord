@@ -1,8 +1,0 @@
-mutation Signup($params: Input!) {
-  signup(params: $params) {
-    id
-    username
-    createdAt
-    updatedAt
-  }
-}

@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": ["es6"],
+    "module": "commonjs",
+    "jsx": "preserve",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "preserveSymlinks": true,
+    "outDir": ".",
+    "skipLibCheck": true
+  },
+  "include": [
+    "./src/**/*.ts",
+    "../web/src/graphql.ts",
+    "../client/src/graphql.ts"
+  ],
+  "exclude": ["./node_modules", "./src/**/*.graphql"]
+}

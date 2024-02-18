@@ -1,0 +1,6 @@
+mutation Block($params: FriendInput!) {
+  block(params: $params) {
+    nameId
+    userId
+  }
+}

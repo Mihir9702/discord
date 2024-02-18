@@ -1,0 +1,115 @@
+
+- ** WebSockets - status, messages
+- server settings
+- user settings
+- server invite link
+- people in server ui
+
+
+-- convert iconId #26413C -> component with iconId as color
+-- convert custom hr into component (ctrl+shift+f)
+-- user settings.tsx
+
+
+
+!! doesn't work in tailwind.config -> lightred: "da373c",
+        
+
+
+---------------------------------------
+online - online status
+all - online, away, dnd, offline status
+pending - incoming / outgoing
+blocked - blocked status
+---------------------------------------
+
+register {
+	email
+	username
+	password
+	dob - dropdowns m/d/y
+	continue button
+	login link
+	agree tos / pp
+	human bot veri ??
+}
+
+onEnter {
+	createServer modal
+	templates ??
+	href=/@me
+}
+
+friendRequest {
+	error {
+		red outline on input
+		modal failure h1, h2, button
+	}
+	success {
+		green outline
+		bottom text
+	}
+}
+
+directMessages {
+	** new block appears immediately after friend request accepts	
+	/@me/rng(15)
+	header {
+		icon nameId \\\ [call] [video] [pinned] [groupdm] [hideprofile] [searchmsgs] [inbox] [help]
+	}
+	textChatroom {
+		preloader {
+			icon
+			nametag
+			`This is the beginning of your direct message history with ${nameId}`
+			[Common Servers] [Remove Friend] [Block]
+			(ConversationStarter)
+		}
+	}
+}
+
+declineFriendRequest {
+	removed from 'incoming' array
+	stays in 'outgoing' array
+}
+
+pending {
+	left {
+		'outgoing friend request'
+		icon + status + name
+
+		'incoming friend request'
+		icon + name
+	}
+	right {
+		'outgoing friend request'
+		cross {
+			instant removal
+			reloads array
+		}
+		::hover {
+			red + 'cancel' tooltip 
+		}
+
+		'incoming friend request'
+		check + cross {
+			instant removal
+			reloads array
+		}
+	}
+}
+
+
+
+
+6/30/23
+
+discord.gg links - ``message below, -> [id] -> /invite/[id]``
+
+1/25/24
+
+remove friend request from sender after receiver declines
+
+2/18/24
+
+MyAccount UI

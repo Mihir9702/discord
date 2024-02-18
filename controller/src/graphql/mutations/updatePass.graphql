@@ -1,0 +1,6 @@
+mutation UpdatePass($params: UpdatePassInput!) {
+  updatePass(params: $params) {
+    nameId
+    userId
+  }
+}

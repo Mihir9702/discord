@@ -1,0 +1,19 @@
+mutation SendFriendRequest($params: FriendInput!) {
+  sendFriendRequest(params: $params) {
+    id
+    nameId
+    userId
+    status
+    friends {
+      id
+      nameId
+      userId
+      status
+    }
+    friendRequests {
+      nameId
+      userId
+      status
+    }
+  }
+}

@@ -1,9 +1,0 @@
-query Friends {
-  user {
-    friends {
-      id
-      displayName
-      status
-    }
-  }
-}

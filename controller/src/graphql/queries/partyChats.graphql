@@ -1,0 +1,11 @@
+query PartyChats {
+  partyChats {
+    channelId
+    users {
+      nameId
+      userId
+      iconId
+      status
+    }
+  }
+}

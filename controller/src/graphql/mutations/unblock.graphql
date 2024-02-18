@@ -1,0 +1,6 @@
+mutation Unblock($params: FriendInput!) {
+  unblock(params: $params) {
+    nameId
+    userId
+  }
+}

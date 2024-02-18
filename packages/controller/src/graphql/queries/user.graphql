@@ -1,9 +1,0 @@
-query User {
-  user {
-    id
-    userId
-    username
-    displayName
-    status
-  }
-}

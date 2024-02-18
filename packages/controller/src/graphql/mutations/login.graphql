@@ -1,6 +1,0 @@
-mutation Login($params: Input!) {
-  login(params: $params) {
-    id
-    username
-  }
-}

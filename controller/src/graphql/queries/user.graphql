@@ -1,0 +1,9 @@
+query User {
+  user {
+    id
+    nameId
+    userId
+    iconId
+    status
+  }
+}
