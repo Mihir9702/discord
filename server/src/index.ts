@@ -40,7 +40,7 @@ const main = async () => {
         secure: !__prod__, // cookie only works in https
       },
       saveUninitialized: false, // don't create session until something stored
-      secret: process.env.SESSION_SECRET as string,
+      secret: process.env.SESSION_SECRET,
       resave: false, // false // do not save session if unmodified
     })
   );

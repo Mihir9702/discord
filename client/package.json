@@ -1,5 +1,5 @@
 {
-  "name": "@ghost/client",
+  "name": "@midnight/client",
   "version": "0.1.0",
   "scripts": {
     "dev": "next dev"

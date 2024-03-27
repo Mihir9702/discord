@@ -1,5 +1,5 @@
 {
-  "name": "@ghost/controller",
+  "name": "@midnight/controller",
   "version": "0.1.0",
   "main": "generated/graphql.ts",
   "description": "A GraphQL API controller",

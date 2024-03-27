@@ -1,10 +1,14 @@
 
+
 - ** WebSockets - status, messages
 - server settings
 - user settings
 - server invite link
 - people in server ui
 
+- ** User Settings
+- delete account
+- update account
 
 -- convert iconId #26413C -> component with iconId as color
 -- convert custom hr into component (ctrl+shift+f)
