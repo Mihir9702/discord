@@ -1,18 +1,18 @@
-# Midnight
+# Discord
 
-Midnight is an instant messaging social platform that replicates the communication experience of voice calls, video calls, text messaging, and media/file sharing built using the PERN stack.
+Discord is an instant messaging social platform that replicates the communication experience of voice calls, video calls, text messaging, and media/file sharing built using the PERN stack.
 
 ## Installation
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/Mihir9702/midnight.git
+   git clone https://github.com/Mihir9702/discord.git
 
 2. Install dependencies for the server:
 
    ```bash
-   cd midnight/server
+   cd discord/server
    yarn install
 
 3. Run the server:
@@ -31,11 +31,11 @@ Midnight is an instant messaging social platform that replicates the communicati
    ```bash
    yarn dev
 
-6. Access Midnight at `http://localhost:3000`.
+6. Access Discord at `http://localhost:3000`.
 
 7. (Optional) To generate TypeScript types from GraphQL schema and operations, run:
 
    ```bash
-   cd midnight/controller
+   cd discord/controller
    yarn install
    yarn gen

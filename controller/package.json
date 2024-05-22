@@ -1,5 +1,5 @@
 {
-  "name": "@midnight/controller",
+  "name": "@discord/controller",
   "version": "0.1.0",
   "main": "generated/graphql.ts",
   "description": "A GraphQL API controller",

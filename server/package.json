@@ -1,5 +1,5 @@
 {
-  "name": "@midnight/server",
+  "name": "@discord/server",
   "version": "0.1.0",
   "main": "dist/index.js",
   "author": "",
@@ -19,6 +19,7 @@
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "graphql": "^16.6.0",
+    "graphql-scalars": "^1.23.0",
     "pg": "^8.11.0",
     "reflect-metadata": "^0.1.13",
     "socket.io": "^4.7.4",
