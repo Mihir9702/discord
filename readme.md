@@ -1,6 +1,6 @@
 # Discord
 
-Discord is an instant messaging social platform that replicates the communication experience of voice calls, video calls, text messaging, and media/file sharing built using the PERN stack.
+A Discord clone built using the PERN stack. Add friends, chat in direct messages, and create servers with text channels, invite links, roles and moderation. Messages, friend requests and online status update live over WebSockets.
 
 ## Features
 

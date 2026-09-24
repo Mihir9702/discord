@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "main": "dist/index.js",
   "author": "",
-  "description": "",
+  "description": "GraphQL + WebSocket API for the Discord clone",
   "scripts": {
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
