@@ -20,7 +20,8 @@ interface Props {
 type Editing = "nameId" | "username" | "password" | "delete" | null;
 
 export default ({ me, editProfile }: Props) => {
-  const { nameId, iconId, status, userId, username } = me;
+  const { nameId, iconId, status, userId } = me;
+  const username = me.username || ""; // only ever null for other users
   const [editing, setEditing] = useState<Editing>(null);
 
   const [updateUser] = useMutation<UpdateUserMutation>(UpdateUserDocument);

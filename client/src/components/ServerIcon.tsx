@@ -19,7 +19,8 @@ export function initials(name: string) {
 
 // server image, or the server's initials when there isn't one (or it fails to load)
 export default ({ name, icon, size = "md", active = false }: Props) => {
-  const [broken, setBroken] = useState(false);
+  // the url that failed to load - a new url gets a fresh try
+  const [failed, setFailed] = useState<string | null>(null);
 
   const css = {
     nav: `server-icon ${active ? "hover-icon" : ""}`,
@@ -27,7 +28,7 @@ export default ({ name, icon, size = "md", active = false }: Props) => {
     lg: "w-20 h-20 text-2xl rounded-3xl bg-lightblue text-white",
   }[size];
 
-  if (icon && !broken) {
+  if (icon && failed !== icon) {
     const shape =
       size === "nav"
         ? `w-[48px] h-[48px] transition-all ${
@@ -38,7 +39,7 @@ export default ({ name, icon, size = "md", active = false }: Props) => {
       <img
         src={icon}
         alt={name}
-        onError={() => setBroken(true)}
+        onError={() => setFailed(icon)}
         className={`${shape} object-cover shrink-0`}
       />
     );

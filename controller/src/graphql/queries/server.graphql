@@ -5,15 +5,14 @@ query Server($serverId: Float!) {
     link
     icon
     serverId
-    users {
-      id
-      nameId
-      userId
-      iconId
-      status
-      roles {
-        serverId
-        role
+    members {
+      role
+      user {
+        id
+        nameId
+        userId
+        iconId
+        status
       }
     }
     channels {

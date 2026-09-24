@@ -24,7 +24,7 @@ import { isAuth } from "../middleware/isAuth";
 import { devOnly } from "../middleware/devOnly";
 import { FriendRequest, FriendRequestStatus } from "../entities/FriendRequest";
 import { ServerRole } from "../entities/ServerRole";
-import { check, filter, push, find, role, same } from "../helpers/array";
+import { check, find, role, same } from "../helpers/array";
 import { Input, FriendInput } from "../types";
 import { Server } from "../entities/Server";
 import { COOKIE } from "../constants";
@@ -50,6 +50,9 @@ import {
   setRole,
 } from "../helpers/access";
 import { audience, emitTo, isOnline } from "../socket";
+import { renameInRequests, saveBan, saveRequest } from "../helpers/jsonb";
+import { EntityManager } from "typeorm";
+import db from "../connect";
 
 const config: Config = {
   dictionaries: [adjectives, colors, animals, countries],
@@ -68,12 +71,32 @@ function request(user: User, status: FriendRequestStatus): FriendRequest {
 }
 
 // a random 4 digit tag nobody else with this name has
-async function freeUserId(nameId: string): Promise<number> {
+async function freeUserId(m: EntityManager, nameId: string): Promise<number> {
   for (let i = 0; i < 20; i++) {
     const userId = randomNumberGenerator(4);
-    if (!(await User.findOne({ where: { nameId, userId } }))) return userId;
+    if (!(await m.findOne(User, { where: { nameId, userId } }))) return userId;
   }
   throw new Error("That display name is too popular, try another one");
+}
+
+// signups + renames run one at a time, so two requests can't both claim
+// the same username or name#tag between the check and the write
+function identity<T>(fn: (m: EntityManager) => Promise<T>): Promise<T> {
+  return db.transaction(async (m) => {
+    await m.query("SELECT pg_advisory_xact_lock(4242)");
+    return await fn(m);
+  });
+}
+
+// new session id on login / signup (no session fixation)
+function startSession(req: MyContext["req"], id: number): Promise<void> {
+  return new Promise((resolve, reject) =>
+    req.session.regenerate((err) => {
+      if (err) return reject(err);
+      req.session.idx = id;
+      resolve();
+    })
+  );
 }
 
 function destroySession({ req, res }: MyContext): Promise<boolean> {
@@ -93,15 +116,8 @@ async function syncFriendRequests(u: User, old: FriendInput, remove = false) {
     });
     if (!other) continue;
 
-    const friendRequests = remove
-      ? filter(other.friendRequests, old)
-      : (other.friendRequests || []).map((r) =>
-          same(r, old)
-            ? { ...r, nameId: u.nameId, userId: u.userId, iconId: u.iconId }
-            : r
-        );
-
-    await User.update(other.id, { friendRequests });
+    if (remove) await saveRequest(other.id, old);
+    else await renameInRequests(other.id, old, u);
   }
 }
 
@@ -112,6 +128,23 @@ export class UserFieldResolver {
   status(@Root() user: User, @Ctx() { req }: MyContext): string {
     if (user.id === req.session.idx) return user.status;
     return isOnline(user.id) ? user.status : "offline";
+  }
+
+  // only you can see your login name, friend requests and server roles
+  // (other people's roles in a server come from Server.members)
+  @FieldResolver(() => String, { nullable: true })
+  username(@Root() user: User, @Ctx() { req }: MyContext) {
+    return user.id === req.session.idx ? user.username : null;
+  }
+
+  @FieldResolver(() => [FriendRequest], { nullable: true })
+  friendRequests(@Root() user: User, @Ctx() { req }: MyContext) {
+    return user.id === req.session.idx ? user.friendRequests : null;
+  }
+
+  @FieldResolver(() => [ServerRole], { nullable: true })
+  roles(@Root() user: User, @Ctx() { req }: MyContext) {
+    return user.id === req.session.idx ? user.roles : null;
   }
 }
 
@@ -192,21 +225,27 @@ export class UserResolver {
       validateUsername(username) || validatePassword(params.password);
     if (invalid) throw new Error(invalid);
 
-    if (await User.findOne({ where: { username } })) {
-      throw new Error("Username already taken");
-    }
+    const password = await hash(params.password, await genSalt(10));
 
-    const nameId = uniqueNamesGenerator(config);
+    const user = await identity(async (m) => {
+      if (await m.findOne(User, { where: { username } })) {
+        throw new Error("Username already taken");
+      }
 
-    const user = await User.create({
-      username,
-      password: await hash(params.password, await genSalt(10)),
-      userId: await freeUserId(nameId),
-      nameId,
-      iconId: randomColorGenerator(),
-    }).save();
+      const nameId = uniqueNamesGenerator(config);
 
-    req.session.idx = user.id;
+      return await m.save(
+        m.create(User, {
+          username,
+          password,
+          userId: await freeUserId(m, nameId),
+          nameId,
+          iconId: randomColorGenerator(),
+        })
+      );
+    });
+
+    await startSession(req, user.id);
 
     return user;
   }
@@ -229,7 +268,7 @@ export class UserResolver {
 
     if (!user || !valid) throw new Error("Invalid username or password");
 
-    req.session.idx = user.id;
+    await startSession(req, user.id);
 
     return user;
   }
@@ -240,51 +279,45 @@ export class UserResolver {
     @Ctx() { req }: MyContext,
     @Arg("params") params: UpdateUserInput
   ): Promise<User> {
-    const { u } = check({ user: await this.find(req.session.idx) });
-    const old = { nameId: u.nameId, userId: u.userId };
+    const invalid =
+      (params.username && validateUsername(normalize(params.username))) ||
+      (params.nameId && validateNameId(params.nameId.trim())) ||
+      (params.iconId && validateColor(params.iconId)) ||
+      (params.status && validateStatus(params.status));
+    if (invalid) throw new Error(invalid);
 
-    if (params.username) {
-      const username = normalize(params.username);
-      const invalid = validateUsername(username);
-      if (invalid) throw new Error(invalid);
+    const { u, old } = await identity(async (m) => {
+      const { u } = check({
+        user: await m.findOne(User, { where: { id: req.session.idx } }),
+      });
+      const old = { nameId: u.nameId, userId: u.userId };
 
-      if (username !== u.username) {
-        if (await User.findOne({ where: { username } })) {
+      const username = params.username && normalize(params.username);
+      if (username && username !== u.username) {
+        if (await m.findOne(User, { where: { username } })) {
           throw new Error("Username already taken");
         }
         u.username = username;
       }
-    }
 
-    if (params.nameId) {
-      const nameId = params.nameId.trim();
-      const invalid = validateNameId(nameId);
-      if (invalid) throw new Error(invalid);
-
-      if (nameId !== u.nameId) {
-        u.userId = await freeUserId(nameId);
+      const nameId = params.nameId && params.nameId.trim();
+      if (nameId && nameId !== u.nameId) {
+        u.userId = await freeUserId(m, nameId);
         u.nameId = nameId;
       }
-    }
 
-    if (params.iconId) {
-      const invalid = validateColor(params.iconId);
-      if (invalid) throw new Error(invalid);
-      u.iconId = params.iconId;
-    }
+      if (params.iconId) u.iconId = params.iconId;
+      if (params.status) u.status = params.status;
 
-    if (params.status) {
-      const invalid = validateStatus(params.status);
-      if (invalid) throw new Error(invalid);
-      u.status = params.status;
-    }
+      await m.update(User, u.id, {
+        username: u.username,
+        nameId: u.nameId,
+        userId: u.userId,
+        iconId: u.iconId,
+        status: u.status,
+      });
 
-    await User.update(u.id, {
-      username: u.username,
-      nameId: u.nameId,
-      userId: u.userId,
-      iconId: u.iconId,
-      status: u.status,
+      return { u, old };
     });
 
     if (!same(u, old) || params.iconId) await syncFriendRequests(u, old);
@@ -401,18 +434,9 @@ export class UserResolver {
       return await this.accept(u, f);
     }
 
-    u.friendRequests = push(
-      filter(u.friendRequests, f),
-      request(f, "outgoing")
-    );
-    f.friendRequests = push(
-      filter(f.friendRequests, u),
-      request(u, "incoming")
-    );
-
-    await Promise.all([
-      User.update(u.id, { friendRequests: u.friendRequests }),
-      User.update(f.id, { friendRequests: f.friendRequests }),
+    [u.friendRequests] = await Promise.all([
+      saveRequest(u.id, f, request(f, "outgoing")),
+      saveRequest(f.id, u, request(u, "incoming")),
     ]);
 
     emitTo([u.id, f.id], "friends");
@@ -430,10 +454,7 @@ export class UserResolver {
     );
     if (!incoming) throw new Error("No friend request from this user");
 
-    await Promise.all([
-      User.update(u.id, { friendRequests: filter(u.friendRequests, f) }),
-      User.update(f.id, { friendRequests: filter(f.friendRequests, u) }),
-    ]);
+    await Promise.all([saveRequest(u.id, f), saveRequest(f.id, u)]);
 
     if (!find(u.friends, f.id))
       await relation(User, "friends").of(u.id).add(f.id);
@@ -479,11 +500,9 @@ export class UserResolver {
     );
     if (!pending) throw new Error("Friend request not found");
 
-    u.friendRequests = filter(u.friendRequests, f);
-
-    await Promise.all([
-      User.update(u.id, { friendRequests: u.friendRequests }),
-      User.update(f.id, { friendRequests: filter(f.friendRequests, u) }),
+    [u.friendRequests] = await Promise.all([
+      saveRequest(u.id, f),
+      saveRequest(f.id, u),
     ]);
 
     emitTo([u.id, f.id], "friends");
@@ -561,10 +580,7 @@ export class UserResolver {
     }
 
     // pending requests either way are dropped too
-    await Promise.all([
-      User.update(u.id, { friendRequests: filter(u.friendRequests, f) }),
-      User.update(f.id, { friendRequests: filter(f.friendRequests, u) }),
-    ]);
+    await Promise.all([saveRequest(u.id, f), saveRequest(f.id, u)]);
 
     emitTo([u.id, f.id], "friends");
 
@@ -657,7 +673,7 @@ export class UserResolver {
 
     const { u, f, s } = check({ user, friend, server });
 
-    if (!canManage(u, s.serverId)) {
+    if (!canManage(u, s.serverId) || !(await isMember(u.id, s.id))) {
       throw new Error("You don't have permission to do that");
     }
 
@@ -709,11 +725,8 @@ export class UserResolver {
       emitTo([f.id], "server:removed", { serverId: s.serverId });
     }
 
-    if (!(s.banned || []).some((b) => b.id === f.id)) {
-      const { id, nameId, userId, iconId } = f;
-      s.banned = push(s.banned, { id, nameId, userId, iconId });
-      await Server.update(s.id, { banned: s.banned });
-    }
+    const { id, nameId, userId, iconId } = f;
+    s.banned = await saveBan(s.id, f.id, { id, nameId, userId, iconId });
 
     emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
 
@@ -733,12 +746,15 @@ export class UserResolver {
 
     const { u, f, s } = check({ user, friend, server });
 
-    if (!canManage(u, s.serverId)) {
+    if (
+      u.id === f.id ||
+      !canManage(u, s.serverId) ||
+      !(await isMember(u.id, s.id))
+    ) {
       throw new Error("You don't have permission to do that");
     }
 
-    s.banned = (s.banned || []).filter((b) => b.id !== f.id);
-    await Server.update(s.id, { banned: s.banned });
+    s.banned = await saveBan(s.id, f.id);
 
     emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
 
@@ -760,7 +776,7 @@ export class UserResolver {
 
     const { u, f, s } = check({ user, friend, server });
 
-    if (getRole(u, s.serverId) !== "owner") {
+    if (getRole(u, s.serverId) !== "owner" || !(await isMember(u.id, s.id))) {
       throw new Error("Only the server owner can change roles");
     }
     if (newRole !== "admin" && newRole !== "member") {

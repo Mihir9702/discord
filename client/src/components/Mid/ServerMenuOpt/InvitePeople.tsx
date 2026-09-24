@@ -48,7 +48,7 @@ export default ({ onClose }: ServerMenuOptFC) => {
 
   const url = inviteUrl(s.link);
   const currCC = s.channels?.find((c) => c.channelId === channelId);
-  const members = (s.users || []).map((u) => u.id);
+  const members = s.members.map((m) => m.user.id);
 
   const inviteMsg = `Hey there! I'm inviting you to join ${s.name}!\n\nJoin here: ${url}\n\nSee you there!`;
 

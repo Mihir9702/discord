@@ -48,7 +48,8 @@ const main = async () => {
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
       httpOnly: true,
-      sameSite: "lax", // csrf
+      // csrf - set COOKIE_SAMESITE=none if the client + api are on different sites
+      sameSite: (process.env.COOKIE_SAMESITE as "lax" | "none") || "lax",
       secure: __prod__, // cookie only works in https
     },
     saveUninitialized: false, // don't create session until something stored

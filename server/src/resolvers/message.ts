@@ -14,7 +14,12 @@ import { randomNumberGenerator } from "../helpers/random";
 import { MessageInput } from "../types";
 import { check } from "../helpers/array";
 import { validateMessage } from "../helpers/validate";
-import { canManage, channelAudience, channelFor } from "../helpers/access";
+import {
+  assertCanMessage,
+  canManage,
+  channelAudience,
+  channelFor,
+} from "../helpers/access";
 import { emitTo } from "../socket";
 
 @Resolver()
@@ -83,19 +88,7 @@ export class MessageResolver {
     const invalid = validateMessage(msg);
     if (invalid) throw new Error(invalid);
 
-    // no dms while either side has the other blocked
-    if (c.ptChat) {
-      const users = await User.find({
-        where: { channels: { id: c.id } },
-        relations: ["blocked"],
-      });
-      const blocked = users.some((a) =>
-        a.blocked?.some(
-          (b) => b.id !== a.id && users.some((x) => x.id === b.id)
-        )
-      );
-      if (blocked) throw new Error("You can't send messages to this user");
-    }
+    await assertCanMessage(c);
 
     const message = await Message.create({
       msg,
@@ -121,6 +114,8 @@ export class MessageResolver {
     if (m.user?.id !== req.session.idx) {
       throw new Error("You can only edit your own messages");
     }
+
+    await assertCanMessage(m.channel);
 
     const msg = (content || "").trim();
     const invalid = validateMessage(msg);

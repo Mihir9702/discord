@@ -7,6 +7,7 @@ import { ServerRole } from "../entities/ServerRole";
 import { role } from "./array";
 import { randomNumberGenerator } from "./random";
 import { emitTo } from "../socket";
+import { saveRole } from "./jsonb";
 
 export type Role = ServerRole["role"];
 
@@ -85,9 +86,7 @@ export async function channelAudience(channel: Channel): Promise<number[]> {
 }
 
 export async function setRole(u: User, serverId: number, r?: Role) {
-  const roles = (u.roles || []).filter((x) => x.serverId !== serverId);
-  u.roles = r ? [...roles, { serverId, role: r }] : roles;
-  await User.update(u.id, { roles: u.roles });
+  u.roles = await saveRole(u.id, serverId, r);
 }
 
 export async function addToServer(u: User, s: Server, as: Role = "member") {
@@ -150,4 +149,19 @@ export async function dmChannel(a: User, b: User): Promise<Channel> {
 
 export async function deleteChannels(ids: number[]) {
   if (ids.length) await Channel.delete({ id: In(ids) });
+}
+
+// no dms while either side has the other blocked
+export async function assertCanMessage(channel: Channel) {
+  if (!channel.ptChat) return;
+
+  const users = await User.find({
+    where: { channels: { id: channel.id } },
+    relations: ["blocked"],
+  });
+  const blocked = users.some((a) =>
+    a.blocked?.some((b) => b.id !== a.id && users.some((x) => x.id === b.id))
+  );
+
+  if (blocked) throw new Error("You can't send messages to this user");
 }

@@ -351,10 +351,17 @@ export type Server = {
   icon?: Maybe<Scalars['String']['output']>;
   id: Scalars['Float']['output'];
   link: Scalars['String']['output'];
+  members: Array<ServerMember>;
   name: Scalars['String']['output'];
   serverId: Scalars['Float']['output'];
   updatedAt: Scalars['String']['output'];
   users?: Maybe<Array<User>>;
+};
+
+export type ServerMember = {
+  __typename?: 'ServerMember';
+  role: Scalars['String']['output'];
+  user: User;
 };
 
 export type ServerRole = {
@@ -391,7 +398,7 @@ export type User = {
   status: Scalars['String']['output'];
   updatedAt: Scalars['String']['output'];
   userId: Scalars['Float']['output'];
-  username: Scalars['String']['output'];
+  username?: Maybe<Scalars['String']['output']>;
 };
 
 export type AcceptFriendRequestMutationVariables = Exact<{
@@ -611,7 +618,7 @@ export type UpdateUserMutationVariables = Exact<{
 }>;
 
 
-export type UpdateUserMutation = { __typename?: 'Mutation', updateUser: { __typename?: 'User', id: number, username: string, nameId: string, userId: number, iconId: string, status: string } };
+export type UpdateUserMutation = { __typename?: 'Mutation', updateUser: { __typename?: 'User', id: number, username?: string | null, nameId: string, userId: number, iconId: string, status: string } };
 
 export type ChannelQueryVariables = Exact<{
   channelId: Scalars['String']['input'];
@@ -658,7 +665,7 @@ export type ServerQueryVariables = Exact<{
 }>;
 
 
-export type ServerQuery = { __typename?: 'Query', server?: { __typename?: 'Server', id: number, name: string, link: string, icon?: string | null, serverId: number, users?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string, roles?: Array<{ __typename?: 'ServerRole', serverId: number, role: string }> | null }> | null, channels?: Array<{ __typename?: 'Channel', id: number, name: string, desc?: string | null, channelId: string }> | null, banned?: Array<{ __typename?: 'BannedUser', id: number, nameId: string, userId: number, iconId: string }> | null } | null };
+export type ServerQuery = { __typename?: 'Query', server?: { __typename?: 'Server', id: number, name: string, link: string, icon?: string | null, serverId: number, members: Array<{ __typename?: 'ServerMember', role: string, user: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string } }>, channels?: Array<{ __typename?: 'Channel', id: number, name: string, desc?: string | null, channelId: string }> | null, banned?: Array<{ __typename?: 'BannedUser', id: number, nameId: string, userId: number, iconId: string }> | null } | null };
 
 export type ServerChannelsQueryVariables = Exact<{
   channelId: Scalars['String']['input'];
@@ -670,7 +677,7 @@ export type ServerChannelsQuery = { __typename?: 'Query', serverChannels: Array<
 export type UserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: number, username: string, nameId: string, userId: number, iconId: string, status: string, roles?: Array<{ __typename?: 'ServerRole', serverId: number, role: string }> | null } | null };
+export type UserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: number, username?: string | null, nameId: string, userId: number, iconId: string, status: string, roles?: Array<{ __typename?: 'ServerRole', serverId: number, role: string }> | null } | null };
 
 export type UserFriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -768,6 +775,7 @@ export type ResolversTypes = {
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   Server: ResolverTypeWrapper<Server>;
+  ServerMember: ResolverTypeWrapper<ServerMember>;
   ServerRole: ResolverTypeWrapper<ServerRole>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   UpdatePassInput: UpdatePassInput;
@@ -792,6 +800,7 @@ export type ResolversParentTypes = {
   Mutation: {};
   Query: {};
   Server: Server;
+  ServerMember: ServerMember;
   ServerRole: ServerRole;
   String: Scalars['String']['output'];
   UpdatePassInput: UpdatePassInput;
@@ -917,10 +926,17 @@ export type ServerResolvers<ContextType = any, ParentType extends ResolversParen
   icon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  members?: Resolver<Array<ResolversTypes['ServerMember']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   serverId?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   users?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type ServerMemberResolvers<ContextType = any, ParentType extends ResolversParentTypes['ServerMember'] = ResolversParentTypes['ServerMember']> = {
+  role?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -945,7 +961,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -959,6 +975,7 @@ export type Resolvers<ContextType = any> = {
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Server?: ServerResolvers<ContextType>;
+  ServerMember?: ServerMemberResolvers<ContextType>;
   ServerRole?: ServerRoleResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 };
@@ -2357,15 +2374,14 @@ export const ServerDocument = gql`
     link
     icon
     serverId
-    users {
-      id
-      nameId
-      userId
-      iconId
-      status
-      roles {
-        serverId
-        role
+    members {
+      role
+      user {
+        id
+        nameId
+        userId
+        iconId
+        status
       }
     }
     channels {

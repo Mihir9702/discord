@@ -86,7 +86,8 @@ export default ({ size, setSize }: Props) => {
   const friends = uf?.userFriends;
   const isFriend = !!friends?.friends?.some((f) => sameUser(f, friend));
   const isBlocked = !!friends?.blocked?.some((f) => sameUser(f, friend));
-  const requested = !!friends?.friendRequests?.some((r) => sameUser(r, friend));
+  const request = friends?.friendRequests?.find((r) => sameUser(r, friend));
+  const sent = request?.status === "outgoing";
 
   async function run(action: () => Promise<unknown>) {
     setError("");
@@ -168,12 +169,17 @@ export default ({ size, setSize }: Props) => {
                     </button>
                   )}
                   {!isFriend && !isBlocked && (
+                    // adding someone who already asked you accepts their request
                     <button
-                      disabled={requested}
+                      disabled={sent}
                       onClick={() => run(() => Add({ variables: { params } }))}
                       className={`${button} !bg-lightblue !border-lightblue disabled:opacity-50`}
                     >
-                      {requested ? "Friend Request Sent" : "Add Friend"}
+                      {sent
+                        ? "Friend Request Sent"
+                        : request
+                        ? "Accept Friend Request"
+                        : "Add Friend"}
                     </button>
                   )}
                   {isBlocked ? (

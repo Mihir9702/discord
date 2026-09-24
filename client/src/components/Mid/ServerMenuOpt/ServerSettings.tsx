@@ -27,7 +27,8 @@ import Confirm from "src/components/Confirm";
 import { Cross, Crown } from "src/components/Icons";
 import Portal from "src/components/Portal";
 
-type Member = NonNullable<Server["users"]>[number];
+// a member's user fields + their role in this server
+type Member = Server["members"][number]["user"] & { role: string };
 
 // sections that work - everything else in the sidebar is "coming soon"
 const pages = ["Overview", "Invites", "Members", "Bans", "Delete Server"];
@@ -179,9 +180,10 @@ function Members({ s, owner }: { s: Server; owner: boolean }) {
     opts
   );
 
-  const roleOf = (m: Member) =>
-    m.roles?.find((r) => r.serverId === s.serverId)?.role || "member";
-  const myRole = me ? roleOf(me as Member) : "member";
+  const members: Member[] = s.members.map((m) => ({ ...m.user, role: m.role }));
+
+  const roleOf = (m: Member) => m.role;
+  const myRole = members.find((m) => m.id === me?.id)?.role || "member";
 
   // owners can moderate anyone, admins only regular members
   const canModerate = (m: Member) =>
@@ -205,8 +207,6 @@ function Members({ s, owner }: { s: Server; owner: boolean }) {
       setError(ex.message);
     }
   }
-
-  const members = s.users || [];
 
   return (
     <div>

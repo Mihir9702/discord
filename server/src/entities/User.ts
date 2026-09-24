@@ -25,7 +25,7 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Field()
+  // private - see UserFieldResolver
   @Column({ type: "text" })
   username!: string;
 
@@ -57,7 +57,7 @@ export class User extends BaseEntity {
   @JoinTable()
   servers?: Server[];
 
-  @Field(() => [ServerRole], { nullable: true })
+  // private - see UserFieldResolver
   @Column("jsonb", { nullable: true })
   roles?: ServerRole[];
 
@@ -76,7 +76,7 @@ export class User extends BaseEntity {
   @JoinTable()
   blocked?: User[];
 
-  @Field(() => [FriendRequest], { nullable: true })
+  // private - see UserFieldResolver
   @Column("jsonb", { nullable: true })
   friendRequests?: FriendRequest[];
 

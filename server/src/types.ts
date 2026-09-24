@@ -59,6 +59,13 @@ export class MessagesResponse {
   @Field(() => User, { nullable: true }) friend?: User | null;
 }
 
+// someone in a server + their role there
+@ObjectType()
+export class ServerMember {
+  @Field(() => User) user!: User;
+  @Field() role!: string;
+}
+
 // public preview of a server behind an invite link
 @ObjectType()
 export class InviteInfo {

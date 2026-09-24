@@ -84,6 +84,7 @@ Server (`server/.env`, see `.env.example`):
 | `PORT` | `3000` | |
 | `CLIENT_URL` | `http://localhost:3001` | allowed origin(s) for cors + websockets, comma separated |
 | `SESSION_SECRET` | dev only default | required when `NODE_ENV=production` |
+| `COOKIE_SAMESITE` | `lax` | `none` when the client and api are on different sites (https only) |
 
 Client: `NEXT_PUBLIC_API_URL` (default `http://localhost:3000`).
 

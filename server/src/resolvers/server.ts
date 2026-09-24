@@ -5,9 +5,11 @@ import {
   Resolver,
   Mutation,
   UseMiddleware,
+  FieldResolver,
+  Root,
 } from "type-graphql";
 import { Server } from "../entities/Server";
-import { InviteInfo, MyContext, relations } from "../types";
+import { InviteInfo, MyContext, ServerMember, relations } from "../types";
 import { isAuth } from "../middleware/isAuth";
 import { devOnly } from "../middleware/devOnly";
 import {
@@ -23,6 +25,7 @@ import {
   deleteServer,
   getRole,
   memberIds,
+  members as membersOf,
 } from "../helpers/access";
 import {
   inviteCode,
@@ -47,8 +50,18 @@ async function freeServerId(): Promise<number> {
   throw new Error("create server - id generation failed");
 }
 
-@Resolver()
+@Resolver(() => Server)
 export class ServerResolver {
+  // everyone in the server with their role in it (roles on users are private)
+  @FieldResolver(() => [ServerMember])
+  async members(@Root() s: Server): Promise<ServerMember[]> {
+    const users = s.users || (await membersOf(s.id));
+    return users.map((user) => ({
+      user,
+      role: getRole(user, s.serverId) || "member",
+    }));
+  }
+
   // the signed in user + a server they belong to
   async member(req: MyContext["req"], serverId: number) {
     const user = await User.findOne({ where: { id: req.session.idx } });

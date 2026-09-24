@@ -25,4 +25,12 @@ export default new ApolloClient({
       Channel: { fields: { users: replace, messages: replace } },
     },
   }),
+  defaultOptions: {
+    // show what's cached right away but always refresh it, so a channel you
+    // come back to isn't stuck with the messages it had when you left
+    watchQuery: {
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
+    },
+  },
 });

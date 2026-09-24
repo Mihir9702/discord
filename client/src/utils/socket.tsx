@@ -22,7 +22,15 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
       client
         .refetchQueries({
           include: "active",
-          onQueryUpdated: (q) => names.includes(q.queryName || "") && match(q),
+          // always a new request - joining one that's already in flight (two
+          // events in a row) would hand back data from before the second change
+          onQueryUpdated: (q) =>
+            names.includes(q.queryName || "") &&
+            match(q) &&
+            q.reobserve({
+              fetchPolicy: "network-only",
+              context: { queryDeduplication: false },
+            }),
         })
         .catch(() => {});
 

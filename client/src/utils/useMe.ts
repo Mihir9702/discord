@@ -40,11 +40,20 @@ export function useRole(serverId: number) {
   };
 }
 
-// only allow relative redirects (no open redirects via ?next=)
+// only allow redirects within this site (no open redirects via ?next=).
+// browsers treat "\" like "/" and drop tabs / newlines, so "/\evil.com" or
+// "/<tab>/evil.com" would become "//evil.com" - reject those outright, then
+// make sure the url still resolves to our own origin
 export function safeNext(next: unknown, fallback = "/@me") {
-  return typeof next === "string" &&
-    next.startsWith("/") &&
-    !next.startsWith("//")
-    ? next
-    : fallback;
+  if (typeof next !== "string" || !next.startsWith("/")) return fallback;
+  if (/[\\\s\u0000-\u001f\u007f]/.test(next)) return fallback;
+
+  try {
+    const base = "http://localhost";
+    const url = new URL(next, base);
+    if (url.origin !== base) return fallback;
+    return url.pathname + url.search + url.hash;
+  } catch {
+    return fallback;
+  }
 }
