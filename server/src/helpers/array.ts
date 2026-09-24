@@ -55,7 +55,10 @@ export function same(a: Tag, b: Tag): boolean {
   return a.nameId === b.nameId && a.userId === b.userId;
 }
 
-export function filter<T extends Tag>(arr: T[] | null | undefined, u: Tag): T[] {
+export function filter<T extends Tag>(
+  arr: T[] | null | undefined,
+  u: Tag
+): T[] {
   return (arr || []).filter((a) => !same(a, u));
 }
 

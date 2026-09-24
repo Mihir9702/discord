@@ -83,6 +83,20 @@ export class MessageResolver {
     const invalid = validateMessage(msg);
     if (invalid) throw new Error(invalid);
 
+    // no dms while either side has the other blocked
+    if (c.ptChat) {
+      const users = await User.find({
+        where: { channels: { id: c.id } },
+        relations: ["blocked"],
+      });
+      const blocked = users.some((a) =>
+        a.blocked?.some(
+          (b) => b.id !== a.id && users.some((x) => x.id === b.id)
+        )
+      );
+      if (blocked) throw new Error("You can't send messages to this user");
+    }
+
     const message = await Message.create({
       msg,
       msgId: randomNumberGenerator(10).toString(),

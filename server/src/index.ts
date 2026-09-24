@@ -2,8 +2,9 @@ import "reflect-metadata";
 import "dotenv/config";
 import express from "express";
 import session from "express-session";
+import connectPg from "connect-pg-simple";
 import { createServer } from "http";
-import db from "./connect";
+import db, { pgConfig } from "./connect";
 import cors from "cors";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
@@ -38,8 +39,12 @@ const main = async () => {
     throw new Error("SESSION_SECRET must be set in production");
   }
 
+  // sessions live in postgres so restarts don't log everyone out
+  const PgStore = connectPg(session);
+
   const sessionMiddleware = session({
     name: COOKIE,
+    store: new PgStore({ conObject: pgConfig, createTableIfMissing: true }),
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
       httpOnly: true,
@@ -65,6 +70,7 @@ const main = async () => {
       validate: false,
     }),
     context: ({ req, res }): MyContext => ({ req, res }),
+    cache: "bounded",
     plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
   });
 

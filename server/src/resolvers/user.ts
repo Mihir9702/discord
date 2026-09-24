@@ -162,10 +162,7 @@ export class UserResolver {
   @Query(() => [Server], { nullable: true })
   @UseMiddleware(isAuth)
   async userServers(@Ctx() { req }: MyContext): Promise<Server[] | null> {
-    const u = await this.find(req.session.idx, [
-      "servers",
-      "servers.channels",
-    ]);
+    const u = await this.find(req.session.idx, ["servers", "servers.channels"]);
     if (!u || !u.servers) return null;
 
     u.servers.sort((a, b) => a.id - b.id);
@@ -404,8 +401,14 @@ export class UserResolver {
       return await this.accept(u, f);
     }
 
-    u.friendRequests = push(filter(u.friendRequests, f), request(f, "outgoing"));
-    f.friendRequests = push(filter(f.friendRequests, u), request(u, "incoming"));
+    u.friendRequests = push(
+      filter(u.friendRequests, f),
+      request(f, "outgoing")
+    );
+    f.friendRequests = push(
+      filter(f.friendRequests, u),
+      request(u, "incoming")
+    );
 
     await Promise.all([
       User.update(u.id, { friendRequests: u.friendRequests }),
@@ -432,8 +435,10 @@ export class UserResolver {
       User.update(f.id, { friendRequests: filter(f.friendRequests, u) }),
     ]);
 
-    if (!find(u.friends, f.id)) await relation(User, "friends").of(u.id).add(f.id);
-    if (!find(f.friends, u.id)) await relation(User, "friends").of(f.id).add(u.id);
+    if (!find(u.friends, f.id))
+      await relation(User, "friends").of(u.id).add(f.id);
+    if (!find(f.friends, u.id))
+      await relation(User, "friends").of(f.id).add(u.id);
 
     await dmChannel(u, f);
 

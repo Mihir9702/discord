@@ -5,6 +5,17 @@ import { Server } from "./entities/Server";
 import { Channel } from "./entities/Channel";
 import { Message } from "./entities/Message";
 
+// postgres connection settings - also used by the session store
+export const pgConfig = process.env.DATABASE_URL
+  ? { connectionString: process.env.DATABASE_URL }
+  : {
+      host: process.env.POSTGRES_HOST || "localhost",
+      port: Number(process.env.POSTGRES_PORT) || 5432,
+      user: process.env.POSTGRES_USER || "postgres",
+      password: process.env.POSTGRES_PASS || "postgres",
+      database: process.env.POSTGRES_DB || "connect",
+    };
+
 export default new DataSource({
   type: "postgres",
   url: process.env.DATABASE_URL, // takes priority over the fields below when set
