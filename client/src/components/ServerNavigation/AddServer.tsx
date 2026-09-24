@@ -1,49 +1,93 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { useMutation } from "@apollo/client";
+import { useRouter } from "next/router";
+import { useApolloClient, useMutation } from "@apollo/client";
 import {
   CreateServerDocument,
   CreateServerMutation,
+  InviteDocument,
+  InviteQuery,
   JoinMutation,
   JoinDocument,
 } from "src/graphql";
 import { ChevronRight } from "../Icons";
+import { useMe } from "src/utils/useMe";
 
 export type Display = "menu" | "create" | "join";
 
-export default () => {
+const templates = ["Gaming", "School Club", "Study Group"];
+
+const origin = typeof window === "undefined" ? "" : window.location.origin;
+
+export default ({ onClose }: { onClose: () => void }) => {
+  const router = useRouter();
+  const client = useApolloClient();
+  const { me } = useMe();
   const [display, setDisplay] = React.useState<Display>("menu");
   const [serverName, setServerName] = React.useState<string>("");
   const [joinLink, setJoinLink] = React.useState<string>("");
+  const [error, setError] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
 
   const setMenu = () => {
+    setError("");
     setDisplay("menu");
   };
 
-  const [create] = useMutation<CreateServerMutation>(CreateServerDocument);
-  const [join] = useMutation<JoinMutation>(JoinDocument);
+  // new servers show up in the server list + roles right away
+  const refetchQueries = ["UserServers", "User"];
 
-  async function Create(e: any) {
+  const [create] = useMutation<CreateServerMutation>(CreateServerDocument, {
+    refetchQueries,
+    awaitRefetchQueries: true,
+  });
+  const [join] = useMutation<JoinMutation>(JoinDocument, {
+    refetchQueries,
+    awaitRefetchQueries: true,
+  });
+
+  function template(name: string) {
+    setServerName(`${me?.nameId}'s ${name.toLowerCase()}`);
+    setDisplay("create");
+  }
+
+  async function Create(e: React.SyntheticEvent) {
     e.preventDefault();
+    if (!serverName.trim() || busy) return;
 
-    const { errors } = await create({ variables: { name: serverName } });
-
-    if (errors) {
-      console.error(errors[0].message);
-    } else {
-      location.reload();
+    setBusy(true);
+    setError("");
+    try {
+      const { data } = await create({ variables: { name: serverName } });
+      const s = data!.createServer;
+      onClose();
+      router.push(`/@me/${s.serverId}/${s.channels?.[0]?.channelId}`);
+    } catch (ex: any) {
+      setError(ex.message);
+      setBusy(false);
     }
   }
 
-  async function Join(e: any) {
+  async function Join(e: React.SyntheticEvent) {
     e.preventDefault();
+    if (!joinLink.trim() || busy) return;
 
-    const { errors } = await join({ variables: { link: joinLink } });
-
-    if (errors) {
-      console.error(errors[0].message);
-    } else {
-      location.reload();
+    setBusy(true);
+    setError("");
+    try {
+      await join({ variables: { link: joinLink } });
+      const { data } = await client.query<InviteQuery>({
+        query: InviteDocument,
+        variables: { link: joinLink },
+        fetchPolicy: "network-only",
+      });
+      onClose();
+      if (data.invite) {
+        router.push(`/@me/${data.invite.serverId}/${data.invite.channelId}`);
+      }
+    } catch (ex: any) {
+      setError(ex.message);
+      setBusy(false);
     }
   }
 
@@ -85,42 +129,22 @@ export default () => {
                   </h1>
 
                   <div className="flex flex-col gap-2">
-                    <button
-                      className={`
+                    {templates.map((name) => (
+                      <button
+                        key={name}
+                        onClick={() => template(name)}
+                        className={`
                       border border-gray-200 hover:bg-gray-100
                       transition-all w-full p-4 rounded-lg
                       flex items-center justify-between
                     `}
-                    >
-                      <h1 className="text-lg text-darkish text-left mx-4">
-                        Gaming
-                      </h1>
-                      <p>{ChevronRight}</p>
-                    </button>
-                    <button
-                      className={`
-                      border border-gray-200 hover:bg-gray-100
-                      transition-all w-full p-4 rounded-lg
-                      flex items-center justify-between
-                    `}
-                    >
-                      <h1 className="text-lg text-darkish text-left mx-4">
-                        School Club
-                      </h1>
-                      <p>{ChevronRight}</p>
-                    </button>
-                    <button
-                      className={`
-                      border border-gray-200 hover:bg-gray-100
-                      transition-all w-full p-4 rounded-lg
-                      flex items-center justify-between
-                    `}
-                    >
-                      <h1 className="text-lg text-darkish text-left mx-4">
-                        Study Group
-                      </h1>
-                      <p>{ChevronRight}</p>
-                    </button>
+                      >
+                        <h1 className="text-lg text-darkish text-left mx-4">
+                          {name}
+                        </h1>
+                        <p>{ChevronRight}</p>
+                      </button>
+                    ))}
                   </div>
 
                   <h1 className="text-2xl text-darkish font-normal text-center mt-6 mb-3">
@@ -168,7 +192,8 @@ export default () => {
                   type="text"
                   value={serverName}
                   onChange={({ target }) => setServerName(target.value)}
-                  placeholder={localStorage.getItem("id") + "'s server"}
+                  placeholder={`${me?.nameId}'s server`}
+                  autoFocus
                   onKeyUp={(event) => {
                     if (event.key === "Enter" && serverName) {
                       Create(event);
@@ -176,10 +201,11 @@ export default () => {
                   }}
                 />
               </label>
+              {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
               <div className="text-sm flex w-full items-center justify-between my-4">
                 <button onClick={() => setMenu()}>Back</button>
                 <button
-                  disabled={!serverName}
+                  disabled={!serverName.trim() || busy}
                   onClick={(e) => Create(e)}
                   className={`p-2 px-6 
                   rounded text-gray-100
@@ -214,9 +240,15 @@ export default () => {
                   focus:outline-0 text-md font-light rounded p-2 py-3 w-full
                   `}
                     type="text"
-                    placeholder="https://stolen.gg/hTKzmak"
+                    placeholder={`${origin}/invite/hTKzmak`}
                     value={joinLink}
+                    autoFocus
                     onChange={({ target }) => setJoinLink(target.value)}
+                    onKeyUp={(event) => {
+                      if (event.key === "Enter" && joinLink) {
+                        Join(event);
+                      }
+                    }}
                   />
                 </label>
                 <div className="text-left">
@@ -225,18 +257,15 @@ export default () => {
                   </h1>
 
                   <p className="mt-2 text-xs font-normal">hTKzmak</p>
-                  <p className="text-xs font-normal">
-                    https://stolen.gg/hTKzmak
-                  </p>
-                  <p className="text-xs font-normal">
-                    https://stolen.gg/cool-people
-                  </p>
+                  <p className="text-xs font-normal">{origin}/invite/hTKzmak</p>
                 </div>
+                {error && <p className="text-sm text-red-500">{error}</p>}
                 <div className="text-sm flex w-full items-center justify-between my-4">
                   <div className="flex gap-2">
                     <button onClick={() => setMenu()}>Back</button>
                   </div>
                   <button
+                    disabled={!joinLink.trim() || busy}
                     onClick={(e) => Join(e)}
                     className={`
                     p-2 px-6

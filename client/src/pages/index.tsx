@@ -1,20 +1,15 @@
-import React from "react";
-import { useQuery } from "@apollo/client";
-import { UserQuery, UserDocument } from "src/graphql";
+import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import Loader from "src/components/Loader";
-
-// todo get state management
+import { useMe } from "src/utils/useMe";
 
 export default () => {
-  const { data, loading } = useQuery<UserQuery>(UserDocument);
+  const router = useRouter();
+  const { me, loading } = useMe();
 
-  if (loading) return <Loader />;
-  else if (!data?.user) {
-    useRouter().push("/login");
-  } else if (data.user) {
-    useRouter().push("/@me");
-  }
+  useEffect(() => {
+    if (!loading) router.replace(me ? "/@me" : "/login");
+  }, [loading, me]);
 
   return <Loader />;
 };

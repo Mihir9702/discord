@@ -4,43 +4,39 @@ import { Box, Plus, User } from "../Icons";
 import { useRouter } from "next/router";
 
 export default () => {
-  const [_, r] = React.useState(false);
   const router = useRouter();
   const link = "flex gap-3 p-3 font-light rounded-md hover:bg-highlight";
-  const main = "flex flex-col mt-8 gap-1 ml-3 w-[90%] text-gray-400";
+  const main = "flex flex-col mt-4 gap-1 mx-2 text-gray-400";
+  const friends = router.pathname === "/@me";
+
   return (
     <main className={main}>
-      <button
-        onClick={() => r(false)}
+      <Link
+        href="/@me"
         className={
-          link +
-          (router.pathname !== "/store"
-            ? " bg-highlight text-white font-semibold"
-            : "")
+          link + (friends ? " bg-highlight text-white font-semibold" : "")
         }
       >
         {User} Friends
-      </button>
+      </Link>
       <button
-        onClick={() => r(true)}
-        className={
-          link +
-          (router.pathname === "/store"
-            ? " bg-highlight text-white font-semibold"
-            : "")
-        }
+        disabled
+        title="Coming soon"
+        className={link + " cursor-not-allowed opacity-60"}
       >
         {Box} Remix
       </button>
       <section
         className="flex justify-between items-center
 			text-gray-400 hover:text-gray-200
-			cursor-pointer my-2"
+			my-2 mx-1"
       >
         <p className="uppercase text-sm font-semibold font-gg">
           Direct Messages
         </p>
-        <p className="cursor-pointer">{Plus}</p>
+        <Link href="/@me" title="Add friends to start a conversation">
+          {Plus}
+        </Link>
       </section>
     </main>
   );

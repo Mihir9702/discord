@@ -1,0 +1,11 @@
+query Invite($link: String!) {
+  invite(link: $link) {
+    name
+    link
+    icon
+    serverId
+    memberCount
+    joined
+    channelId
+  }
+}

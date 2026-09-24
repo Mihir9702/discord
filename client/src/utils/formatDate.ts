@@ -1,54 +1,36 @@
 import { Message } from "src/types/query";
 
-export function formatDate(date: string) {
+// "3:07 PM" in the viewer's own timezone
+export function formatTime(date: string) {
   const dateObj = new Date(Number(date));
-
-  // Get the timezone offset in minutes (240 for EST)
-  const timezoneOffset = dateObj.getTimezoneOffset() - 240;
-
-  // Adjust the date by adding the timezone offset in minutes
-  dateObj.setMinutes(dateObj.getMinutes() + timezoneOffset);
-
-  // Create a new Date object for the current date and time
-  const today = new Date(Date.now() + timezoneOffset * 60 * 1000); // Adjust the current date with the timezone offset
-
-  const month = dateObj.getMonth() + 1;
-  const day = dateObj.getDate();
-  const year = dateObj.getFullYear();
   const hour = dateObj.getHours();
   const minute = dateObj.getMinutes();
-  const ampm = hour >= 12 ? "PM" : "AM";
 
-  const monthStr = month < 10 ? `0${month}` : `${month}`;
-  const dayStr = day < 10 ? `0${day}` : `${day}`;
   const hourStr = hour % 12 === 0 ? "12" : String(hour % 12);
   const minuteStr = minute < 10 ? `0${minute}` : `${minute}`;
+  const ampm = hour >= 12 ? "PM" : "AM";
 
-  if (isSameDate(dateObj, today)) {
-    const todayHour = today.getHours();
-    const todayMinute = today.getMinutes();
-    const todayHourStr = todayHour % 12 === 0 ? "12" : String(todayHour % 12);
-    const todayMinuteStr =
-      todayMinute < 10 ? `0${todayMinute}` : `${todayMinute}`;
-    const todayAmpm = todayHour >= 12 ? "PM" : "AM";
-    return `Today at ${todayHourStr}:${todayMinuteStr} ${todayAmpm}`;
-  }
+  return `${hourStr}:${minuteStr} ${ampm}`;
+}
+
+export function formatDate(date: string) {
+  const dateObj = new Date(Number(date));
+  const today = new Date();
+  const time = formatTime(date);
+
+  if (isSameDate(dateObj, today)) return `Today at ${time}`;
 
   const yesterday = new Date(today);
   yesterday.setDate(today.getDate() - 1);
 
-  if (isSameDate(dateObj, yesterday)) {
-    return `Yesterday at ${hourStr}:${minuteStr} ${ampm}`;
-  }
+  if (isSameDate(dateObj, yesterday)) return `Yesterday at ${time}`;
 
-  const twoDaysAgo = new Date(today);
-  twoDaysAgo.setDate(today.getDate() - 2);
+  const month = dateObj.getMonth() + 1;
+  const day = dateObj.getDate();
+  const monthStr = month < 10 ? `0${month}` : `${month}`;
+  const dayStr = day < 10 ? `0${day}` : `${day}`;
 
-  if (isSameDate(dateObj, twoDaysAgo)) {
-    return `${monthStr}/${dayStr}/${year} at ${hourStr}:${minuteStr} ${ampm}`;
-  }
-
-  return `${monthStr}/${dayStr}/${year} ${hourStr}:${minuteStr} ${ampm}`;
+  return `${monthStr}/${dayStr}/${dateObj.getFullYear()} ${time}`;
 }
 
 // Helper function to check if two dates are the same
@@ -65,7 +47,7 @@ export function uniqueDates(messages: Message[]): string[] {
   if (messages.length === 0) return [];
 
   // loop through messages
-  const dates = messages.map((message, i) => {
+  const dates = messages.map((message) => {
     return new Date(Number(message.createdAt)).toLocaleDateString();
   });
 
@@ -83,4 +65,10 @@ export function getMessagesFromSameDate(messages: Message[], date: string) {
   return messages.filter((message) => {
     return new Date(Number(message.createdAt)).toLocaleDateString() === date;
   });
+}
+
+// discord groups messages from the same person sent within a few minutes
+export function isContinuation(prev: Message | undefined, msg: Message) {
+  if (!prev || prev.user?.id !== msg.user?.id) return false;
+  return Number(msg.createdAt) - Number(prev.createdAt) < 7 * 60 * 1000;
 }

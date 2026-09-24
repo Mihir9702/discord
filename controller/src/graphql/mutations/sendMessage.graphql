@@ -1,8 +1,10 @@
 # params: { msg: String!, channelId: String! }
 mutation sendMessage($params: MessageInput!) {
   sendMessage(params: $params) {
+    id
     msg
     msgId
+    edited
     createdAt
     updatedAt
     user {

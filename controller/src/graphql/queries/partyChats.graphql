@@ -2,6 +2,7 @@ query PartyChats {
   partyChats {
     channelId
     users {
+      id
       nameId
       userId
       iconId

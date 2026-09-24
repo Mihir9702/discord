@@ -5,66 +5,63 @@ import { DispatchBool } from "src/types/dispatch";
 
 interface Props {
   setStatus: DispatchBool;
-  refetch: () => void;
 }
 
-// * not modal - just a pop up menu
+const options = [
+  { status: "online", label: "Online", color: "text-online" },
+  { status: "idle", label: "Idle", color: "text-idle" },
+  {
+    status: "dnd",
+    label: "Do Not Disturb",
+    color: "text-dnd",
+    desc: "You will not receive desktop notifications",
+  },
+  {
+    status: "offline",
+    label: "Invisible",
+    color: "text-offline",
+    desc: "You will not appear online, but will have full access to Discord",
+  },
+];
 
-export default ({ setStatus, refetch }: Props) => {
+// * not modal - just a pop up menu
+export default ({ setStatus }: Props) => {
+  // the mutation returns the user, apollo updates it everywhere
   const [update] = useMutation<UpdateStatusMutation>(UpdateStatusDocument);
 
+  async function choose(status: string) {
+    setStatus(false);
+    try {
+      await update({ variables: { status } });
+    } catch (ex) {
+      console.error(ex);
+    }
+  }
+
   return (
-    <section className="absolute bottom-0 mb-12 w-full bg-[#232428] rounded-sm">
-      <ul className="flex flex-col items-start gap-2 text-gray-200 font-normal">
-        <li
-          onClick={async () => {
-            await update({ variables: { status: "online" } });
-            setStatus(false);
-            refetch();
-          }}
-          className="hover:bg-highlight cursor-pointer w-full p-1"
-        >
-          <p>
-            <span className="text-online">●</span> Online
-          </p>
-        </li>
-        <li
-          onClick={async () => {
-            await update({ variables: { status: "idle" } });
-            setStatus(false);
-            refetch();
-          }}
-          className="hover:bg-highlight cursor-pointer w-full p-1"
-        >
-          <p>
-            <span className="text-idle">●</span> Idle
-          </p>
-        </li>
-        <li
-          onClick={async () => {
-            await update({ variables: { status: "dnd" } });
-            setStatus(false);
-            refetch();
-          }}
-          className="hover:bg-highlight cursor-pointer w-full p-1"
-        >
-          <p>
-            <span className="text-dnd">●</span> Do Not Disturb
-          </p>
-        </li>
-        <li
-          onClick={async () => {
-            await update({ variables: { status: "offline" } });
-            setStatus(false);
-            refetch();
-          }}
-          className="hover:bg-highlight cursor-pointer w-full p-1"
-        >
-          <p>
-            <span className="text-offline">●</span> Offline
-          </p>
-        </li>
-      </ul>
-    </section>
+    <>
+      {/* click anywhere else to close */}
+      <div className="fixed inset-0 z-20" onClick={() => setStatus(false)} />
+      <section className="absolute bottom-0 left-2 z-30 mb-14 w-56 bg-[#111214] rounded-md p-2 shadow-lg shadow-darkish">
+        <ul className="flex flex-col items-start gap-1 text-gray-200 font-normal">
+          {options.map((o) => (
+            <li
+              key={o.status}
+              onClick={() => choose(o.status)}
+              className="hover:bg-lightblue cursor-pointer w-full p-1.5 rounded group"
+            >
+              <p className="text-sm">
+                <span className={o.color}>●</span> {o.label}
+              </p>
+              {o.desc && (
+                <p className="text-xs text-gray-400 group-hover:text-gray-100 ml-4">
+                  {o.desc}
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+    </>
   );
 };

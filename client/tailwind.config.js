@@ -1,5 +1,9 @@
 module.exports = {
-  content: ["src/pages/**/*.tsx", "src/components/**/*.tsx"],
+  content: [
+    "src/pages/**/*.tsx",
+    "src/components/**/*.tsx",
+    "src/utils/**/*.{ts,tsx}",
+  ],
   theme: {
     extend: {
       fontSize: {

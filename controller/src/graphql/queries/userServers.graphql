@@ -2,6 +2,8 @@ query UserServers {
   userServers {
     id
     name
+    icon
+    link
     serverId
     channels {
       name

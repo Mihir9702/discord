@@ -1,0 +1,6 @@
+mutation RefreshLink($serverId: Float!) {
+  refreshLink(serverId: $serverId) {
+    id
+    link
+  }
+}

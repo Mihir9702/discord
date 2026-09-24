@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import Portal from "./Portal";
 
 interface ModalProps {
   children: React.ReactNode;
@@ -9,21 +10,23 @@ interface ModalProps {
 
 export default (props: ModalProps) => {
   return (
-    <motion.div
-      className={`
+    <Portal>
+      <motion.div
+        className={`
       fixed inset-0 z-50
       w-full h-screen
       flex justify-center items-center
-      ${props.dark ? "bg-[#070809]" : "bg-transparent"}
+      ${props.dark ? "bg-[#070809]/80" : "bg-transparent"}
       `}
-      onClick={props.handleClose}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 0.97 }}
-      exit={{ opacity: 0 }}
-    >
-      <motion.div onClick={(e) => e.stopPropagation()}>
-        {props.children}
+        onClick={props.handleClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+      >
+        <motion.div onClick={(e) => e.stopPropagation()}>
+          {props.children}
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </Portal>
   );
 };

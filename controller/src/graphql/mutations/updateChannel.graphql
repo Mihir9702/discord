@@ -1,0 +1,8 @@
+mutation UpdateChannel($channelId: String!, $name: String, $desc: String) {
+  updateChannel(channelId: $channelId, name: $name, desc: $desc) {
+    id
+    name
+    desc
+    channelId
+  }
+}

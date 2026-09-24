@@ -12,11 +12,19 @@ export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: Non
 const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: { input: string | number; output: string; }
+  ID: { input: string; output: string; }
   String: { input: string; output: string; }
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+};
+
+export type BannedUser = {
+  __typename?: 'BannedUser';
+  iconId: Scalars['String']['output'];
+  id: Scalars['Float']['output'];
+  nameId: Scalars['String']['output'];
+  userId: Scalars['Float']['output'];
 };
 
 export type Channel = {
@@ -51,10 +59,22 @@ export type Input = {
   username: Scalars['String']['input'];
 };
 
+export type InviteInfo = {
+  __typename?: 'InviteInfo';
+  channelId?: Maybe<Scalars['String']['output']>;
+  icon?: Maybe<Scalars['String']['output']>;
+  joined: Scalars['Boolean']['output'];
+  link: Scalars['String']['output'];
+  memberCount: Scalars['Float']['output'];
+  name: Scalars['String']['output'];
+  serverId: Scalars['Float']['output'];
+};
+
 export type Message = {
   __typename?: 'Message';
   channel?: Maybe<Channel>;
   createdAt: Scalars['String']['output'];
+  edited: Scalars['Boolean']['output'];
   id: Scalars['Float']['output'];
   msg: Scalars['String']['output'];
   msgId: Scalars['String']['output'];
@@ -84,6 +104,7 @@ export type Mutation = {
   createServerChannel: Channel;
   declineFriendRequest: User;
   deleteChannel: Scalars['Boolean']['output'];
+  deleteMessage: Scalars['Boolean']['output'];
   deleteServer: Scalars['Boolean']['output'];
   deleteUser: Scalars['Boolean']['output'];
   join?: Maybe<User>;
@@ -91,6 +112,7 @@ export type Mutation = {
   leave: Scalars['Boolean']['output'];
   login: User;
   logout: Scalars['Boolean']['output'];
+  refreshLink: Server;
   removeFriend: User;
   sendFriendRequest: User;
   sendMessage: Message;
@@ -98,7 +120,9 @@ export type Mutation = {
   unban: Scalars['Boolean']['output'];
   unblock: User;
   updateChannel: Channel;
+  updateMessage: Message;
   updatePass: User;
+  updateRole: Scalars['Boolean']['output'];
   updateServer: Server;
   updateStatus: User;
   updateUser: User;
@@ -147,8 +171,18 @@ export type MutationDeleteChannelArgs = {
 };
 
 
+export type MutationDeleteMessageArgs = {
+  msgId: Scalars['String']['input'];
+};
+
+
 export type MutationDeleteServerArgs = {
-  id: Scalars['Float']['input'];
+  serverId: Scalars['Float']['input'];
+};
+
+
+export type MutationDeleteUserArgs = {
+  password: Scalars['String']['input'];
 };
 
 
@@ -170,6 +204,11 @@ export type MutationLeaveArgs = {
 
 export type MutationLoginArgs = {
   params: Input;
+};
+
+
+export type MutationRefreshLinkArgs = {
+  serverId: Scalars['Float']['input'];
 };
 
 
@@ -206,7 +245,14 @@ export type MutationUnblockArgs = {
 
 export type MutationUpdateChannelArgs = {
   channelId: Scalars['String']['input'];
-  name: Scalars['String']['input'];
+  desc?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type MutationUpdateMessageArgs = {
+  content: Scalars['String']['input'];
+  msgId: Scalars['String']['input'];
 };
 
 
@@ -215,9 +261,17 @@ export type MutationUpdatePassArgs = {
 };
 
 
+export type MutationUpdateRoleArgs = {
+  params: FriendInput;
+  role: Scalars['String']['input'];
+  serverId: Scalars['Float']['input'];
+};
+
+
 export type MutationUpdateServerArgs = {
-  name: Scalars['String']['input'];
-  serverId: Scalars['Int']['input'];
+  icon?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  serverId: Scalars['Float']['input'];
 };
 
 
@@ -234,15 +288,14 @@ export type Query = {
   __typename?: 'Query';
   channel: Server;
   currentChannel: Channel;
-  deleteMessage: Scalars['Boolean']['output'];
+  invite?: Maybe<InviteInfo>;
   message: Message;
   messages: MessagesResponse;
   partyChats: Array<Channel>;
   server?: Maybe<Server>;
   serverChannels: Array<Channel>;
-  serverRole?: Maybe<Array<User>>;
+  serverRole?: Maybe<ServerRole>;
   servers: Array<Server>;
-  updateMessage: Message;
   user?: Maybe<User>;
   userChannels: Array<Channel>;
   userFriends?: Maybe<User>;
@@ -261,9 +314,8 @@ export type QueryCurrentChannelArgs = {
 };
 
 
-export type QueryDeleteMessageArgs = {
-  channelId: Scalars['String']['input'];
-  msgId: Scalars['String']['input'];
+export type QueryInviteArgs = {
+  link: Scalars['String']['input'];
 };
 
 
@@ -291,15 +343,9 @@ export type QueryServerRoleArgs = {
   serverId: Scalars['Float']['input'];
 };
 
-
-export type QueryUpdateMessageArgs = {
-  content: Scalars['String']['input'];
-  msgId: Scalars['String']['input'];
-};
-
 export type Server = {
   __typename?: 'Server';
-  banned?: Maybe<Array<User>>;
+  banned?: Maybe<Array<BannedUser>>;
   channels?: Maybe<Array<Channel>>;
   createdAt: Scalars['String']['output'];
   icon?: Maybe<Scalars['String']['output']>;
@@ -323,8 +369,8 @@ export type UpdatePassInput = {
 };
 
 export type UpdateUserInput = {
+  iconId?: InputMaybe<Scalars['String']['input']>;
   nameId?: InputMaybe<Scalars['String']['input']>;
-  password?: InputMaybe<Scalars['String']['input']>;
   status?: InputMaybe<Scalars['String']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
 };
@@ -355,6 +401,14 @@ export type AcceptFriendRequestMutationVariables = Exact<{
 
 export type AcceptFriendRequestMutation = { __typename?: 'Mutation', acceptFriendRequest: { __typename?: 'User', id: number, nameId: string, userId: number, friends?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, status: string }> | null, friendRequests?: Array<{ __typename?: 'FriendRequest', nameId: string, userId: number, status: string }> | null, channels?: Array<{ __typename?: 'Channel', id: number, name: string, channelId: string, users?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number }> | null }> | null } };
 
+export type BanMutationVariables = Exact<{
+  serverId: Scalars['Float']['input'];
+  params: FriendInput;
+}>;
+
+
+export type BanMutation = { __typename?: 'Mutation', ban: boolean };
+
 export type BlockMutationVariables = Exact<{
   params: FriendInput;
 }>;
@@ -374,7 +428,7 @@ export type CreateServerMutationVariables = Exact<{
 }>;
 
 
-export type CreateServerMutation = { __typename?: 'Mutation', createServer: { __typename?: 'Server', id: number, name: string, link: string, serverId: number, channels?: Array<{ __typename?: 'Channel', id: number, name: string, channelId: string, users?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number }> | null, messages?: Array<{ __typename?: 'Message', id: number, msg: string, msgId: string, createdAt: string, updatedAt: string, user?: { __typename?: 'User', id: number, nameId: string, userId: number } | null }> | null }> | null } };
+export type CreateServerMutation = { __typename?: 'Mutation', createServer: { __typename?: 'Server', id: number, name: string, link: string, serverId: number, channels?: Array<{ __typename?: 'Channel', id: number, name: string, channelId: string }> | null } };
 
 export type CreateServerChannelMutationVariables = Exact<{
   name: Scalars['String']['input'];
@@ -391,12 +445,55 @@ export type DeclineFriendRequestMutationVariables = Exact<{
 
 export type DeclineFriendRequestMutation = { __typename?: 'Mutation', declineFriendRequest: { __typename?: 'User', id: number, nameId: string, userId: number, status: string, friends?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, status: string }> | null, friendRequests?: Array<{ __typename?: 'FriendRequest', nameId: string, userId: number, status: string }> | null } };
 
+export type DeleteChannelMutationVariables = Exact<{
+  channelId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteChannelMutation = { __typename?: 'Mutation', deleteChannel: boolean };
+
+export type DeleteMessageMutationVariables = Exact<{
+  msgId: Scalars['String']['input'];
+}>;
+
+
+export type DeleteMessageMutation = { __typename?: 'Mutation', deleteMessage: boolean };
+
+export type DeleteServerMutationVariables = Exact<{
+  serverId: Scalars['Float']['input'];
+}>;
+
+
+export type DeleteServerMutation = { __typename?: 'Mutation', deleteServer: boolean };
+
+export type DeleteUserMutationVariables = Exact<{
+  password: Scalars['String']['input'];
+}>;
+
+
+export type DeleteUserMutation = { __typename?: 'Mutation', deleteUser: boolean };
+
 export type JoinMutationVariables = Exact<{
   link: Scalars['String']['input'];
 }>;
 
 
 export type JoinMutation = { __typename?: 'Mutation', join?: { __typename?: 'User', nameId: string, userId: number, servers?: Array<{ __typename?: 'Server', name: string, link: string, serverId: number }> | null } | null };
+
+export type KickMutationVariables = Exact<{
+  serverId: Scalars['Float']['input'];
+  params: FriendInput;
+}>;
+
+
+export type KickMutation = { __typename?: 'Mutation', kick: boolean };
+
+export type LeaveMutationVariables = Exact<{
+  serverId: Scalars['Float']['input'];
+}>;
+
+
+export type LeaveMutation = { __typename?: 'Mutation', leave: boolean };
 
 export type LoginMutationVariables = Exact<{
   params: Input;
@@ -409,6 +506,13 @@ export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+
+export type RefreshLinkMutationVariables = Exact<{
+  serverId: Scalars['Float']['input'];
+}>;
+
+
+export type RefreshLinkMutation = { __typename?: 'Mutation', refreshLink: { __typename?: 'Server', id: number, link: string } };
 
 export type RemoveFriendMutationVariables = Exact<{
   params: FriendInput;
@@ -429,7 +533,7 @@ export type SendMessageMutationVariables = Exact<{
 }>;
 
 
-export type SendMessageMutation = { __typename?: 'Mutation', sendMessage: { __typename?: 'Message', msg: string, msgId: string, createdAt: string, updatedAt: string, user?: { __typename?: 'User', nameId: string, userId: number } | null, channel?: { __typename?: 'Channel', channelId: string } | null } };
+export type SendMessageMutation = { __typename?: 'Mutation', sendMessage: { __typename?: 'Message', id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user?: { __typename?: 'User', nameId: string, userId: number } | null, channel?: { __typename?: 'Channel', channelId: string } | null } };
 
 export type SignupMutationVariables = Exact<{
   params: Input;
@@ -438,6 +542,14 @@ export type SignupMutationVariables = Exact<{
 
 export type SignupMutation = { __typename?: 'Mutation', signup: { __typename?: 'User', id: number } };
 
+export type UnbanMutationVariables = Exact<{
+  serverId: Scalars['Float']['input'];
+  params: FriendInput;
+}>;
+
+
+export type UnbanMutation = { __typename?: 'Mutation', unban: boolean };
+
 export type UnblockMutationVariables = Exact<{
   params: FriendInput;
 }>;
@@ -445,12 +557,47 @@ export type UnblockMutationVariables = Exact<{
 
 export type UnblockMutation = { __typename?: 'Mutation', unblock: { __typename?: 'User', nameId: string, userId: number } };
 
+export type UpdateChannelMutationVariables = Exact<{
+  channelId: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  desc?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type UpdateChannelMutation = { __typename?: 'Mutation', updateChannel: { __typename?: 'Channel', id: number, name: string, desc?: string | null, channelId: string } };
+
+export type UpdateMessageMutationVariables = Exact<{
+  msgId: Scalars['String']['input'];
+  content: Scalars['String']['input'];
+}>;
+
+
+export type UpdateMessageMutation = { __typename?: 'Mutation', updateMessage: { __typename?: 'Message', id: number, msgId: string, msg: string, edited: boolean } };
+
 export type UpdatePassMutationVariables = Exact<{
   params: UpdatePassInput;
 }>;
 
 
 export type UpdatePassMutation = { __typename?: 'Mutation', updatePass: { __typename?: 'User', nameId: string, userId: number } };
+
+export type UpdateRoleMutationVariables = Exact<{
+  serverId: Scalars['Float']['input'];
+  params: FriendInput;
+  role: Scalars['String']['input'];
+}>;
+
+
+export type UpdateRoleMutation = { __typename?: 'Mutation', updateRole: boolean };
+
+export type UpdateServerMutationVariables = Exact<{
+  serverId: Scalars['Float']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  icon?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type UpdateServerMutation = { __typename?: 'Mutation', updateServer: { __typename?: 'Server', id: number, name: string, icon?: string | null } };
 
 export type UpdateStatusMutationVariables = Exact<{
   status: Scalars['String']['input'];
@@ -464,69 +611,76 @@ export type UpdateUserMutationVariables = Exact<{
 }>;
 
 
-export type UpdateUserMutation = { __typename?: 'Mutation', updateUser: { __typename?: 'User', nameId: string, userId: number } };
+export type UpdateUserMutation = { __typename?: 'Mutation', updateUser: { __typename?: 'User', id: number, username: string, nameId: string, userId: number, iconId: string, status: string } };
 
 export type ChannelQueryVariables = Exact<{
   channelId: Scalars['String']['input'];
 }>;
 
 
-export type ChannelQuery = { __typename?: 'Query', channel: { __typename?: 'Server', name: string, link: string, serverId: number, channels?: Array<{ __typename?: 'Channel', name: string, ptChat: boolean, channelId: string, users?: Array<{ __typename?: 'User', nameId: string, userId: number, iconId: string, status: string }> | null, messages?: Array<{ __typename?: 'Message', msg: string, msgId: string, createdAt: string, updatedAt: string }> | null, server?: { __typename?: 'Server', serverId: number } | null }> | null } };
+export type ChannelQuery = { __typename?: 'Query', channel: { __typename?: 'Server', name: string, link: string, serverId: number, channels?: Array<{ __typename?: 'Channel', name: string, ptChat: boolean, channelId: string, server?: { __typename?: 'Server', serverId: number } | null }> | null } };
 
 export type CurrentChannelQueryVariables = Exact<{
   channelId: Scalars['String']['input'];
 }>;
 
 
-export type CurrentChannelQuery = { __typename?: 'Query', currentChannel: { __typename?: 'Channel', id: number, name: string, ptChat: boolean, channelId: string, users?: Array<{ __typename?: 'User', id: number, nameId: string, status: string }> | null } };
+export type CurrentChannelQuery = { __typename?: 'Query', currentChannel: { __typename?: 'Channel', id: number, name: string, desc?: string | null, ptChat: boolean, channelId: string, server?: { __typename?: 'Server', serverId: number } | null, users?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string }> | null } };
+
+export type InviteQueryVariables = Exact<{
+  link: Scalars['String']['input'];
+}>;
+
+
+export type InviteQuery = { __typename?: 'Query', invite?: { __typename?: 'InviteInfo', name: string, link: string, icon?: string | null, serverId: number, memberCount: number, joined: boolean, channelId?: string | null } | null };
 
 export type MessageQueryVariables = Exact<{
   msgId: Scalars['String']['input'];
 }>;
 
 
-export type MessageQuery = { __typename?: 'Query', message: { __typename?: 'Message', id: number, msg: string, msgId: string, createdAt: string, updatedAt: string, user?: { __typename?: 'User', id: number, nameId: string, userId: number } | null, channel?: { __typename?: 'Channel', name: string, channelId: string, ptChat: boolean, users?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number }> | null, messages?: Array<{ __typename?: 'Message', id: number, msg: string, msgId: string, createdAt: string, updatedAt: string, user?: { __typename?: 'User', id: number, nameId: string, userId: number, messages?: Array<{ __typename?: 'Message', id: number, msg: string, msgId: string, createdAt: string, updatedAt: string }> | null } | null }> | null } | null } };
+export type MessageQuery = { __typename?: 'Query', message: { __typename?: 'Message', id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string } | null, channel?: { __typename?: 'Channel', name: string, channelId: string, ptChat: boolean } | null } };
 
 export type MessagesQueryVariables = Exact<{
   channelId: Scalars['String']['input'];
 }>;
 
 
-export type MessagesQuery = { __typename?: 'Query', messages: { __typename?: 'MessagesResponse', channel: { __typename?: 'Channel', name: string, desc?: string | null, ptChat: boolean, channelId: string }, messages: Array<{ __typename?: 'Message', id: number, msg: string, msgId: string, createdAt: string, updatedAt: string, user?: { __typename?: 'User', nameId: string, userId: number, iconId: string } | null }>, friend?: { __typename?: 'User', nameId: string, userId: number, iconId: string, status: string } | null } };
+export type MessagesQuery = { __typename?: 'Query', messages: { __typename?: 'MessagesResponse', channel: { __typename?: 'Channel', name: string, desc?: string | null, ptChat: boolean, channelId: string }, messages: Array<{ __typename?: 'Message', id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string } | null }>, friend?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string } | null } };
 
 export type PartyChatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type PartyChatsQuery = { __typename?: 'Query', partyChats: Array<{ __typename?: 'Channel', channelId: string, users?: Array<{ __typename?: 'User', nameId: string, userId: number, iconId: string, status: string }> | null }> };
+export type PartyChatsQuery = { __typename?: 'Query', partyChats: Array<{ __typename?: 'Channel', channelId: string, users?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string }> | null }> };
 
 export type ServerQueryVariables = Exact<{
   serverId: Scalars['Float']['input'];
 }>;
 
 
-export type ServerQuery = { __typename?: 'Query', server?: { __typename?: 'Server', id: number, name: string, link: string, serverId: number, users?: Array<{ __typename?: 'User', id: number, servers?: Array<{ __typename?: 'Server', serverId: number }> | null }> | null, channels?: Array<{ __typename?: 'Channel', name: string, channelId: string, users?: Array<{ __typename?: 'User', nameId: string, userId: number, iconId: string, status: string }> | null, messages?: Array<{ __typename?: 'Message', id: number, msg: string, msgId: string, createdAt: string, updatedAt: string, channel?: { __typename?: 'Channel', channelId: string } | null, user?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string } | null }> | null }> | null } | null };
+export type ServerQuery = { __typename?: 'Query', server?: { __typename?: 'Server', id: number, name: string, link: string, icon?: string | null, serverId: number, users?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string, roles?: Array<{ __typename?: 'ServerRole', serverId: number, role: string }> | null }> | null, channels?: Array<{ __typename?: 'Channel', id: number, name: string, desc?: string | null, channelId: string }> | null, banned?: Array<{ __typename?: 'BannedUser', id: number, nameId: string, userId: number, iconId: string }> | null } | null };
 
 export type ServerChannelsQueryVariables = Exact<{
   channelId: Scalars['String']['input'];
 }>;
 
 
-export type ServerChannelsQuery = { __typename?: 'Query', serverChannels: Array<{ __typename?: 'Channel', name: string, channelId: string, server?: { __typename?: 'Server', name: string, serverId: number, channels?: Array<{ __typename?: 'Channel', name: string, channelId: string, users?: Array<{ __typename?: 'User', nameId: string, userId: number, iconId: string }> | null }> | null } | null, users?: Array<{ __typename?: 'User', nameId: string, userId: number, iconId: string }> | null }> };
+export type ServerChannelsQuery = { __typename?: 'Query', serverChannels: Array<{ __typename?: 'Channel', name: string, channelId: string, server?: { __typename?: 'Server', name: string, serverId: number } | null }> };
 
 export type UserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string } | null };
+export type UserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: number, username: string, nameId: string, userId: number, iconId: string, status: string, roles?: Array<{ __typename?: 'ServerRole', serverId: number, role: string }> | null } | null };
 
 export type UserFriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UserFriendsQuery = { __typename?: 'Query', userFriends?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, friends?: Array<{ __typename?: 'User', nameId: string, userId: number, iconId: string, status: string }> | null, friendRequests?: Array<{ __typename?: 'FriendRequest', nameId: string, userId: number, iconId: string, status: string }> | null, blocked?: Array<{ __typename?: 'User', nameId: string, userId: number, iconId: string, status: string }> | null } | null };
+export type UserFriendsQuery = { __typename?: 'Query', userFriends?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, friends?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string }> | null, friendRequests?: Array<{ __typename?: 'FriendRequest', nameId: string, userId: number, iconId: string, status: string }> | null, blocked?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string }> | null } | null };
 
 export type UserServersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UserServersQuery = { __typename?: 'Query', userServers?: Array<{ __typename?: 'Server', id: number, name: string, serverId: number, channels?: Array<{ __typename?: 'Channel', name: string, channelId: string }> | null }> | null };
+export type UserServersQuery = { __typename?: 'Query', userServers?: Array<{ __typename?: 'Server', id: number, name: string, icon?: string | null, link: string, serverId: number, channels?: Array<{ __typename?: 'Channel', name: string, channelId: string }> | null }> | null };
 
 
 
@@ -599,6 +753,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  BannedUser: ResolverTypeWrapper<BannedUser>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Channel: ResolverTypeWrapper<Channel>;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
@@ -606,6 +761,7 @@ export type ResolversTypes = {
   FriendRequest: ResolverTypeWrapper<FriendRequest>;
   Input: Input;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  InviteInfo: ResolverTypeWrapper<InviteInfo>;
   Message: ResolverTypeWrapper<Message>;
   MessageInput: MessageInput;
   MessagesResponse: ResolverTypeWrapper<MessagesResponse>;
@@ -621,6 +777,7 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  BannedUser: BannedUser;
   Boolean: Scalars['Boolean']['output'];
   Channel: Channel;
   Float: Scalars['Float']['output'];
@@ -628,6 +785,7 @@ export type ResolversParentTypes = {
   FriendRequest: FriendRequest;
   Input: Input;
   Int: Scalars['Int']['output'];
+  InviteInfo: InviteInfo;
   Message: Message;
   MessageInput: MessageInput;
   MessagesResponse: MessagesResponse;
@@ -639,6 +797,14 @@ export type ResolversParentTypes = {
   UpdatePassInput: UpdatePassInput;
   UpdateUserInput: UpdateUserInput;
   User: User;
+};
+
+export type BannedUserResolvers<ContextType = any, ParentType extends ResolversParentTypes['BannedUser'] = ResolversParentTypes['BannedUser']> = {
+  iconId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  nameId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type ChannelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Channel'] = ResolversParentTypes['Channel']> = {
@@ -663,9 +829,21 @@ export type FriendRequestResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type InviteInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['InviteInfo'] = ResolversParentTypes['InviteInfo']> = {
+  channelId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  icon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  joined?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  memberCount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  serverId?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Message'] = ResolversParentTypes['Message']> = {
   channel?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  edited?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
   msg?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   msgId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -690,22 +868,26 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   createServerChannel?: Resolver<ResolversTypes['Channel'], ParentType, ContextType, RequireFields<MutationCreateServerChannelArgs, 'name' | 'serverId'>>;
   declineFriendRequest?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationDeclineFriendRequestArgs, 'params'>>;
   deleteChannel?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteChannelArgs, 'channelId'>>;
-  deleteServer?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteServerArgs, 'id'>>;
-  deleteUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  deleteMessage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteMessageArgs, 'msgId'>>;
+  deleteServer?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteServerArgs, 'serverId'>>;
+  deleteUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'password'>>;
   join?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationJoinArgs, 'link'>>;
   kick?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationKickArgs, 'params' | 'serverId'>>;
   leave?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationLeaveArgs, 'serverId'>>;
   login?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'params'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  refreshLink?: Resolver<ResolversTypes['Server'], ParentType, ContextType, RequireFields<MutationRefreshLinkArgs, 'serverId'>>;
   removeFriend?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveFriendArgs, 'params'>>;
   sendFriendRequest?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSendFriendRequestArgs, 'params'>>;
   sendMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'params'>>;
   signup?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignupArgs, 'params'>>;
   unban?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUnbanArgs, 'params' | 'serverId'>>;
   unblock?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockArgs, 'params'>>;
-  updateChannel?: Resolver<ResolversTypes['Channel'], ParentType, ContextType, RequireFields<MutationUpdateChannelArgs, 'channelId' | 'name'>>;
+  updateChannel?: Resolver<ResolversTypes['Channel'], ParentType, ContextType, RequireFields<MutationUpdateChannelArgs, 'channelId'>>;
+  updateMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationUpdateMessageArgs, 'content' | 'msgId'>>;
   updatePass?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdatePassArgs, 'params'>>;
-  updateServer?: Resolver<ResolversTypes['Server'], ParentType, ContextType, RequireFields<MutationUpdateServerArgs, 'name' | 'serverId'>>;
+  updateRole?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateRoleArgs, 'params' | 'role' | 'serverId'>>;
+  updateServer?: Resolver<ResolversTypes['Server'], ParentType, ContextType, RequireFields<MutationUpdateServerArgs, 'serverId'>>;
   updateStatus?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateStatusArgs, 'status'>>;
   updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'params'>>;
 };
@@ -713,15 +895,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   channel?: Resolver<ResolversTypes['Server'], ParentType, ContextType, RequireFields<QueryChannelArgs, 'channelId'>>;
   currentChannel?: Resolver<ResolversTypes['Channel'], ParentType, ContextType, RequireFields<QueryCurrentChannelArgs, 'channelId'>>;
-  deleteMessage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<QueryDeleteMessageArgs, 'channelId' | 'msgId'>>;
+  invite?: Resolver<Maybe<ResolversTypes['InviteInfo']>, ParentType, ContextType, RequireFields<QueryInviteArgs, 'link'>>;
   message?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<QueryMessageArgs, 'msgId'>>;
   messages?: Resolver<ResolversTypes['MessagesResponse'], ParentType, ContextType, RequireFields<QueryMessagesArgs, 'channelId'>>;
   partyChats?: Resolver<Array<ResolversTypes['Channel']>, ParentType, ContextType>;
   server?: Resolver<Maybe<ResolversTypes['Server']>, ParentType, ContextType, RequireFields<QueryServerArgs, 'serverId'>>;
   serverChannels?: Resolver<Array<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<QueryServerChannelsArgs, 'channelId'>>;
-  serverRole?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType, RequireFields<QueryServerRoleArgs, 'serverId'>>;
+  serverRole?: Resolver<Maybe<ResolversTypes['ServerRole']>, ParentType, ContextType, RequireFields<QueryServerRoleArgs, 'serverId'>>;
   servers?: Resolver<Array<ResolversTypes['Server']>, ParentType, ContextType>;
-  updateMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<QueryUpdateMessageArgs, 'content' | 'msgId'>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   userChannels?: Resolver<Array<ResolversTypes['Channel']>, ParentType, ContextType>;
   userFriends?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
@@ -730,7 +911,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type ServerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Server'] = ResolversParentTypes['Server']> = {
-  banned?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>;
+  banned?: Resolver<Maybe<Array<ResolversTypes['BannedUser']>>, ParentType, ContextType>;
   channels?: Resolver<Maybe<Array<ResolversTypes['Channel']>>, ParentType, ContextType>;
   createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   icon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -769,8 +950,10 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 };
 
 export type Resolvers<ContextType = any> = {
+  BannedUser?: BannedUserResolvers<ContextType>;
   Channel?: ChannelResolvers<ContextType>;
   FriendRequest?: FriendRequestResolvers<ContextType>;
+  InviteInfo?: InviteInfoResolvers<ContextType>;
   Message?: MessageResolvers<ContextType>;
   MessagesResponse?: MessagesResponseResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
@@ -838,6 +1021,38 @@ export function useAcceptFriendRequestMutation(baseOptions?: Apollo.MutationHook
 export type AcceptFriendRequestMutationHookResult = ReturnType<typeof useAcceptFriendRequestMutation>;
 export type AcceptFriendRequestMutationResult = Apollo.MutationResult<AcceptFriendRequestMutation>;
 export type AcceptFriendRequestMutationOptions = Apollo.BaseMutationOptions<AcceptFriendRequestMutation, AcceptFriendRequestMutationVariables>;
+export const BanDocument = gql`
+    mutation Ban($serverId: Float!, $params: FriendInput!) {
+  ban(serverId: $serverId, params: $params)
+}
+    `;
+export type BanMutationFn = Apollo.MutationFunction<BanMutation, BanMutationVariables>;
+
+/**
+ * __useBanMutation__
+ *
+ * To run a mutation, you first call `useBanMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useBanMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [banMutation, { data, loading, error }] = useBanMutation({
+ *   variables: {
+ *      serverId: // value for 'serverId'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useBanMutation(baseOptions?: Apollo.MutationHookOptions<BanMutation, BanMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<BanMutation, BanMutationVariables>(BanDocument, options);
+      }
+export type BanMutationHookResult = ReturnType<typeof useBanMutation>;
+export type BanMutationResult = Apollo.MutationResult<BanMutation>;
+export type BanMutationOptions = Apollo.BaseMutationOptions<BanMutation, BanMutationVariables>;
 export const BlockDocument = gql`
     mutation Block($params: FriendInput!) {
   block(params: $params) {
@@ -930,23 +1145,6 @@ export const CreateServerDocument = gql`
       id
       name
       channelId
-      users {
-        id
-        nameId
-        userId
-      }
-      messages {
-        id
-        msg
-        msgId
-        createdAt
-        updatedAt
-        user {
-          id
-          nameId
-          userId
-        }
-      }
     }
   }
 }
@@ -1060,6 +1258,130 @@ export function useDeclineFriendRequestMutation(baseOptions?: Apollo.MutationHoo
 export type DeclineFriendRequestMutationHookResult = ReturnType<typeof useDeclineFriendRequestMutation>;
 export type DeclineFriendRequestMutationResult = Apollo.MutationResult<DeclineFriendRequestMutation>;
 export type DeclineFriendRequestMutationOptions = Apollo.BaseMutationOptions<DeclineFriendRequestMutation, DeclineFriendRequestMutationVariables>;
+export const DeleteChannelDocument = gql`
+    mutation DeleteChannel($channelId: String!) {
+  deleteChannel(channelId: $channelId)
+}
+    `;
+export type DeleteChannelMutationFn = Apollo.MutationFunction<DeleteChannelMutation, DeleteChannelMutationVariables>;
+
+/**
+ * __useDeleteChannelMutation__
+ *
+ * To run a mutation, you first call `useDeleteChannelMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteChannelMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteChannelMutation, { data, loading, error }] = useDeleteChannelMutation({
+ *   variables: {
+ *      channelId: // value for 'channelId'
+ *   },
+ * });
+ */
+export function useDeleteChannelMutation(baseOptions?: Apollo.MutationHookOptions<DeleteChannelMutation, DeleteChannelMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteChannelMutation, DeleteChannelMutationVariables>(DeleteChannelDocument, options);
+      }
+export type DeleteChannelMutationHookResult = ReturnType<typeof useDeleteChannelMutation>;
+export type DeleteChannelMutationResult = Apollo.MutationResult<DeleteChannelMutation>;
+export type DeleteChannelMutationOptions = Apollo.BaseMutationOptions<DeleteChannelMutation, DeleteChannelMutationVariables>;
+export const DeleteMessageDocument = gql`
+    mutation DeleteMessage($msgId: String!) {
+  deleteMessage(msgId: $msgId)
+}
+    `;
+export type DeleteMessageMutationFn = Apollo.MutationFunction<DeleteMessageMutation, DeleteMessageMutationVariables>;
+
+/**
+ * __useDeleteMessageMutation__
+ *
+ * To run a mutation, you first call `useDeleteMessageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteMessageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteMessageMutation, { data, loading, error }] = useDeleteMessageMutation({
+ *   variables: {
+ *      msgId: // value for 'msgId'
+ *   },
+ * });
+ */
+export function useDeleteMessageMutation(baseOptions?: Apollo.MutationHookOptions<DeleteMessageMutation, DeleteMessageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteMessageMutation, DeleteMessageMutationVariables>(DeleteMessageDocument, options);
+      }
+export type DeleteMessageMutationHookResult = ReturnType<typeof useDeleteMessageMutation>;
+export type DeleteMessageMutationResult = Apollo.MutationResult<DeleteMessageMutation>;
+export type DeleteMessageMutationOptions = Apollo.BaseMutationOptions<DeleteMessageMutation, DeleteMessageMutationVariables>;
+export const DeleteServerDocument = gql`
+    mutation DeleteServer($serverId: Float!) {
+  deleteServer(serverId: $serverId)
+}
+    `;
+export type DeleteServerMutationFn = Apollo.MutationFunction<DeleteServerMutation, DeleteServerMutationVariables>;
+
+/**
+ * __useDeleteServerMutation__
+ *
+ * To run a mutation, you first call `useDeleteServerMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteServerMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteServerMutation, { data, loading, error }] = useDeleteServerMutation({
+ *   variables: {
+ *      serverId: // value for 'serverId'
+ *   },
+ * });
+ */
+export function useDeleteServerMutation(baseOptions?: Apollo.MutationHookOptions<DeleteServerMutation, DeleteServerMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteServerMutation, DeleteServerMutationVariables>(DeleteServerDocument, options);
+      }
+export type DeleteServerMutationHookResult = ReturnType<typeof useDeleteServerMutation>;
+export type DeleteServerMutationResult = Apollo.MutationResult<DeleteServerMutation>;
+export type DeleteServerMutationOptions = Apollo.BaseMutationOptions<DeleteServerMutation, DeleteServerMutationVariables>;
+export const DeleteUserDocument = gql`
+    mutation DeleteUser($password: String!) {
+  deleteUser(password: $password)
+}
+    `;
+export type DeleteUserMutationFn = Apollo.MutationFunction<DeleteUserMutation, DeleteUserMutationVariables>;
+
+/**
+ * __useDeleteUserMutation__
+ *
+ * To run a mutation, you first call `useDeleteUserMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteUserMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteUserMutation, { data, loading, error }] = useDeleteUserMutation({
+ *   variables: {
+ *      password: // value for 'password'
+ *   },
+ * });
+ */
+export function useDeleteUserMutation(baseOptions?: Apollo.MutationHookOptions<DeleteUserMutation, DeleteUserMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteUserMutation, DeleteUserMutationVariables>(DeleteUserDocument, options);
+      }
+export type DeleteUserMutationHookResult = ReturnType<typeof useDeleteUserMutation>;
+export type DeleteUserMutationResult = Apollo.MutationResult<DeleteUserMutation>;
+export type DeleteUserMutationOptions = Apollo.BaseMutationOptions<DeleteUserMutation, DeleteUserMutationVariables>;
 export const JoinDocument = gql`
     mutation Join($link: String!) {
   join(link: $link) {
@@ -1099,6 +1421,69 @@ export function useJoinMutation(baseOptions?: Apollo.MutationHookOptions<JoinMut
 export type JoinMutationHookResult = ReturnType<typeof useJoinMutation>;
 export type JoinMutationResult = Apollo.MutationResult<JoinMutation>;
 export type JoinMutationOptions = Apollo.BaseMutationOptions<JoinMutation, JoinMutationVariables>;
+export const KickDocument = gql`
+    mutation Kick($serverId: Float!, $params: FriendInput!) {
+  kick(serverId: $serverId, params: $params)
+}
+    `;
+export type KickMutationFn = Apollo.MutationFunction<KickMutation, KickMutationVariables>;
+
+/**
+ * __useKickMutation__
+ *
+ * To run a mutation, you first call `useKickMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useKickMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [kickMutation, { data, loading, error }] = useKickMutation({
+ *   variables: {
+ *      serverId: // value for 'serverId'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useKickMutation(baseOptions?: Apollo.MutationHookOptions<KickMutation, KickMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<KickMutation, KickMutationVariables>(KickDocument, options);
+      }
+export type KickMutationHookResult = ReturnType<typeof useKickMutation>;
+export type KickMutationResult = Apollo.MutationResult<KickMutation>;
+export type KickMutationOptions = Apollo.BaseMutationOptions<KickMutation, KickMutationVariables>;
+export const LeaveDocument = gql`
+    mutation Leave($serverId: Float!) {
+  leave(serverId: $serverId)
+}
+    `;
+export type LeaveMutationFn = Apollo.MutationFunction<LeaveMutation, LeaveMutationVariables>;
+
+/**
+ * __useLeaveMutation__
+ *
+ * To run a mutation, you first call `useLeaveMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useLeaveMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [leaveMutation, { data, loading, error }] = useLeaveMutation({
+ *   variables: {
+ *      serverId: // value for 'serverId'
+ *   },
+ * });
+ */
+export function useLeaveMutation(baseOptions?: Apollo.MutationHookOptions<LeaveMutation, LeaveMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LeaveMutation, LeaveMutationVariables>(LeaveDocument, options);
+      }
+export type LeaveMutationHookResult = ReturnType<typeof useLeaveMutation>;
+export type LeaveMutationResult = Apollo.MutationResult<LeaveMutation>;
+export type LeaveMutationOptions = Apollo.BaseMutationOptions<LeaveMutation, LeaveMutationVariables>;
 export const LoginDocument = gql`
     mutation Login($params: Input!) {
   login(params: $params) {
@@ -1162,6 +1547,40 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
+export const RefreshLinkDocument = gql`
+    mutation RefreshLink($serverId: Float!) {
+  refreshLink(serverId: $serverId) {
+    id
+    link
+  }
+}
+    `;
+export type RefreshLinkMutationFn = Apollo.MutationFunction<RefreshLinkMutation, RefreshLinkMutationVariables>;
+
+/**
+ * __useRefreshLinkMutation__
+ *
+ * To run a mutation, you first call `useRefreshLinkMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRefreshLinkMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [refreshLinkMutation, { data, loading, error }] = useRefreshLinkMutation({
+ *   variables: {
+ *      serverId: // value for 'serverId'
+ *   },
+ * });
+ */
+export function useRefreshLinkMutation(baseOptions?: Apollo.MutationHookOptions<RefreshLinkMutation, RefreshLinkMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RefreshLinkMutation, RefreshLinkMutationVariables>(RefreshLinkDocument, options);
+      }
+export type RefreshLinkMutationHookResult = ReturnType<typeof useRefreshLinkMutation>;
+export type RefreshLinkMutationResult = Apollo.MutationResult<RefreshLinkMutation>;
+export type RefreshLinkMutationOptions = Apollo.BaseMutationOptions<RefreshLinkMutation, RefreshLinkMutationVariables>;
 export const RemoveFriendDocument = gql`
     mutation RemoveFriend($params: FriendInput!) {
   removeFriend(params: $params) {
@@ -1246,8 +1665,10 @@ export type SendFriendRequestMutationOptions = Apollo.BaseMutationOptions<SendFr
 export const SendMessageDocument = gql`
     mutation sendMessage($params: MessageInput!) {
   sendMessage(params: $params) {
+    id
     msg
     msgId
+    edited
     createdAt
     updatedAt
     user {
@@ -1319,6 +1740,38 @@ export function useSignupMutation(baseOptions?: Apollo.MutationHookOptions<Signu
 export type SignupMutationHookResult = ReturnType<typeof useSignupMutation>;
 export type SignupMutationResult = Apollo.MutationResult<SignupMutation>;
 export type SignupMutationOptions = Apollo.BaseMutationOptions<SignupMutation, SignupMutationVariables>;
+export const UnbanDocument = gql`
+    mutation Unban($serverId: Float!, $params: FriendInput!) {
+  unban(serverId: $serverId, params: $params)
+}
+    `;
+export type UnbanMutationFn = Apollo.MutationFunction<UnbanMutation, UnbanMutationVariables>;
+
+/**
+ * __useUnbanMutation__
+ *
+ * To run a mutation, you first call `useUnbanMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUnbanMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [unbanMutation, { data, loading, error }] = useUnbanMutation({
+ *   variables: {
+ *      serverId: // value for 'serverId'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useUnbanMutation(baseOptions?: Apollo.MutationHookOptions<UnbanMutation, UnbanMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UnbanMutation, UnbanMutationVariables>(UnbanDocument, options);
+      }
+export type UnbanMutationHookResult = ReturnType<typeof useUnbanMutation>;
+export type UnbanMutationResult = Apollo.MutationResult<UnbanMutation>;
+export type UnbanMutationOptions = Apollo.BaseMutationOptions<UnbanMutation, UnbanMutationVariables>;
 export const UnblockDocument = gql`
     mutation Unblock($params: FriendInput!) {
   unblock(params: $params) {
@@ -1353,6 +1806,81 @@ export function useUnblockMutation(baseOptions?: Apollo.MutationHookOptions<Unbl
 export type UnblockMutationHookResult = ReturnType<typeof useUnblockMutation>;
 export type UnblockMutationResult = Apollo.MutationResult<UnblockMutation>;
 export type UnblockMutationOptions = Apollo.BaseMutationOptions<UnblockMutation, UnblockMutationVariables>;
+export const UpdateChannelDocument = gql`
+    mutation UpdateChannel($channelId: String!, $name: String, $desc: String) {
+  updateChannel(channelId: $channelId, name: $name, desc: $desc) {
+    id
+    name
+    desc
+    channelId
+  }
+}
+    `;
+export type UpdateChannelMutationFn = Apollo.MutationFunction<UpdateChannelMutation, UpdateChannelMutationVariables>;
+
+/**
+ * __useUpdateChannelMutation__
+ *
+ * To run a mutation, you first call `useUpdateChannelMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateChannelMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateChannelMutation, { data, loading, error }] = useUpdateChannelMutation({
+ *   variables: {
+ *      channelId: // value for 'channelId'
+ *      name: // value for 'name'
+ *      desc: // value for 'desc'
+ *   },
+ * });
+ */
+export function useUpdateChannelMutation(baseOptions?: Apollo.MutationHookOptions<UpdateChannelMutation, UpdateChannelMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateChannelMutation, UpdateChannelMutationVariables>(UpdateChannelDocument, options);
+      }
+export type UpdateChannelMutationHookResult = ReturnType<typeof useUpdateChannelMutation>;
+export type UpdateChannelMutationResult = Apollo.MutationResult<UpdateChannelMutation>;
+export type UpdateChannelMutationOptions = Apollo.BaseMutationOptions<UpdateChannelMutation, UpdateChannelMutationVariables>;
+export const UpdateMessageDocument = gql`
+    mutation UpdateMessage($msgId: String!, $content: String!) {
+  updateMessage(msgId: $msgId, content: $content) {
+    id
+    msgId
+    msg
+    edited
+  }
+}
+    `;
+export type UpdateMessageMutationFn = Apollo.MutationFunction<UpdateMessageMutation, UpdateMessageMutationVariables>;
+
+/**
+ * __useUpdateMessageMutation__
+ *
+ * To run a mutation, you first call `useUpdateMessageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateMessageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateMessageMutation, { data, loading, error }] = useUpdateMessageMutation({
+ *   variables: {
+ *      msgId: // value for 'msgId'
+ *      content: // value for 'content'
+ *   },
+ * });
+ */
+export function useUpdateMessageMutation(baseOptions?: Apollo.MutationHookOptions<UpdateMessageMutation, UpdateMessageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateMessageMutation, UpdateMessageMutationVariables>(UpdateMessageDocument, options);
+      }
+export type UpdateMessageMutationHookResult = ReturnType<typeof useUpdateMessageMutation>;
+export type UpdateMessageMutationResult = Apollo.MutationResult<UpdateMessageMutation>;
+export type UpdateMessageMutationOptions = Apollo.BaseMutationOptions<UpdateMessageMutation, UpdateMessageMutationVariables>;
 export const UpdatePassDocument = gql`
     mutation UpdatePass($params: UpdatePassInput!) {
   updatePass(params: $params) {
@@ -1387,6 +1915,76 @@ export function useUpdatePassMutation(baseOptions?: Apollo.MutationHookOptions<U
 export type UpdatePassMutationHookResult = ReturnType<typeof useUpdatePassMutation>;
 export type UpdatePassMutationResult = Apollo.MutationResult<UpdatePassMutation>;
 export type UpdatePassMutationOptions = Apollo.BaseMutationOptions<UpdatePassMutation, UpdatePassMutationVariables>;
+export const UpdateRoleDocument = gql`
+    mutation UpdateRole($serverId: Float!, $params: FriendInput!, $role: String!) {
+  updateRole(serverId: $serverId, params: $params, role: $role)
+}
+    `;
+export type UpdateRoleMutationFn = Apollo.MutationFunction<UpdateRoleMutation, UpdateRoleMutationVariables>;
+
+/**
+ * __useUpdateRoleMutation__
+ *
+ * To run a mutation, you first call `useUpdateRoleMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateRoleMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateRoleMutation, { data, loading, error }] = useUpdateRoleMutation({
+ *   variables: {
+ *      serverId: // value for 'serverId'
+ *      params: // value for 'params'
+ *      role: // value for 'role'
+ *   },
+ * });
+ */
+export function useUpdateRoleMutation(baseOptions?: Apollo.MutationHookOptions<UpdateRoleMutation, UpdateRoleMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateRoleMutation, UpdateRoleMutationVariables>(UpdateRoleDocument, options);
+      }
+export type UpdateRoleMutationHookResult = ReturnType<typeof useUpdateRoleMutation>;
+export type UpdateRoleMutationResult = Apollo.MutationResult<UpdateRoleMutation>;
+export type UpdateRoleMutationOptions = Apollo.BaseMutationOptions<UpdateRoleMutation, UpdateRoleMutationVariables>;
+export const UpdateServerDocument = gql`
+    mutation UpdateServer($serverId: Float!, $name: String, $icon: String) {
+  updateServer(serverId: $serverId, name: $name, icon: $icon) {
+    id
+    name
+    icon
+  }
+}
+    `;
+export type UpdateServerMutationFn = Apollo.MutationFunction<UpdateServerMutation, UpdateServerMutationVariables>;
+
+/**
+ * __useUpdateServerMutation__
+ *
+ * To run a mutation, you first call `useUpdateServerMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateServerMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateServerMutation, { data, loading, error }] = useUpdateServerMutation({
+ *   variables: {
+ *      serverId: // value for 'serverId'
+ *      name: // value for 'name'
+ *      icon: // value for 'icon'
+ *   },
+ * });
+ */
+export function useUpdateServerMutation(baseOptions?: Apollo.MutationHookOptions<UpdateServerMutation, UpdateServerMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateServerMutation, UpdateServerMutationVariables>(UpdateServerDocument, options);
+      }
+export type UpdateServerMutationHookResult = ReturnType<typeof useUpdateServerMutation>;
+export type UpdateServerMutationResult = Apollo.MutationResult<UpdateServerMutation>;
+export type UpdateServerMutationOptions = Apollo.BaseMutationOptions<UpdateServerMutation, UpdateServerMutationVariables>;
 export const UpdateStatusDocument = gql`
     mutation UpdateStatus($status: String!) {
   updateStatus(status: $status) {
@@ -1428,8 +2026,12 @@ export type UpdateStatusMutationOptions = Apollo.BaseMutationOptions<UpdateStatu
 export const UpdateUserDocument = gql`
     mutation UpdateUser($params: UpdateUserInput!) {
   updateUser(params: $params) {
+    id
+    username
     nameId
     userId
+    iconId
+    status
   }
 }
     `;
@@ -1469,18 +2071,6 @@ export const ChannelDocument = gql`
       name
       ptChat
       channelId
-      users {
-        nameId
-        userId
-        iconId
-        status
-      }
-      messages {
-        msg
-        msgId
-        createdAt
-        updatedAt
-      }
       server {
         serverId
       }
@@ -1521,11 +2111,17 @@ export const CurrentChannelDocument = gql`
   currentChannel(channelId: $channelId) {
     id
     name
+    desc
     ptChat
     channelId
+    server {
+      serverId
+    }
     users {
       id
       nameId
+      userId
+      iconId
       status
     }
   }
@@ -1559,47 +2155,66 @@ export function useCurrentChannelLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
 export type CurrentChannelQueryHookResult = ReturnType<typeof useCurrentChannelQuery>;
 export type CurrentChannelLazyQueryHookResult = ReturnType<typeof useCurrentChannelLazyQuery>;
 export type CurrentChannelQueryResult = Apollo.QueryResult<CurrentChannelQuery, CurrentChannelQueryVariables>;
+export const InviteDocument = gql`
+    query Invite($link: String!) {
+  invite(link: $link) {
+    name
+    link
+    icon
+    serverId
+    memberCount
+    joined
+    channelId
+  }
+}
+    `;
+
+/**
+ * __useInviteQuery__
+ *
+ * To run a query within a React component, call `useInviteQuery` and pass it any options that fit your needs.
+ * When your component renders, `useInviteQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useInviteQuery({
+ *   variables: {
+ *      link: // value for 'link'
+ *   },
+ * });
+ */
+export function useInviteQuery(baseOptions: Apollo.QueryHookOptions<InviteQuery, InviteQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<InviteQuery, InviteQueryVariables>(InviteDocument, options);
+      }
+export function useInviteLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<InviteQuery, InviteQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<InviteQuery, InviteQueryVariables>(InviteDocument, options);
+        }
+export type InviteQueryHookResult = ReturnType<typeof useInviteQuery>;
+export type InviteLazyQueryHookResult = ReturnType<typeof useInviteLazyQuery>;
+export type InviteQueryResult = Apollo.QueryResult<InviteQuery, InviteQueryVariables>;
 export const MessageDocument = gql`
     query Message($msgId: String!) {
   message(msgId: $msgId) {
     id
     msg
     msgId
+    edited
     createdAt
     updatedAt
     user {
       id
       nameId
       userId
+      iconId
     }
     channel {
       name
       channelId
       ptChat
-      users {
-        id
-        nameId
-        userId
-      }
-      messages {
-        id
-        msg
-        msgId
-        createdAt
-        updatedAt
-        user {
-          id
-          nameId
-          userId
-          messages {
-            id
-            msg
-            msgId
-            createdAt
-            updatedAt
-          }
-        }
-      }
     }
   }
 }
@@ -1645,15 +2260,18 @@ export const MessagesDocument = gql`
       id
       msg
       msgId
+      edited
       createdAt
       updatedAt
       user {
+        id
         nameId
         userId
         iconId
       }
     }
     friend {
+      id
       nameId
       userId
       iconId
@@ -1695,6 +2313,7 @@ export const PartyChatsDocument = gql`
   partyChats {
     channelId
     users {
+      id
       nameId
       userId
       iconId
@@ -1736,38 +2355,30 @@ export const ServerDocument = gql`
     id
     name
     link
+    icon
     serverId
     users {
       id
-      servers {
+      nameId
+      userId
+      iconId
+      status
+      roles {
         serverId
+        role
       }
     }
     channels {
+      id
       name
+      desc
       channelId
-      users {
-        nameId
-        userId
-        iconId
-        status
-      }
-      messages {
-        id
-        msg
-        msgId
-        createdAt
-        updatedAt
-        channel {
-          channelId
-        }
-        user {
-          id
-          nameId
-          userId
-          iconId
-        }
-      }
+    }
+    banned {
+      id
+      nameId
+      userId
+      iconId
     }
   }
 }
@@ -1808,20 +2419,6 @@ export const ServerChannelsDocument = gql`
     server {
       name
       serverId
-      channels {
-        name
-        channelId
-        users {
-          nameId
-          userId
-          iconId
-        }
-      }
-    }
-    users {
-      nameId
-      userId
-      iconId
     }
   }
 }
@@ -1858,10 +2455,15 @@ export const UserDocument = gql`
     query User {
   user {
     id
+    username
     nameId
     userId
     iconId
     status
+    roles {
+      serverId
+      role
+    }
   }
 }
     `;
@@ -1900,6 +2502,7 @@ export const UserFriendsDocument = gql`
     userId
     iconId
     friends {
+      id
       nameId
       userId
       iconId
@@ -1912,6 +2515,7 @@ export const UserFriendsDocument = gql`
       status
     }
     blocked {
+      id
       nameId
       userId
       iconId
@@ -1952,6 +2556,8 @@ export const UserServersDocument = gql`
   userServers {
     id
     name
+    icon
+    link
     serverId
     channels {
       name

@@ -3,38 +3,30 @@ query Server($serverId: Float!) {
     id
     name
     link
+    icon
     serverId
     users {
       id
-      servers {
+      nameId
+      userId
+      iconId
+      status
+      roles {
         serverId
+        role
       }
     }
     channels {
+      id
       name
+      desc
       channelId
-      users {
-        nameId
-        userId
-        iconId
-        status
-      }
-      messages {
-        id
-        msg
-        msgId
-        createdAt
-        updatedAt
-        channel {
-          channelId
-        }
-        user {
-          id
-          nameId
-          userId
-          iconId
-        }
-      }
+    }
+    banned {
+      id
+      nameId
+      userId
+      iconId
     }
   }
 }

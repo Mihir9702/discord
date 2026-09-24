@@ -1,0 +1,3 @@
+mutation Unban($serverId: Float!, $params: FriendInput!) {
+  unban(serverId: $serverId, params: $params)
+}

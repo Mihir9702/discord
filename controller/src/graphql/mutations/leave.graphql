@@ -1,0 +1,3 @@
+mutation Leave($serverId: Float!) {
+  leave(serverId: $serverId)
+}

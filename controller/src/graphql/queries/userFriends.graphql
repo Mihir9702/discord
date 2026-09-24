@@ -5,6 +5,7 @@ query UserFriends {
     userId
     iconId
     friends {
+      id
       nameId
       userId
       iconId
@@ -17,6 +18,7 @@ query UserFriends {
       status
     }
     blocked {
+      id
       nameId
       userId
       iconId

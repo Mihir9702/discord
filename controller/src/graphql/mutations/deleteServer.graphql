@@ -1,0 +1,3 @@
+mutation DeleteServer($serverId: Float!) {
+  deleteServer(serverId: $serverId)
+}

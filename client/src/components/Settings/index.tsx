@@ -1,65 +1,101 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useQuery } from "@apollo/client";
-import { UserQuery, UserDocument } from "src/graphql";
-import { useRouter } from "next/router";
-import Loader from "../Loader";
-import Options from "./Options";
+import { useMutation, useQuery } from "@apollo/client";
+import {
+  LogoutDocument,
+  LogoutMutation,
+  UserFriendsDocument,
+  UserFriendsQuery,
+} from "src/graphql";
+import { useMe } from "src/utils/useMe";
+import Options, { Option } from "./Options";
 import MyAccount from "./MyAccount";
 import Profiles from "./Profiles";
+import Blocked from "../Home/Blocked";
+import Confirm from "../Confirm";
+import Portal from "../Portal";
+import { Cross } from "../Icons";
 
 interface Props {
-  init: boolean;
-  iinit: (init: boolean) => void;
+  onClose: () => void;
 }
 
-export default ({ init, iinit }: Props) => {
-  const { data, loading } = useQuery<UserQuery>(UserDocument);
-  const user = data?.user;
+export default ({ onClose }: Props) => {
+  const { me } = useMe();
+  const [option, setOption] = useState<Option>("MyAccount");
+  const [logout, setLogout] = useState(false);
 
-  if (loading) return <Loader />;
-  else if (!user) {
-    useRouter().push("/login");
-  }
+  const { data } = useQuery<UserFriendsQuery>(UserFriendsDocument);
+  const [Logout] = useMutation<LogoutMutation>(LogoutDocument);
 
-  const nameId = user?.nameId!;
-  const iconId = user?.iconId!;
-  const status = user?.status!;
+  // esc closes settings
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
-  const [option, setOption] = useState("myaccount");
+  if (!me) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.1 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.1 }}
-      transition={{ duration: 0.2 }}
-      className="fixed inset-0 w-full h-screen flex justify-center items-center bg-background"
-    >
-      <article className="w-full h-full">
-        <main className="w-full h-full flex items-start justify-between">
-          <Options option={option} setOption={setOption} />
+    <Portal>
+      <motion.div
+        initial={{ opacity: 0, scale: 1.1 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 1.1 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-40 w-full h-screen flex bg-background"
+      >
+        <Options
+          option={option}
+          setOption={setOption}
+          onLogout={() => setLogout(true)}
+        />
 
-          <section className="py-2 border border-red-500 w-full h-full">
-            {option == "MyAccount" && (
-              <MyAccount nameId={nameId} iconId={iconId} status={status} />
+        <section className="flex-1 h-full overflow-y-auto py-14 px-10 text-gray-200">
+          <div className="max-w-2xl">
+            {option === "MyAccount" && (
+              <MyAccount me={me} editProfile={() => setOption("Profiles")} />
             )}
-
-            {option == "Profiles" && (
-              <Profiles nameId={nameId} iconId={iconId} status={status} />
+            {option === "Profiles" && <Profiles me={me} />}
+            {option === "Blocked" && (
+              <>
+                <h1 className="text-xl font-semibold text-white">
+                  Blocked Users
+                </h1>
+                <div className="-mx-6">
+                  <Blocked friends={data?.userFriends?.blocked || []} />
+                </div>
+              </>
             )}
-          </section>
+          </div>
+        </section>
 
-          <section className="border h-full">
-            <button
-              className="w-max rounded-full m-14 hover:text-gray-400 cursor-pointer"
-              onClick={() => iinit(!init)}
-            >
-              X
-            </button>
-          </section>
-        </main>
-      </article>
-    </motion.div>
+        <section className="h-full pt-14 pr-10 flex flex-col items-center gap-1">
+          <button
+            className="w-9 h-9 rounded-full border-2 border-gray-400 text-gray-400 hover:text-white hover:border-white flex items-center justify-center"
+            onClick={onClose}
+          >
+            {Cross}
+          </button>
+          <p className="text-xs text-gray-400 font-semibold">ESC</p>
+        </section>
+
+        {logout && (
+          <Confirm
+            title="Log Out"
+            confirm="Log Out"
+            danger
+            onClose={() => setLogout(false)}
+            onConfirm={async () => {
+              await Logout();
+              window.location.assign("/login");
+            }}
+          >
+            Are you sure you want to logout?
+          </Confirm>
+        )}
+      </motion.div>
+    </Portal>
   );
 };

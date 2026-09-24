@@ -1,21 +1,13 @@
 import React from "react";
-import { useQuery } from "@apollo/client";
-import { UserQuery, UserDocument } from "src/graphql";
-import { useRouter } from "next/router";
 import Loader from "src/components/Loader";
 import Layout from "src/components/Layout";
-import { storage } from "src/utils/storage";
+import { useRequireMe } from "src/utils/useMe";
 
+// friends
 export default () => {
-  const { data, loading } = useQuery<UserQuery>(UserDocument);
-  const user = data?.user;
+  const { me } = useRequireMe();
 
-  if (loading) return <Loader />;
-  else if (!user) {
-    useRouter().push("/login");
-  }
-
-  storage(user?.nameId);
+  if (!me) return <Loader />;
 
   return <Layout home={true} server={false} />;
 };

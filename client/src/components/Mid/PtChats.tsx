@@ -1,76 +1,47 @@
 import React from "react";
-import { RegularSkeleton } from "../Skeleton";
 import Link from "next/link";
-import { User, Channel } from "src/types/query";
+import { useRouter } from "next/router";
 import { useQuery } from "@apollo/client";
 import { PartyChatsQuery, PartyChatsDocument } from "src/graphql";
-import { statusColor } from "src/utils/statusColor";
-import { reverseElements } from "src/utils/reverseElements";
-import { DispatchBool } from "src/types/dispatch";
-import { useRouter } from "next/router";
-import Status from "../Status";
+import { RegularSkeleton } from "../Skeleton";
+import UserIcon from "../UserIcon";
+import { useMe } from "src/utils/useMe";
 
-export default ({
-  status,
-  setStatus,
-  refetch: refetchStatus,
-  fetch,
-  fetchChats,
-}: {
-  status: boolean;
-  setStatus: DispatchBool;
-  refetch: () => void;
-  fetch: boolean;
-  fetchChats: DispatchBool;
-}) => {
+// direct message list
+export default () => {
   const channelId = useRouter().query.id;
-  const { data, loading, refetch } =
-    useQuery<PartyChatsQuery>(PartyChatsDocument);
-  const ptChats = data?.partyChats;
+  const { me } = useMe();
+  const { data, loading } = useQuery<PartyChatsQuery>(PartyChatsDocument);
 
-  const name = localStorage.getItem("id");
+  if (loading && !data) return <RegularSkeleton />;
 
-  if (fetch) {
-    refetch();
-    fetchChats(false);
-  }
-
-  if (loading) return <RegularSkeleton />;
+  const chats = (data?.partyChats || [])
+    .map((chat) => ({
+      chat,
+      friend: chat.users?.find((user) => user.id !== me?.id),
+    }))
+    .filter(({ friend }) => !!friend)
+    .reverse();
 
   return (
-    <main className="overflow-auto">
-      {reverseElements(ptChats!).map((chat: Channel) => {
-        const ptChat = chat?.users?.filter(
-          (user: User) => user.nameId !== name
-        )[0];
-        const status = ptChat?.status;
-        const statusColorCss = statusColor(status);
-        const ifs =
-          status &&
-          statusColorCss +
-            " rounded-full absolute w-2.5 h-2.5 bottom-0 right-0.5";
-        return (
-          <Link
-            key={chat?.channelId}
-            href={`/@me/${chat?.channelId}`}
-            className={`
-              status-button
-              ${channelId === chat?.channelId && "bg-highlight"}
+    <main className="overflow-y-auto flex-1 min-h-0 px-2 flex flex-col gap-0.5">
+      {chats.map(({ chat, friend }) => (
+        <Link
+          key={chat.channelId}
+          href={`/@me/${chat.channelId}`}
+          className={`
+              status-button text-gray-400 hover:text-gray-200
+              ${channelId === chat.channelId ? "bg-highlight text-white" : ""}
             `}
-          >
-            <div className="relative inline-block">
-              <div
-                className={`w-8 h-8 rounded-full`}
-                style={{ backgroundColor: ptChat.iconId }}
-              />
-              <span className={ifs} />
-            </div>
-            <p className="text-lg font-light">{ptChat?.nameId}</p>
-          </Link>
-        );
-      })}
-
-      {status && <Status setStatus={setStatus} refetch={refetchStatus} />}
+        >
+          <UserIcon
+            iconId={friend!.iconId}
+            status={friend!.status}
+            name={friend!.nameId}
+          />
+          <p className="text-lg font-light truncate">{friend!.nameId}</p>
+        </Link>
+      ))}
     </main>
   );
 };

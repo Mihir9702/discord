@@ -1,0 +1,4 @@
+# role: "admin" | "member" (owner only)
+mutation UpdateRole($serverId: Float!, $params: FriendInput!, $role: String!) {
+  updateRole(serverId: $serverId, params: $params, role: $role)
+}

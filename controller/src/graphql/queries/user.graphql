@@ -1,9 +1,14 @@
 query User {
   user {
     id
+    username
     nameId
     userId
     iconId
     status
+    roles {
+      serverId
+      role
+    }
   }
 }

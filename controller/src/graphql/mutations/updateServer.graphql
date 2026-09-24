@@ -1,0 +1,7 @@
+mutation UpdateServer($serverId: Float!, $name: String, $icon: String) {
+  updateServer(serverId: $serverId, name: $name, icon: $icon) {
+    id
+    name
+    icon
+  }
+}

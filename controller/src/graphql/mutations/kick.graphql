@@ -1,0 +1,3 @@
+mutation Kick($serverId: Float!, $params: FriendInput!) {
+  kick(serverId: $serverId, params: $params)
+}

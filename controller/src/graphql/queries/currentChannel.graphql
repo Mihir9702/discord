@@ -2,11 +2,17 @@ query CurrentChannel($channelId: String!) {
   currentChannel(channelId: $channelId) {
     id
     name
+    desc
     ptChat
     channelId
+    server {
+      serverId
+    }
     users {
       id
       nameId
+      userId
+      iconId
       status
     }
   }

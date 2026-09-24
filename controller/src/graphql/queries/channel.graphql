@@ -7,18 +7,6 @@ query Channel($channelId: String!) {
       name
       ptChat
       channelId
-      users {
-        nameId
-        userId
-        iconId
-        status
-      }
-      messages {
-        msg
-        msgId
-        createdAt
-        updatedAt
-      }
       server {
         serverId
       }

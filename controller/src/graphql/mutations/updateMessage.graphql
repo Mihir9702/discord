@@ -1,0 +1,8 @@
+mutation UpdateMessage($msgId: String!, $content: String!) {
+  updateMessage(msgId: $msgId, content: $content) {
+    id
+    msgId
+    msg
+    edited
+  }
+}

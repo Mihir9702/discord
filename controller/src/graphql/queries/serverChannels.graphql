@@ -5,20 +5,6 @@ query ServerChannels($channelId: String!) {
     server {
       name
       serverId
-      channels {
-        name
-        channelId
-        users {
-          nameId
-          userId
-          iconId
-        }
-      }
-    }
-    users {
-      nameId
-      userId
-      iconId
     }
   }
 }

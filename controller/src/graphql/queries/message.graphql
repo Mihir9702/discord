@@ -3,41 +3,19 @@ query Message($msgId: String!) {
     id
     msg
     msgId
+    edited
     createdAt
     updatedAt
     user {
       id
       nameId
       userId
+      iconId
     }
     channel {
       name
       channelId
       ptChat
-      users {
-        id
-        nameId
-        userId
-      }
-      messages {
-        id
-        msg
-        msgId
-        createdAt
-        updatedAt
-        user {
-          id
-          nameId
-          userId
-          messages {
-            id
-            msg
-            msgId
-            createdAt
-            updatedAt
-          }
-        }
-      }
     }
   }
 }

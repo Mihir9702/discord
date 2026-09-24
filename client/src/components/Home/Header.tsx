@@ -1,17 +1,17 @@
 import React from "react";
 import { MessageSquare, Inbox, HelpCircle, User } from "../Icons";
 import { DispatchString } from "../../types/dispatch";
-import { MessageResolver } from "../../../../server/src/resolvers/message";
 
 interface Props {
   state: string;
   setState: DispatchString;
+  pending?: number;
 }
 
-export default ({ state, setState }: Props) => {
+export default ({ state, setState, pending = 0 }: Props) => {
   const css = {
     // prettier-ignore
-    header: "w-full flex flex-auto justify-between items-center min-h-[48px] py-[8px] font-lg text-gray-200 ",
+    header: "w-full flex shrink-0 justify-between items-center min-h-[48px] py-[8px] font-lg text-gray-200 ",
     section: "flex items-center justify-between font-gg font-normal",
     button: "text-lg hover:text-gray-200 hover:bg-highlight rounded px-2 ",
   };
@@ -21,7 +21,7 @@ export default ({ state, setState }: Props) => {
   const select = "bg-highlight text-gray-200";
   const online = state === "online" ? select : "";
   const all = state === "all" ? select : "";
-  const pending = state === "pending" ? select : "";
+  const pendingCss = state === "pending" ? select : "";
   const blocked = state === "blocked" ? select : "";
 
   return (
@@ -49,10 +49,15 @@ export default ({ state, setState }: Props) => {
               All
             </button>
             <button
-              className={css.button + pending}
+              className={css.button + pendingCss + " flex items-center gap-2"}
               onClick={() => setState("pending")}
             >
               Pending
+              {pending > 0 && (
+                <span className="bg-[#f23f42] text-white text-xs font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center">
+                  {pending}
+                </span>
+              )}
             </button>
             <button
               className={css.button + blocked}

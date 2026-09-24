@@ -6,46 +6,40 @@ import Pending from "./Pending";
 import { useState } from "react";
 import { UserFriendsDocument, UserFriendsQuery } from "src/graphql";
 import { useQuery } from "@apollo/client";
-import Active from "./Active";
-import { DispatchBool } from "src/types/dispatch";
+import { UserSkeleton } from "../Skeleton";
 
-export default ({ fetchChats }: { fetchChats: DispatchBool }) => {
+export default () => {
   const [state, setState] = useState("online");
-  const [get, fetchFriends] = useState(false);
 
-  const { data, loading, refetch } =
-    useQuery<UserFriendsQuery>(UserFriendsDocument);
+  const { data, loading } = useQuery<UserFriendsQuery>(UserFriendsDocument);
 
-  const friends = data?.userFriends?.friends as any[];
-  const friendRequests = data?.userFriends?.friendRequests as any[];
-  const blocked = data?.userFriends?.blocked as any[];
-
-  if (get) refetch();
-
-  if (loading) {
-    return (
-      // todo fix header width
-      <header className="fixed top-0 right-0 w-full md:max-w-[1350px] sm:max-w-2xl">
-        <Header state={state} setState={setState} />
-        <hr className="border-lightdark" />
-      </header>
-    );
-  }
+  const friends = data?.userFriends?.friends || [];
+  const friendRequests = data?.userFriends?.friendRequests || [];
+  const blocked = data?.userFriends?.blocked || [];
+  const incoming = friendRequests.filter((r) => r.status === "incoming");
 
   return (
-    <main className="bg-background w-full relative flex flex-col">
-      <Header state={state} setState={setState} />
+    <main className="bg-background flex-1 min-w-0 h-screen relative flex flex-col">
+      <Header state={state} setState={setState} pending={incoming.length} />
       <hr className="border-lightdark" />
 
-      <section className="h-full flex items-start">
-        <div className="h-full w-full">
-          {state === "online" && <Friends friends={friends} online={true} />}
-          {state === "all" && <Friends friends={friends} />}
-          {state === "pending" && (
-            <Pending friends={friendRequests} fetchChats={fetchChats} />
+      <section className="flex-1 min-h-0 flex items-start">
+        <div className="h-full w-full overflow-y-auto">
+          {loading && !data ? (
+            <div className="p-6">
+              <UserSkeleton />
+            </div>
+          ) : (
+            <>
+              {state === "online" && (
+                <Friends friends={friends} online={true} />
+              )}
+              {state === "all" && <Friends friends={friends} />}
+              {state === "pending" && <Pending friends={friendRequests} />}
+              {state === "blocked" && <Blocked friends={blocked} />}
+              {state === "add" && <AddFriend />}
+            </>
           )}
-          {state === "blocked" && <Blocked friends={blocked} />}
-          {state === "add" && <AddFriend fetch={fetchFriends} />}
         </div>
         {/* <Active /> */}
       </section>

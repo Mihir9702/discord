@@ -1,7 +1,14 @@
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 export default () => {
+  const { query } = useRouter();
+  const href = {
+    pathname: "/signup",
+    query: query.next ? { next: query.next } : {},
+  };
+
   return (
     <div className="flex flex-col justify-start gap-1 w-full">
       <button
@@ -12,10 +19,7 @@ export default () => {
       </button>
       <span className="text-sm text-gray-500">
         Need an account?{" "}
-        <Link
-          href={"/signup"}
-          className="text-left text-blue-500 hover:underline"
-        >
+        <Link href={href} className="text-left text-blue-500 hover:underline">
           Register
         </Link>
       </span>

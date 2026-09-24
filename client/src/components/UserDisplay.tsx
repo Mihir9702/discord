@@ -1,29 +1,27 @@
 import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { Settings as SettingsIcon } from "./Icons";
-import { UserQuery } from "src/graphql";
-import Loader from "./Loader";
-import { statusColor } from "src/utils/statusColor";
 import Settings from "./Settings";
+import Status from "./Status";
+import UserIcon from "./UserIcon";
+import Tooltip from "./Tooltip";
 import { DispatchBool } from "src/types/dispatch";
+import { useMe } from "src/utils/useMe";
 
 interface Props {
-  id: UserQuery["user"];
   status: boolean;
   setStatus: DispatchBool;
 }
 
+// the signed in user's panel at the bottom of the middle column
 const UserDisplay = ({
-  id,
   status: statusModal,
   setStatus: setStatusModal,
 }: Props) => {
   const [init, setInit] = useState(false);
+  const { me } = useMe();
 
-  if (!id) return <Loader />;
-
-  const ifs =
-    statusColor(id.status) +
-    " absolute bottom-0 right-0.5 w-3 h-3 rounded-full";
+  if (!me) return null;
 
   return (
     <main
@@ -32,38 +30,38 @@ const UserDisplay = ({
       max-h-[52px] w-full rounded-sm
     `}
     >
-      <section className="flex-1 text-left h-full text-gray-300 flex gap-4 p-1 items-center justify-between w-full">
+      {statusModal && <Status setStatus={setStatusModal} />}
+
+      <section className="flex-1 text-left h-full text-gray-300 flex gap-2 p-1 items-center justify-between w-full">
         <button
-          onClick={() => setStatusModal(!statusModal)} // todo status modal
-          className="status-button flex items-center"
+          onClick={() => setStatusModal(!statusModal)}
+          className="status-button flex items-center min-w-0"
+          title="Set status"
         >
-          <div className="relative inline-block">
-            <div
-              // todo image here
-              className={`w-8 h-8 rounded-full self-center`}
-              style={{ backgroundColor: id.iconId }}
-            />
-            <span className={ifs} />
-          </div>
-          <div className="flex flex-col items-start leading-3">
-            <p className="text-sm text-gray-300 font-bold font-sans">
-              {id.nameId}
+          <UserIcon iconId={me.iconId} status={me.status} name={me.nameId} />
+          <div className="flex flex-col items-start leading-4 min-w-0">
+            <p className="text-sm text-gray-200 font-bold font-sans truncate max-w-[110px]">
+              {me.nameId}
             </p>
-            <p className="text-sm text-gray-300 font-light font-sans">
-              {id.status}
+            <p className="text-xs text-gray-400 font-light font-sans">
+              #{me.userId}
             </p>
           </div>
         </button>
-        <h1 className="text-md text-white flex justify-end items-center w-max">
-          {init && <Settings init={init} iinit={setInit} />}
+        <Tooltip content="User Settings" position="top">
           <button
-            onClick={() => setInit(!init)}
+            aria-label="User Settings"
+            onClick={() => setInit(true)}
             className="text-md text-gray-100 hover:text-gray-400 cursor-pointer mx-2"
           >
             {SettingsIcon}
           </button>
-        </h1>
+        </Tooltip>
       </section>
+
+      <AnimatePresence>
+        {init && <Settings onClose={() => setInit(false)} />}
+      </AnimatePresence>
     </main>
   );
 };

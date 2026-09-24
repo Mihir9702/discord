@@ -1,6 +1,10 @@
 mutation UpdateUser($params: UpdateUserInput!) {
   updateUser(params: $params) {
+    id
+    username
     nameId
     userId
+    iconId
+    status
   }
 }

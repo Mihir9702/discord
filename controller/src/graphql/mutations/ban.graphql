@@ -1,0 +1,3 @@
+mutation Ban($serverId: Float!, $params: FriendInput!) {
+  ban(serverId: $serverId, params: $params)
+}

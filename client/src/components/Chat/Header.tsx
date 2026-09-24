@@ -1,50 +1,40 @@
-import React, { useEffect, useState } from "react";
-import { User } from "src/types/query";
-import { statusColor } from "src/utils/statusColor";
+import React from "react";
+import { MessagesQuery } from "src/graphql";
 import Tooltip from "../Tooltip";
-import { User as UserIcon } from "../Icons";
+import UserIcon from "../UserIcon";
+import { User as UserSvg } from "../Icons";
+import { DispatchBool } from "src/types/dispatch";
 
 interface HeaderProps {
-  id: User;
+  id: NonNullable<MessagesQuery["messages"]["friend"]>;
+  size: boolean;
+  setSize: DispatchBool;
 }
 
-export default ({ id }: HeaderProps) => {
-  const { status, nameId, iconId } = id;
-
-  if (!status || !nameId) return null;
-
-  const [statusColorCss, setStatusColorCss] = useState(statusColor(status));
-
-  useEffect(() => {
-    setStatusColorCss(statusColor(status));
-  }, [status]);
+// dm header: who you're talking to
+export default ({ id, size, setSize }: HeaderProps) => {
+  const { status, nameId, iconId, userId } = id;
 
   return (
-    <section className="flex justify-between items-center">
-      <button className="flex gap-2 items-center p-[6.5px] mx-3">
-        <div className="relative inline-block">
-          <div
-            className="w-8 h-8 rounded-full"
-            style={{ backgroundColor: iconId }}
-          />
-          <span
-            className={
-              "w-2.5 h-2.5 rounded-full absolute bottom-0 right-0.5" +
-              statusColorCss
-            }
-          />
-        </div>
-        <Tooltip content={`${nameId}#${id.userId}`}>
+    <section className="flex justify-between items-center w-full">
+      <div className="flex gap-2 items-center p-[6.5px] mx-3">
+        <UserIcon iconId={iconId} status={status} name={nameId} />
+        <Tooltip content={`${nameId}#${userId}`}>
           <p className="text-md font-semibold text-gray-200">{nameId}</p>
         </Tooltip>
-      </button>
+      </div>
 
-      <button
-        className="mx-4 text-gray-300 hover:text-gray-400 hover:transition-all"
-        onClick={() => {}}
-      >
-        {UserIcon}
-      </button>
+      <Tooltip content={size ? "Hide User Profile" : "Show User Profile"}>
+        <button
+          aria-label="User Profile"
+          className={`mx-4 hover:text-gray-200 hover:transition-all ${
+            size ? "text-white" : "text-gray-400"
+          }`}
+          onClick={() => setSize(!size)}
+        >
+          {UserSvg}
+        </button>
+      </Tooltip>
     </section>
   );
 };

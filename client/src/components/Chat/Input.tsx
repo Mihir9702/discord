@@ -1,89 +1,90 @@
 import { useEffect, useState } from "react";
 import { ChevronRight, PlusCircle } from "../Icons";
-import { useMutation, useQuery } from "@apollo/client";
-import {
-  SendMessageMutation,
-  SendMessageDocument,
-  CurrentChannelQuery,
-  CurrentChannelDocument,
-} from "src/graphql";
-import { DispatchBool } from "src/types/dispatch";
+import { useMutation } from "@apollo/client";
+import { SendMessageMutation, SendMessageDocument } from "src/graphql";
 
 interface ChatInput {
   channelId: string;
-  isFetch: DispatchBool;
+  placeholder: string; // "#channel" or "@friend"
+  disabled?: boolean;
 }
 
-export default ({ channelId, isFetch }: ChatInput) => {
+const MAX = 2000;
+
+export default ({ channelId, placeholder, disabled }: ChatInput) => {
   const [msg, setMsg] = useState("");
-  const [msgp, setMsgP] = useState("");
-  const [send] = useMutation<SendMessageMutation>(SendMessageDocument);
+  const [error, setError] = useState("");
+  const [send, { loading }] = useMutation<SendMessageMutation>(
+    SendMessageDocument,
+    { refetchQueries: ["Messages"] }
+  );
 
-  const { data } = useQuery<CurrentChannelQuery>(CurrentChannelDocument, {
-    variables: { channelId },
-  });
-
-  const channel = data?.currentChannel;
-  const ptChat = channel?.ptChat;
-
+  // drafts don't follow you to other channels
   useEffect(() => {
-    if (ptChat) {
-      channel.users?.forEach((user) => {
-        if (user.nameId !== localStorage.getItem("id")) {
-          setMsgP(`@${user.nameId}`);
-        }
-      });
-    } else {
-      setMsgP(`#${channel?.name as string}`);
-    }
-  }, [channelId, channel]);
+    setMsg("");
+    setError("");
+  }, [channelId]);
 
   function isWhiteSpace(msg: string) {
     return !msg.replace(/\s/g, "").length;
   }
 
-  const sendMessage = async (e: any) => {
-    e.preventDefault();
+  const sendMessage = async () => {
+    if (isWhiteSpace(msg) || loading || disabled) return;
 
-    if (isWhiteSpace(msg)) return;
-
-    const params = { msg, channelId };
-    const { errors } = await send({ variables: { params } });
-    if (errors) console.error(errors[0].message);
-
-    setMsg("");
-    isFetch(true);
+    setError("");
+    try {
+      await send({ variables: { params: { msg, channelId } } });
+      setMsg("");
+    } catch (ex: any) {
+      setError(ex.message);
+    }
   };
 
-  console.log(msgp);
+  const left = MAX - msg.length;
+
   return (
-    <section className="flex items-center h-16 rounded-xl bg-white dark:bg-mid w-full px-4">
-      <div>
-        <button className="flex items-center justify-center text-gray-400 hover:text-gray-600">
+    <div>
+      {error && <p className="text-sm text-red-400 mb-1 mx-1">{error}</p>}
+      <section className="flex items-center min-h-[44px] rounded-lg bg-[#383a40] w-full px-4 py-2.5">
+        <button
+          disabled
+          title="Uploads are coming soon"
+          className="flex items-center justify-center text-gray-400 cursor-not-allowed"
+        >
           {PlusCircle}
         </button>
-      </div>
-      <div className="flex-col w-full h-full mx-3">
-        <span className="h-7 w-full" />
         <textarea
           id="msg"
-          placeholder={`Message ${msgp}`}
-          className="w-full h-full resize-none text-gray-200 font-light bg-transparent focus:outline-none placeholder:whitespace-nowrap overflow-x-hidden"
+          rows={Math.min(8, msg.split("\n").length)}
+          maxLength={MAX}
+          disabled={disabled}
+          placeholder={
+            disabled
+              ? "You can't send messages to this user"
+              : `Message ${placeholder}`
+          }
+          className="flex-1 mx-3 resize-none text-gray-200 font-light bg-transparent focus:outline-none placeholder:text-gray-500 placeholder:whitespace-nowrap overflow-x-hidden leading-6"
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
-          onKeyDownCapture={(e) => {
+          onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
-              sendMessage(e);
+              e.preventDefault();
+              sendMessage();
             }
           }}
         />
-      </div>
-      <button
-        className="mx-3 text-2xl text-gray-600 hover:text-gray-400 dark:text-gray-100 dark:hover:text-gray-500"
-        onClick={(e) => sendMessage(e)}
-      >
-        {ChevronRight}
-      </button>
-    </section>
+        {left <= 200 && (
+          <span className="text-xs text-gray-400 mr-2">{left}</span>
+        )}
+        <button
+          className="text-2xl text-gray-400 hover:text-gray-200 disabled:opacity-40"
+          disabled={isWhiteSpace(msg) || loading || disabled}
+          onClick={sendMessage}
+        >
+          {ChevronRight}
+        </button>
+      </section>
+    </div>
   );
 };

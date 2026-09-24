@@ -11,9 +11,11 @@ query Messages($channelId: String!) {
       id
       msg
       msgId
+      edited
       createdAt
       updatedAt
       user {
+        id
         nameId
         userId
         iconId
@@ -21,6 +23,7 @@ query Messages($channelId: String!) {
     }
 
     friend {
+      id
       nameId
       userId
       iconId
