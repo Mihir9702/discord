@@ -12,12 +12,12 @@
 // ** 12. have two friends w/ open chats
 // ** 13. create a server
 // ** 14. join intro channel and send msg 'intromsg'
-// 15. create another server and get links from both servers
-// 16. send both servers to one acc but only one server to another acc
-// 17. log into 1st fr acc and join server via msgs
-// 18. log into 2nd fr acc and join server via join server modal
-// 19. check to see if 1st server contains 2 members and 2nd server contains 3 members
-// 20. send msgs in general channel inside server on all 3 accs
-// !! 21. edit server name icon refresh link ** updateServerMutation depends on serverRole...
-// 22. create a 'test' channel inside the server
-// 23. send msg 'testmsg' inside the 'test' channel
+// ** 15. create another server and get links from both servers
+// ** 16. send both servers to one acc but only one server to another acc
+// ** 17. log into 1st fr acc and join server via msgs
+// ** 18. log into 2nd fr acc and join server via join server modal
+// ** 19. check to see if 1st server contains 2 members and 2nd server contains 3 members
+// ** 20. send msgs in general channel inside server on all 3 accs
+// ** 21. edit server name icon refresh link
+// ** 22. create a 'test' channel inside the server
+// ** 23. send msg 'testmsg' inside the 'test' channel
