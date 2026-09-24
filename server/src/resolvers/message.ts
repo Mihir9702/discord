@@ -6,29 +6,43 @@ import {
   Resolver,
   UseMiddleware,
 } from "type-graphql";
-import { MessagesResponse, MyContext, relations } from "../types";
+import { MessagesResponse, MyContext } from "../types";
 import { isAuth } from "../middleware/isAuth";
 import { Message } from "../entities/Message";
 import { User } from "../entities/User";
-import { Channel } from "../entities/Channel";
 import { randomNumberGenerator } from "../helpers/random";
 import { MessageInput } from "../types";
-import { check, push } from "../helpers/array";
-import { createServer } from "http";
-import { Server } from "socket.io";
-
-// const server = createServer();
-// const io = new Server(server);
+import { check } from "../helpers/array";
+import { validateMessage } from "../helpers/validate";
+import { canManage, channelAudience, channelFor } from "../helpers/access";
+import { emitTo } from "../socket";
 
 @Resolver()
 export class MessageResolver {
+  // a message in a channel the signed in user can see
+  async find(req: MyContext["req"], msgId: string) {
+    const message = await Message.findOne({
+      where: { msgId },
+      relations: ["user", "channel"],
+    });
+
+    const { m } = check({ message });
+
+    if (!m.channel) throw new Error("Message not found");
+
+    // also makes sure the user can see the channel
+    m.channel = await channelFor(req.session.idx, m.channel.channelId);
+
+    return m;
+  }
+
   @Query(() => Message)
   @UseMiddleware(isAuth)
-  async message(@Arg("msgId") msgId: string): Promise<Message | null> {
-    return await Message.findOne({
-      where: { msgId },
-      relations: relations.message,
-    });
+  async message(
+    @Arg("msgId") msgId: string,
+    @Ctx() { req }: MyContext
+  ): Promise<Message> {
+    return await this.find(req, msgId);
   }
 
   @Query(() => MessagesResponse)
@@ -37,30 +51,18 @@ export class MessageResolver {
     @Ctx() { req }: MyContext,
     @Arg("channelId") channelId: string
   ): Promise<MessagesResponse | null> {
-    const user = await User.findOne({
-      where: { id: req.session.idx },
-    });
-    check({ user });
-    const channel = await Channel.findOne({
-      where: { channelId },
-      relations: [
-        "messages",
-        "messages.user",
-        "messages.channel",
-        "users",
-        "users.messages",
-        "users.channels",
-      ],
-    });
-    if (!channel) throw new Error("messages - no channel");
+    const channel = await channelFor(req.session.idx, channelId, ["users"]);
 
-    const messages = channel.messages || [];
+    const messages = await Message.find({
+      where: { channel: { id: channel.id } },
+      relations: ["user"],
+      order: { id: "ASC" },
+    });
 
     if (channel.ptChat) {
-      const friend = channel.users?.filter((u) => u.id !== user?.id);
-      if (!friend) throw new Error("messages - no friend");
+      const friend = channel.users?.find((u) => u.id !== req.session.idx);
 
-      return { channel, messages, friend: friend[0] };
+      return { channel, messages, friend: friend || null };
     }
 
     return { channel, messages };
@@ -72,75 +74,80 @@ export class MessageResolver {
     @Arg("params") params: MessageInput,
     @Ctx() { req }: MyContext
   ): Promise<Message> {
-    const u = await User.findOne({
-      where: { id: req.session.idx },
-      relations: ["messages", "messages.channel"],
-    });
+    const channel = await channelFor(req.session.idx, params.channelId);
+    const user = await User.findOne({ where: { id: req.session.idx } });
 
-    if (!u) throw new Error("send msg - no user");
+    const { u, c } = check({ user, channel });
 
-    const ch = await Channel.findOne({
-      where: { channelId: params.channelId },
-      relations: ["messages", "messages.channel"],
-    });
+    const msg = (params.msg || "").trim();
+    const invalid = validateMessage(msg);
+    if (invalid) throw new Error(invalid);
 
-    if (!ch) throw new Error("send msg - no channel");
+    const message = await Message.create({
+      msg,
+      msgId: randomNumberGenerator(10).toString(),
+      user: u,
+      channel: c,
+    }).save();
 
-    if (params.msg === "" || params.msg === " ")
-      throw new Error("send msg - msg too short");
-    if (params.msg.length > 2000) throw new Error("send msg - msg too long");
+    emitTo(await channelAudience(c), "message", { channelId: c.channelId });
 
-    const msgId = randomNumberGenerator(10).toString();
-    const info = { ...params, user: u, msgId };
-    const msg = await Message.create(info).save();
-
-    ch.messages = push(ch.messages, msg);
-
-    await Channel.save(ch);
-    return msg;
+    return message;
   }
 
-  @Query(() => Message)
+  @Mutation(() => Message)
+  @UseMiddleware(isAuth)
   async updateMessage(
     @Arg("msgId", () => String) msgId: string,
-    @Arg("content", () => String) content: string
+    @Arg("content", () => String) content: string,
+    @Ctx() { req }: MyContext
   ): Promise<Message> {
-    const msg = await Message.findOne({
-      where: { msgId },
-      relations: relations.message,
-    });
-    if (!msg) throw new Error("update msg - no msg");
+    const m = await this.find(req, msgId);
 
-    if (typeof content !== "undefined") {
-      msg.msg = content;
-      await Message.save(msg);
+    if (m.user?.id !== req.session.idx) {
+      throw new Error("You can only edit your own messages");
     }
 
-    return msg;
+    const msg = (content || "").trim();
+    const invalid = validateMessage(msg);
+    if (invalid) throw new Error(invalid);
+
+    if (msg !== m.msg) {
+      m.msg = msg;
+      m.edited = true;
+      await Message.update(m.id, { msg, edited: true });
+
+      emitTo(await channelAudience(m.channel), "message", {
+        channelId: m.channel.channelId,
+      });
+    }
+
+    return m;
   }
 
-  @Query(() => Boolean)
+  // your own messages, or anyone's if you manage the server
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
   async deleteMessage(
     @Arg("msgId", () => String) msgId: string,
-    @Arg("channelId", () => String) channelId: string
+    @Ctx() { req }: MyContext
   ): Promise<boolean> {
-    const msg = await Message.findOne({
-      where: { msgId },
-      relations: ["channel", "channel.msgs"],
-    });
-    if (!msg) throw new Error("delete msg - no msg");
-
-    const ch = await Channel.findOne({
-      where: { channelId },
-      relations: ["messages", "messages.channel"],
+    const m = await this.find(req, msgId);
+    const { u } = check({
+      user: await User.findOne({ where: { id: req.session.idx } }),
     });
 
-    if (!ch) throw new Error("delete msg - no channel");
+    const mine = m.user?.id === u.id;
+    const mod = !!m.channel.server && canManage(u, m.channel.server.serverId);
 
-    const idx = ch.messages?.findIndex((m) => m.msgId === msgId);
-    if (!idx) throw new Error("delete msg - no msg in channel");
+    if (!mine && !mod) throw new Error("You can't delete this message");
 
-    await Message.remove(msg);
+    await Message.delete(m.id);
+
+    emitTo(await channelAudience(m.channel), "message", {
+      channelId: m.channel.channelId,
+    });
+
     return true;
   }
 }

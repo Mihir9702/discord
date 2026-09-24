@@ -2,17 +2,19 @@ import "reflect-metadata";
 import "dotenv/config";
 import express from "express";
 import session from "express-session";
+import { createServer } from "http";
 import db from "./connect";
 import cors from "cors";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
-import { __prod__, COOKIE, runApp } from "./constants";
+import { __prod__, COOKIE, CLIENT_URLS, PORT, runApp } from "./constants";
 import { MyContext } from "./types";
 import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
-import { UserResolver } from "./resolvers/user";
+import { UserResolver, UserFieldResolver } from "./resolvers/user";
 import { ServerResolver } from "./resolvers/server";
 import { MessageResolver } from "./resolvers/message";
 import { ChannelResolver } from "./resolvers/channel";
+import { initSocket } from "./socket";
 
 const main = async () => {
   // Connect to Database
@@ -20,35 +22,42 @@ const main = async () => {
   await db.runMigrations();
 
   const app = express();
+  const http = createServer(app);
 
-  app.set("trust proxy", __prod__);
+  // behind a proxy (heroku, render, nginx...) in production
+  app.set("trust proxy", __prod__ ? 1 : false);
 
   app.use(
     cors({
-      origin: ["http://localhost:3001", "0.0.0.0:8888"],
+      origin: CLIENT_URLS,
       credentials: true,
     })
   );
 
-  app.use(
-    session({
-      name: COOKIE,
-      cookie: {
-        maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
-        httpOnly: true,
-        sameSite: "lax", // csrf
-        secure: !__prod__, // cookie only works in https
-      },
-      saveUninitialized: false, // don't create session until something stored
-      secret: process.env.SESSION_SECRET || "express.session.cookie.secret.key",
-      resave: false, // false // do not save session if unmodified
-    })
-  );
+  if (__prod__ && !process.env.SESSION_SECRET) {
+    throw new Error("SESSION_SECRET must be set in production");
+  }
+
+  const sessionMiddleware = session({
+    name: COOKIE,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
+      httpOnly: true,
+      sameSite: "lax", // csrf
+      secure: __prod__, // cookie only works in https
+    },
+    saveUninitialized: false, // don't create session until something stored
+    secret: process.env.SESSION_SECRET || "express.session.cookie.secret.key",
+    resave: false, // false // do not save session if unmodified
+  });
+
+  app.use(sessionMiddleware);
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [
         UserResolver,
+        UserFieldResolver,
         ServerResolver,
         MessageResolver,
         ChannelResolver,
@@ -63,7 +72,12 @@ const main = async () => {
 
   apolloServer.applyMiddleware({ app, cors: false });
 
-  app.listen(3000, runApp);
+  initSocket(http, sessionMiddleware, CLIENT_URLS);
+
+  http.listen(PORT, runApp);
 };
 
-main();
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

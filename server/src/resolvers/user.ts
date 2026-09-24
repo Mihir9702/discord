@@ -5,6 +5,8 @@ import {
   Resolver,
   Mutation,
   UseMiddleware,
+  FieldResolver,
+  Root,
 } from "type-graphql";
 import { MyContext, UpdatePassInput, UpdateUserInput } from "../types";
 import { hash, genSalt, compare } from "bcryptjs";
@@ -19,34 +21,121 @@ import {
   uniqueNamesGenerator,
 } from "unique-names-generator";
 import { isAuth } from "../middleware/isAuth";
-import { FriendRequest } from "../entities/FriendRequest";
-import { Channel } from "../entities/Channel";
-import { check, filter, push, find, role, checkCopy } from "../helpers/array";
+import { devOnly } from "../middleware/devOnly";
+import { FriendRequest, FriendRequestStatus } from "../entities/FriendRequest";
+import { ServerRole } from "../entities/ServerRole";
+import { check, filter, push, find, role, same } from "../helpers/array";
 import { Input, FriendInput } from "../types";
 import { Server } from "../entities/Server";
-import { __prod__ } from "../constants";
-import { validatePassword, validateUsername } from "../helpers/validate";
+import { COOKIE } from "../constants";
+import {
+  inviteCode,
+  validateColor,
+  validateNameId,
+  validatePassword,
+  validateStatus,
+  validateUsername,
+} from "../helpers/validate";
+import {
+  addToServer,
+  canManage,
+  deleteChannels,
+  deleteServer,
+  dmChannel,
+  getRole,
+  isMember,
+  memberIds,
+  relation,
+  removeFromServer,
+  setRole,
+} from "../helpers/access";
+import { audience, emitTo, isOnline } from "../socket";
+
+const config: Config = {
+  dictionaries: [adjectives, colors, animals, countries],
+  length: 1,
+};
+
+const normalize = (username: string) => (username || "").trim().toLowerCase();
+
+function request(user: User, status: FriendRequestStatus): FriendRequest {
+  const frq = new FriendRequest();
+  frq.nameId = user.nameId;
+  frq.userId = user.userId;
+  frq.iconId = user.iconId;
+  frq.status = status;
+  return frq;
+}
+
+// a random 4 digit tag nobody else with this name has
+async function freeUserId(nameId: string): Promise<number> {
+  for (let i = 0; i < 20; i++) {
+    const userId = randomNumberGenerator(4);
+    if (!(await User.findOne({ where: { nameId, userId } }))) return userId;
+  }
+  throw new Error("That display name is too popular, try another one");
+}
+
+function destroySession({ req, res }: MyContext): Promise<boolean> {
+  return new Promise((resolve) =>
+    req.session.destroy((err) => {
+      res.clearCookie(COOKIE);
+      resolve(!err);
+    })
+  );
+}
+
+// the other side of every pending request keeps a copy of our tag + icon
+async function syncFriendRequests(u: User, old: FriendInput, remove = false) {
+  for (const frq of u.friendRequests || []) {
+    const other = await User.findOne({
+      where: { nameId: frq.nameId, userId: frq.userId },
+    });
+    if (!other) continue;
+
+    const friendRequests = remove
+      ? filter(other.friendRequests, old)
+      : (other.friendRequests || []).map((r) =>
+          same(r, old)
+            ? { ...r, nameId: u.nameId, userId: u.userId, iconId: u.iconId }
+            : r
+        );
+
+    await User.update(other.id, { friendRequests });
+  }
+}
+
+@Resolver(() => User)
+export class UserFieldResolver {
+  // your chosen status while connected, offline otherwise (you always see your own)
+  @FieldResolver(() => String)
+  status(@Root() user: User, @Ctx() { req }: MyContext): string {
+    if (user.id === req.session.idx) return user.status;
+    return isOnline(user.id) ? user.status : "offline";
+  }
+}
 
 @Resolver()
 export class UserResolver {
-  @UseMiddleware(isAuth)
+  // lookups - an undefined id would make typeorm return the first row, so bail early
   async find(id?: number, relations?: string[]) {
+    if (!id) return null;
     return await User.findOne({
       where: { id },
       relations: relations,
     });
   }
 
-  @UseMiddleware(isAuth)
-  async friend({ nameId, userId }: any, relations?: string[]) {
+  async friend({ nameId, userId }: FriendInput, relations?: string[]) {
+    if (!nameId || !userId) return null;
     return await User.findOne({
       where: { nameId, userId },
       relations: relations,
     });
   }
 
-  @UseMiddleware(isAuth)
   async server(id: number, relations?: string[]) {
+    if (!id) return null;
     return await Server.findOne({
       where: { serverId: id },
       relations: relations,
@@ -54,12 +143,12 @@ export class UserResolver {
   }
 
   @Query(() => [User])
+  @UseMiddleware(isAuth, devOnly)
   async users(): Promise<User[]> {
     return await User.find();
   }
 
   @Query(() => User, { nullable: true })
-  @UseMiddleware(isAuth)
   async user(@Ctx() { req }: MyContext): Promise<User | null> {
     return await this.find(req.session.idx);
   }
@@ -73,22 +162,26 @@ export class UserResolver {
   @Query(() => [Server], { nullable: true })
   @UseMiddleware(isAuth)
   async userServers(@Ctx() { req }: MyContext): Promise<Server[] | null> {
-    return await this.find(req.session.idx, [
+    const u = await this.find(req.session.idx, [
       "servers",
       "servers.channels",
-    ]).then((u) => (u && u.servers) || null);
+    ]);
+    if (!u || !u.servers) return null;
+
+    u.servers.sort((a, b) => a.id - b.id);
+    u.servers.forEach((s) => s.channels?.sort((a, b) => a.id - b.id));
+    return u.servers;
   }
 
-  @Query(() => [User], { nullable: true })
+  @Query(() => ServerRole, { nullable: true })
   @UseMiddleware(isAuth)
   async serverRole(
     @Ctx() { req }: MyContext,
     @Arg("serverId") serverId: number
-  ): Promise<User[] | null> {
-    const u = await this.find(req.session.idx, ["servers", "roles"]);
-    if (!u || !u.roles) throw new Error("userRole - no user");
+  ): Promise<ServerRole | null> {
+    const { u } = check({ user: await this.find(req.session.idx) });
 
-    return role(u.roles, serverId);
+    return role(u.roles, serverId) || null;
   }
 
   @Mutation(() => User)
@@ -96,29 +189,23 @@ export class UserResolver {
     @Arg("params") params: Input,
     @Ctx() { req }: MyContext
   ): Promise<User> {
-    if (
-      await User.findOne({
-        where: { username: params.username },
-      })
-    ) {
+    const username = normalize(params.username);
+
+    const invalid =
+      validateUsername(username) || validatePassword(params.password);
+    if (invalid) throw new Error(invalid);
+
+    if (await User.findOne({ where: { username } })) {
       throw new Error("Username already taken");
     }
 
-    if (__prod__) {
-      validateUsername(params.username);
-      validatePassword(params.password);
-    }
-
-    const config: Config = {
-      dictionaries: [adjectives, colors, animals, countries],
-      length: 1,
-    };
+    const nameId = uniqueNamesGenerator(config);
 
     const user = await User.create({
-      username: params.username.toLowerCase(),
+      username,
       password: await hash(params.password, await genSalt(10)),
-      userId: randomNumberGenerator(4),
-      nameId: uniqueNamesGenerator(config),
+      userId: await freeUserId(nameId),
+      nameId,
       iconId: randomColorGenerator(),
     }).save();
 
@@ -132,18 +219,18 @@ export class UserResolver {
     @Arg("params") params: Input,
     @Ctx() { req }: MyContext
   ): Promise<User> {
-    if (!params.username) throw new Error("Username not provided");
+    const username = normalize(params.username);
+
+    if (!username) throw new Error("Username not provided");
     if (!params.password) throw new Error("Password not provided");
 
     const user = await User.findOne({
-      where: { username: params.username },
+      where: { username },
     });
 
-    if (!user) throw new Error("User not found");
+    const valid = user && (await compare(params.password, user.password));
 
-    const valid = await compare(params.password, user.password);
-
-    if (!valid) throw new Error("Invalid username or password");
+    if (!user || !valid) throw new Error("Invalid username or password");
 
     req.session.idx = user.id;
 
@@ -151,23 +238,65 @@ export class UserResolver {
   }
 
   @Mutation(() => User)
+  @UseMiddleware(isAuth)
   async updateUser(
     @Ctx() { req }: MyContext,
     @Arg("params") params: UpdateUserInput
   ): Promise<User> {
-    const u = await this.find(req.session.idx);
-    if (!u) throw new Error("update user - no user");
+    const { u } = check({ user: await this.find(req.session.idx) });
+    const old = { nameId: u.nameId, userId: u.userId };
 
-    if (params.username) u.username = params.username;
-    if (params.nameId) {
-      u.nameId = params.nameId;
-      u.userId = randomNumberGenerator(4);
+    if (params.username) {
+      const username = normalize(params.username);
+      const invalid = validateUsername(username);
+      if (invalid) throw new Error(invalid);
+
+      if (username !== u.username) {
+        if (await User.findOne({ where: { username } })) {
+          throw new Error("Username already taken");
+        }
+        u.username = username;
+      }
     }
 
-    // todo update icon
-    if (params.status) u.status = params.status;
+    if (params.nameId) {
+      const nameId = params.nameId.trim();
+      const invalid = validateNameId(nameId);
+      if (invalid) throw new Error(invalid);
 
-    return await User.save(u);
+      if (nameId !== u.nameId) {
+        u.userId = await freeUserId(nameId);
+        u.nameId = nameId;
+      }
+    }
+
+    if (params.iconId) {
+      const invalid = validateColor(params.iconId);
+      if (invalid) throw new Error(invalid);
+      u.iconId = params.iconId;
+    }
+
+    if (params.status) {
+      const invalid = validateStatus(params.status);
+      if (invalid) throw new Error(invalid);
+      u.status = params.status;
+    }
+
+    await User.update(u.id, {
+      username: u.username,
+      nameId: u.nameId,
+      userId: u.userId,
+      iconId: u.iconId,
+      status: u.status,
+    });
+
+    if (!same(u, old) || params.iconId) await syncFriendRequests(u, old);
+
+    // names, icons and statuses show up everywhere - let everyone refetch
+    emitTo(await audience(u.id), "presence", { id: u.id });
+    emitTo([u.id], "account");
+
+    return u;
   }
 
   @Mutation(() => User)
@@ -176,40 +305,67 @@ export class UserResolver {
     @Ctx() { req }: MyContext,
     @Arg("params") params: UpdatePassInput
   ): Promise<User> {
-    const u = await this.find(req.session.idx);
-
-    if (!u) throw new Error("update pass - no user");
+    const { u } = check({ user: await this.find(req.session.idx) });
 
     const valid = await compare(params.currPass, u.password);
 
-    if (!valid) throw new Error("update pass - invalid password");
+    if (!valid) throw new Error("Current password is incorrect");
 
-    const password = await hash(params.newPass, await genSalt(10));
+    const invalid = validatePassword(params.newPass);
+    if (invalid) throw new Error(invalid);
 
-    u.password = password;
+    u.password = await hash(params.newPass, await genSalt(10));
 
-    return await User.save(u);
+    await User.update(u.id, { password: u.password });
+
+    return u;
   }
 
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
-  async deleteUser(@Ctx() { req }: MyContext): Promise<boolean> {
-    const user = await this.find(req.session.idx);
+  async deleteUser(
+    @Ctx() ctx: MyContext,
+    @Arg("password") password: string
+  ): Promise<boolean> {
+    const { u } = check({
+      user: await this.find(ctx.req.session.idx, ["channels"]),
+    });
 
-    if (!user) throw new Error("User not found");
-
-    try {
-      await User.remove(user);
-      return true;
-    } catch (ex) {
-      throw new Error("deleteUser - Failed to delete user.");
+    if (!(await compare(password, u.password))) {
+      throw new Error("Incorrect password");
     }
+
+    const notify = await audience(u.id);
+
+    // servers they own go with them
+    for (const r of u.roles || []) {
+      if (r.role !== "owner") continue;
+      const s = await this.server(r.serverId);
+      if (s) await deleteServer(s);
+    }
+
+    // and so do their dms
+    await deleteChannels(
+      (u.channels || []).filter((c) => c.ptChat).map((c) => c.id)
+    );
+
+    // pending requests on the other side
+    await syncFriendRequests(u, u, true);
+
+    // messages, friends, blocks and memberships cascade
+    await User.delete(u.id);
+
+    await destroySession(ctx);
+
+    emitTo(notify, "friends");
+    emitTo(notify, "presence", { id: u.id });
+
+    return true;
   }
 
   @Mutation(() => Boolean)
-  @UseMiddleware(isAuth)
-  async logout(@Ctx() { req }: MyContext): Promise<boolean> {
-    return req.session.destroy((err) => (err ? err : true)) ? true : false;
+  async logout(@Ctx() ctx: MyContext): Promise<boolean> {
+    return await destroySession(ctx);
   }
 
   @Mutation(() => User)
@@ -218,37 +374,72 @@ export class UserResolver {
     @Arg("params") params: FriendInput,
     @Ctx() { req }: MyContext
   ): Promise<User> {
-    const relations = ["friends", "blocked", "channels", "channels.users"];
+    const relations = ["friends", "blocked"];
 
     const user = await this.find(req.session.idx, relations);
     const friend = await this.friend(params, relations);
 
     const { u, f } = check({ user, friend });
 
-    checkCopy(u.friendRequests, f);
-    checkCopy(f.friendRequests, u);
+    if (u.id === f.id) throw new Error("You can't add yourself as a friend");
 
-    const ufrq = new FriendRequest();
-    ufrq.nameId = f.nameId;
-    ufrq.userId = f.userId;
-    ufrq.iconId = f.iconId;
-    ufrq.status = "outgoing";
-
-    const frfrq = new FriendRequest();
-    frfrq.nameId = u.nameId;
-    frfrq.userId = u.userId;
-    frfrq.iconId = u.iconId;
-    frfrq.status = "incoming";
-
-    u.friendRequests = push(u.friendRequests, ufrq);
-    f.friendRequests = push(f.friendRequests, frfrq);
-
-    try {
-      await Promise.all([User.save(u), User.save(f)]);
-      return u;
-    } catch (ex) {
-      throw new Error("sendFriendRequest - Failed to save changes.");
+    if (find(u.blocked, f.id)) {
+      throw new Error("You blocked this user - unblock them first");
     }
+    if (find(f.blocked, u.id)) {
+      throw new Error("Unable to send a friend request to this user");
+    }
+    if (find(u.friends, f.id)) {
+      throw new Error("You're already friends with this user");
+    }
+
+    const pending = (u.friendRequests || []).find((r) => same(r, f));
+
+    if (pending && pending.status === "outgoing") {
+      throw new Error("Friend request already sent");
+    }
+
+    // they already asked - just accept it
+    if (pending && pending.status === "incoming") {
+      return await this.accept(u, f);
+    }
+
+    u.friendRequests = push(filter(u.friendRequests, f), request(f, "outgoing"));
+    f.friendRequests = push(filter(f.friendRequests, u), request(u, "incoming"));
+
+    await Promise.all([
+      User.update(u.id, { friendRequests: u.friendRequests }),
+      User.update(f.id, { friendRequests: f.friendRequests }),
+    ]);
+
+    emitTo([u.id, f.id], "friends");
+
+    return u;
+  }
+
+  async accept(u: User, f: User): Promise<User> {
+    if (find(u.blocked, f.id) || find(f.blocked, u.id)) {
+      throw new Error("Unable to accept this friend request");
+    }
+
+    const incoming = (u.friendRequests || []).find(
+      (r) => same(r, f) && r.status === "incoming"
+    );
+    if (!incoming) throw new Error("No friend request from this user");
+
+    await Promise.all([
+      User.update(u.id, { friendRequests: filter(u.friendRequests, f) }),
+      User.update(f.id, { friendRequests: filter(f.friendRequests, u) }),
+    ]);
+
+    if (!find(u.friends, f.id)) await relation(User, "friends").of(u.id).add(f.id);
+    if (!find(f.friends, u.id)) await relation(User, "friends").of(f.id).add(u.id);
+
+    await dmChannel(u, f);
+
+    emitTo([u.id, f.id], "friends");
+
+    return (await this.find(u.id, ["friends", "channels", "channels.users"]))!;
   }
 
   @Mutation(() => User)
@@ -257,56 +448,42 @@ export class UserResolver {
     @Arg("params") params: FriendInput,
     @Ctx() { req }: MyContext
   ): Promise<User> {
-    const relations = ["friends", "blocked", "channels", "channels.users"];
+    const relations = ["friends", "blocked"];
 
     const user = await this.find(req.session.idx, relations);
     const friend = await this.friend(params, relations);
 
     const { u, f } = check({ user, friend });
 
-    if (find(u.blocked!, f.id) || find(f.blocked!, u.id)) {
-      throw new Error("acceptFriendRequest - blocked");
-    }
+    return await this.accept(u, f);
+  }
 
-    if (!u.friendRequests || !f.friendRequests) {
-      throw new Error("acceptFriendRequest - No friend requests available.");
-    }
+  // incoming request -> decline, outgoing request -> cancel
+  async dropRequest(
+    req: MyContext["req"],
+    params: FriendInput,
+    status: FriendRequestStatus
+  ): Promise<User> {
+    const user = await this.find(req.session.idx);
+    const friend = await this.friend(params);
 
-    const id = randomNumberGenerator(15).toString();
-    const ptChat = await Channel.create({
-      name: id,
-      ptChat: true,
-      users: [{ ...u }, { ...f }],
-      channelId: id,
-    }).save();
+    const { u, f } = check({ user, friend });
 
-    if (!u.channels) {
-      u.channels = [ptChat];
-    } else {
-      u.channels.push(ptChat);
-    }
-
-    if (!f.channels) {
-      f.channels = [ptChat];
-    } else {
-      f.channels.push(ptChat);
-    }
-
-    checkCopy(u.friends, f);
-    checkCopy(f.friends, u);
-
-    u.friends = push(u.friends, f);
-    f.friends = push(f.friends, u);
+    const pending = (u.friendRequests || []).find(
+      (r) => same(r, f) && r.status === status
+    );
+    if (!pending) throw new Error("Friend request not found");
 
     u.friendRequests = filter(u.friendRequests, f);
-    f.friendRequests = filter(f.friendRequests, u);
 
-    try {
-      await Promise.all([User.save(u), User.save(f)]);
-      return u;
-    } catch (ex) {
-      throw new Error("acceptFriendRequest - Failed to save changes.");
-    }
+    await Promise.all([
+      User.update(u.id, { friendRequests: u.friendRequests }),
+      User.update(f.id, { friendRequests: filter(f.friendRequests, u) }),
+    ]);
+
+    emitTo([u.id, f.id], "friends");
+
+    return u;
   }
 
   @Mutation(() => User)
@@ -315,28 +492,7 @@ export class UserResolver {
     @Arg("params") params: FriendInput,
     @Ctx() { req }: MyContext
   ): Promise<User> {
-    const user = await this.find(req.session.idx, ["friends", "blocked"]);
-    const friend = await this.friend(params, ["friends", "blocked"]);
-
-    const { u, f } = check({ user, friend });
-
-    if (find(u.blocked!, f.id) || find(f.blocked!, u.id)) {
-      throw new Error("declineFriendRequest - blocked");
-    }
-
-    if (!u.friendRequests || !f.friendRequests) {
-      throw new Error("declineFriendRequest - No friend requests available.");
-    }
-
-    u.friendRequests = filter(u.friendRequests, f);
-    f.friendRequests = filter(f.friendRequests, u);
-
-    try {
-      await Promise.all([User.save(u), User.save(f)]);
-      return u;
-    } catch (ex) {
-      throw new Error("declineFriendRequest - Failed to save changes.");
-    }
+    return await this.dropRequest(req, params, "incoming");
   }
 
   @Mutation(() => User)
@@ -345,28 +501,7 @@ export class UserResolver {
     @Arg("params") params: FriendInput,
     @Ctx() { req }: MyContext
   ): Promise<User> {
-    const user = await this.find(req.session.idx, ["friends", "blocked"]);
-    const friend = await this.friend(params, ["friends", "blocked"]);
-
-    const { u, f } = check({ user, friend });
-
-    if (find(u.blocked!, f.id) || find(f.blocked!, u.id)) {
-      throw new Error("cancelFriendRequest - blocked");
-    }
-
-    if (!u.friendRequests || !f.friendRequests) {
-      throw new Error("cancelFriendRequest - No friend requests available.");
-    }
-
-    u.friendRequests = filter(u.friendRequests, f);
-    f.friendRequests = filter(f.friendRequests, u);
-
-    try {
-      await Promise.all([User.save(u), User.save(f)]);
-      return u;
-    } catch (ex) {
-      throw new Error("cancelFriendRequest - Failed to save changes.");
-    }
+    return await this.dropRequest(req, params, "outgoing");
   }
 
   @Mutation(() => User)
@@ -375,28 +510,23 @@ export class UserResolver {
     @Arg("params") params: FriendInput,
     @Ctx() { req }: MyContext
   ): Promise<User> {
-    const user = await this.find(req.session.idx, ["friends", "blocked"]);
-    const friend = await this.friend(params, ["friends", "blocked"]);
+    const user = await this.find(req.session.idx, ["friends"]);
+    const friend = await this.friend(params, ["friends"]);
 
     const { u, f } = check({ user, friend });
 
-    if (find(u.blocked!, f.id) || find(f.blocked!, u.id)) {
-      throw new Error("removeFriend - blocked");
+    if (!find(u.friends, f.id)) {
+      throw new Error("You're not friends with this user");
     }
 
-    if (!u.friends || !f.friends) {
-      throw new Error("removeFriend - No friends available.");
+    await relation(User, "friends").of(u.id).remove(f.id);
+    if (find(f.friends, u.id)) {
+      await relation(User, "friends").of(f.id).remove(u.id);
     }
 
-    u.friends = filter(u.friends, f);
-    f.friends = filter(f.friends, u);
+    emitTo([u.id, f.id], "friends");
 
-    try {
-      await Promise.all([User.save(u), User.save(f)]);
-      return u;
-    } catch (ex) {
-      throw new Error("removeFriend - Failed to save changes.");
-    }
+    return u;
   }
 
   @Mutation(() => User)
@@ -405,22 +535,35 @@ export class UserResolver {
     @Arg("params") params: FriendInput,
     @Ctx() { req }: MyContext
   ): Promise<User> {
-    const user = await this.find(req.session.idx, ["friends", "blocked"]);
-    const friend = await this.friend(params, ["friends", "blocked"]);
+    const relations = ["friends", "blocked"];
+
+    const user = await this.find(req.session.idx, relations);
+    const friend = await this.friend(params, relations);
 
     const { u, f } = check({ user, friend });
 
-    u.blocked = push(u.blocked, f);
+    if (u.id === f.id) throw new Error("You can't block yourself");
 
-    u.friends = filter(u.friends!, f);
-    f.friends = filter(f.friends!, u);
-
-    try {
-      Promise.all([User.save(u), User.save(f)]);
-      return u;
-    } catch (ex) {
-      throw new Error("blockUser - Failed to save changes.");
+    if (!find(u.blocked, f.id)) {
+      await relation(User, "blocked").of(u.id).add(f.id);
     }
+
+    if (find(u.friends, f.id)) {
+      await relation(User, "friends").of(u.id).remove(f.id);
+    }
+    if (find(f.friends, u.id)) {
+      await relation(User, "friends").of(f.id).remove(u.id);
+    }
+
+    // pending requests either way are dropped too
+    await Promise.all([
+      User.update(u.id, { friendRequests: filter(u.friendRequests, f) }),
+      User.update(f.id, { friendRequests: filter(f.friendRequests, u) }),
+    ]);
+
+    emitTo([u.id, f.id], "friends");
+
+    return u;
   }
 
   @Mutation(() => User)
@@ -429,18 +572,18 @@ export class UserResolver {
     @Arg("params") params: FriendInput,
     @Ctx() { req }: MyContext
   ): Promise<User> {
-    const user = await this.find(req.session.idx, ["friends", "blocked"]);
-    const friend = await this.friend(params, ["friends", "blocked"]);
+    const user = await this.find(req.session.idx, ["blocked"]);
+    const friend = await this.friend(params);
 
     const { u, f } = check({ user, friend });
 
-    if (!u.blocked) {
-      throw new Error("unblockUser - No blocked users available.");
-    }
+    if (!find(u.blocked, f.id)) throw new Error("This user isn't blocked");
 
-    u.blocked = filter(u.blocked, f);
+    await relation(User, "blocked").of(u.id).remove(f.id);
 
-    return await User.save(u);
+    emitTo([u.id], "friends");
+
+    return u;
   }
 
   @Mutation(() => User, { nullable: true })
@@ -450,35 +593,26 @@ export class UserResolver {
     @Arg("link") link: string
   ): Promise<User | null> {
     const s = await Server.findOne({
-      where: { link },
-      relations: ["users", "users.servers"],
+      where: { link: inviteCode(link) },
     });
 
-    if (!s) throw new Error("join - no server");
+    if (!s) throw new Error("Invite is invalid or has expired");
 
-    if (find(s.users!, req.session.idx!))
-      throw new Error("join - already in server");
+    const { u } = check({ user: await this.find(req.session.idx) });
 
-    const user = await this.find(req.session.idx, ["servers", "servers.users"]);
-    const { u } = check({ user });
-    const r = role(u.roles!, s.serverId);
-
-    if (!r) {
-      const roles = { serverId: s.serverId, role: "member" };
-      u.roles = push(u.roles, { ...roles });
-    } else {
-      throw new Error("join - already in server");
+    if ((s.banned || []).some((b) => b.id === u.id)) {
+      throw new Error("You're banned from this server");
     }
 
-    u.servers = push(u.servers, s);
-    s.users = push(s.users, u);
-
-    try {
-      await Promise.all([User.save(u), Server.save(s)]);
-      return u;
-    } catch (ex) {
-      throw new Error("join - Failed to save changes.");
+    if (await isMember(u.id, s.id)) {
+      throw new Error("You're already in this server");
     }
+
+    await addToServer(u, s);
+
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
+
+    return await this.find(u.id, ["servers"]);
   }
 
   @Mutation(() => Boolean)
@@ -487,33 +621,52 @@ export class UserResolver {
     @Ctx() { req }: MyContext,
     @Arg("serverId") serverId: number
   ): Promise<boolean> {
-    const user = await this.find(req.session.idx, ["servers", "servers.users"]);
-    const server = await this.server(serverId, ["users", "users.servers"]);
+    const user = await this.find(req.session.idx);
+    const server = await this.server(serverId);
 
     const { u, s } = check({ user, server });
 
-    if (!find(u.servers!, u.id) || !find(s.users!, u.id)) {
-      throw new Error("leave - not in server");
+    if (!(await isMember(u.id, s.id))) {
+      throw new Error("You're not in this server");
     }
 
-    if (role(u.roles!, serverId) === "owner") {
-      try {
-        u.servers = filter(u.servers!, s);
-        await Promise.all([User.save(u), Server.remove(s)]);
-        return true;
-      } catch (ex) {
-        throw new Error("leave - owner failed");
-      }
-    } else {
-      try {
-        u.servers = filter(u.servers!, s);
-        s.users = filter(s.users!, u);
-        await Promise.all([User.save(u), Server.save(s)]);
-        return true;
-      } catch (ex) {
-        throw new Error("leave - member failed");
-      }
+    // the owner leaving takes the server with them
+    if (getRole(u, s.serverId) === "owner") {
+      await deleteServer(s);
+      return true;
     }
+
+    await removeFromServer(u, s);
+
+    emitTo([u.id], "server:removed", { serverId: s.serverId });
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
+
+    return true;
+  }
+
+  // owners can moderate anyone, admins only regular members
+  async moderate(req: MyContext["req"], serverId: number, params: FriendInput) {
+    const user = await this.find(req.session.idx);
+    const friend = await this.friend(params);
+    const server = await this.server(serverId);
+
+    const { u, f, s } = check({ user, friend, server });
+
+    if (!canManage(u, s.serverId)) {
+      throw new Error("You don't have permission to do that");
+    }
+
+    const target = getRole(f, s.serverId);
+
+    if (
+      u.id === f.id ||
+      target === "owner" ||
+      (target === "admin" && getRole(u, s.serverId) !== "owner")
+    ) {
+      throw new Error("You can't do that to this member");
+    }
+
+    return { u, f, s };
   }
 
   @Mutation(() => Boolean)
@@ -523,31 +676,18 @@ export class UserResolver {
     @Arg("serverId") serverId: number,
     @Arg("params") params: FriendInput
   ): Promise<boolean> {
-    const user = await this.find(req.session.idx, ["servers", "servers.users"]);
-    const friend = await this.friend(params, ["servers", "servers.users"]);
+    const { f, s } = await this.moderate(req, serverId, params);
 
-    const { u, f } = check({ user, friend });
-
-    const s = await this.server(serverId, ["users", "users.servers"]);
-
-    if (!find(u.servers!, u.id) || !find(f.servers!, f.id)) {
-      throw new Error("kick - not in server");
+    if (!(await isMember(f.id, s.id))) {
+      throw new Error("That user isn't in this server");
     }
 
-    const r = role(u.roles!, serverId);
+    await removeFromServer(f, s);
 
-    if (r === "owner" || r === "admin") {
-      f.servers = filter(f.servers!, s);
-    } else {
-      throw new Error("kick - not admin");
-    }
+    emitTo([f.id], "server:removed", { serverId: s.serverId });
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
 
-    try {
-      await Promise.all([User.save(u), User.save(f)]);
-      return true;
-    } catch (ex) {
-      throw new Error("kick - Failed to save changes.");
-    }
+    return true;
   }
 
   @Mutation(() => Boolean)
@@ -557,29 +697,22 @@ export class UserResolver {
     @Arg("serverId") serverId: number,
     @Arg("params") params: FriendInput
   ): Promise<boolean> {
-    const user = await this.find(req.session.idx, ["servers", "servers.users"]);
-    const friend = await this.friend(params, ["servers", "servers.users"]);
-    const { u, f } = check({ user, friend });
+    const { f, s } = await this.moderate(req, serverId, params);
 
-    const server = await this.server(serverId, ["users", "users.servers"]);
-    const { s } = check({ server });
-
-    find(u.servers!, u.id) && find(f.servers!, f.id);
-
-    const r = role(u.roles!, serverId);
-
-    if (r === "owner" || r === "admin") {
-      f.servers = filter(f.servers!, s);
-      u.blocked = push(u.blocked, f);
-      s.banned = push(s.banned, f);
+    if (await isMember(f.id, s.id)) {
+      await removeFromServer(f, s);
+      emitTo([f.id], "server:removed", { serverId: s.serverId });
     }
 
-    try {
-      await Promise.all([User.save(u), User.save(f), Server.save(s)]);
-      return true;
-    } catch (ex) {
-      throw new Error("ban - Failed to save changes.");
+    if (!(s.banned || []).some((b) => b.id === f.id)) {
+      const { id, nameId, userId, iconId } = f;
+      s.banned = push(s.banned, { id, nameId, userId, iconId });
+      await Server.update(s.id, { banned: s.banned });
     }
+
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
+
+    return true;
   }
 
   @Mutation(() => Boolean)
@@ -589,45 +722,74 @@ export class UserResolver {
     @Arg("serverId") serverId: number,
     @Arg("params") params: FriendInput
   ): Promise<boolean> {
-    const user = await this.find(req.session.idx, ["servers", "servers.users"]);
-    const friend = await this.friend(params, ["servers", "servers.users"]);
+    const user = await this.find(req.session.idx);
+    const friend = await this.friend(params);
+    const server = await this.server(serverId);
 
-    const { u, f } = check({ user, friend });
+    const { u, f, s } = check({ user, friend, server });
 
-    const server = await this.server(serverId, ["users", "users.servers"]);
-    const { s } = check({ server });
-
-    if (!find(u.servers!, u.id) || !find(f.servers!, f.id)) {
-      throw new Error("unban - not in server");
+    if (!canManage(u, s.serverId)) {
+      throw new Error("You don't have permission to do that");
     }
 
-    const r = role(u.roles!, serverId);
+    s.banned = (s.banned || []).filter((b) => b.id !== f.id);
+    await Server.update(s.id, { banned: s.banned });
 
-    if (r === "owner" || r === "admin") {
-      s.banned = filter(s.banned!, f);
-    } else {
-      throw new Error("unban - not admin");
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
+
+    return true;
+  }
+
+  // owner only - promote to admin or demote back to member
+  @Mutation(() => Boolean)
+  @UseMiddleware(isAuth)
+  async updateRole(
+    @Ctx() { req }: MyContext,
+    @Arg("serverId") serverId: number,
+    @Arg("params") params: FriendInput,
+    @Arg("role") newRole: string
+  ): Promise<boolean> {
+    const user = await this.find(req.session.idx);
+    const friend = await this.friend(params);
+    const server = await this.server(serverId);
+
+    const { u, f, s } = check({ user, friend, server });
+
+    if (getRole(u, s.serverId) !== "owner") {
+      throw new Error("Only the server owner can change roles");
+    }
+    if (newRole !== "admin" && newRole !== "member") {
+      throw new Error("Invalid role");
+    }
+    if (u.id === f.id || !(await isMember(f.id, s.id))) {
+      throw new Error("You can't change this member's role");
     }
 
-    try {
-      await Promise.all([User.save(u), User.save(f), Server.save(s)]);
-      return true;
-    } catch (ex) {
-      throw new Error("unban - Failed to save changes.");
-    }
+    await setRole(f, s.serverId, newRole);
+
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
+
+    return true;
   }
 
   @Mutation(() => User)
   @UseMiddleware(isAuth)
   async updateStatus(
     @Ctx() { req }: MyContext,
-    @Arg("status") status: String
+    @Arg("status") status: string
   ): Promise<User> {
-    const user = await this.find(req.session.idx);
-    const { u } = check({ user });
+    const { u } = check({ user: await this.find(req.session.idx) });
+
+    const invalid = validateStatus(status);
+    if (invalid) throw new Error(invalid);
 
     u.status = status as UserStatus;
 
-    return await User.save(u);
+    await User.update(u.id, { status: u.status });
+
+    emitTo(await audience(u.id), "presence", { id: u.id });
+    emitTo([u.id], "account");
+
+    return u;
   }
 }

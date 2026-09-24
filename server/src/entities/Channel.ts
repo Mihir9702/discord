@@ -39,7 +39,7 @@ export class Channel extends BaseEntity {
   ptChat!: boolean;
 
   @Field(() => [User], { nullable: true })
-  @ManyToMany(() => User, (user) => user.channels)
+  @ManyToMany(() => User, (user) => user.channels, { onDelete: "CASCADE" })
   users!: User[];
 
   @Field(() => [Message], { nullable: true })
@@ -47,7 +47,9 @@ export class Channel extends BaseEntity {
   messages?: Message[];
 
   @Field(() => Server, { nullable: true })
-  @ManyToOne(() => Server, (server) => server.channels)
+  @ManyToOne(() => Server, (server) => server.channels, {
+    onDelete: "CASCADE",
+  })
   @JoinColumn()
   server?: Server;
 

@@ -1,6 +1,7 @@
 import { Field, ObjectType } from "type-graphql";
 import { Channel } from "./Channel";
 import { User } from "./User";
+import { BannedUser } from "./BannedUser";
 import {
   Entity,
   Column,
@@ -36,16 +37,16 @@ export class Server extends BaseEntity {
   serverId!: number;
 
   @Field(() => [User], { nullable: true })
-  @ManyToMany(() => User, (user) => user.servers)
+  @ManyToMany(() => User, (user) => user.servers, { onDelete: "CASCADE" })
   users?: User[];
 
   @Field(() => [Channel], { nullable: true })
   @OneToMany(() => Channel, (channel) => channel.server)
   channels?: Channel[];
 
-  @Field(() => [User], { nullable: true })
+  @Field(() => [BannedUser], { nullable: true })
   @Column("jsonb", { nullable: true })
-  banned?: User[];
+  banned?: BannedUser[];
 
   @Field(() => String)
   @CreateDateColumn()

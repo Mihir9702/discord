@@ -22,8 +22,8 @@ export class Input {
 @InputType()
 export class UpdateUserInput {
   @Field({ nullable: true }) username?: string;
-  @Field({ nullable: true }) password?: string;
   @Field({ nullable: true }) nameId?: string;
+  @Field({ nullable: true }) iconId?: string;
   @Field({ nullable: true }) status?: UserStatus;
 }
 
@@ -57,6 +57,18 @@ export class MessagesResponse {
   @Field(() => [Message]) messages!: Message[];
   @Field(() => Channel) channel!: Channel;
   @Field(() => User, { nullable: true }) friend?: User | null;
+}
+
+// public preview of a server behind an invite link
+@ObjectType()
+export class InviteInfo {
+  @Field() name!: string;
+  @Field() link!: string;
+  @Field() serverId!: number;
+  @Field({ nullable: true }) icon?: string;
+  @Field() memberCount!: number;
+  @Field() joined!: boolean;
+  @Field({ nullable: true }) channelId?: string;
 }
 
 export const relations = {

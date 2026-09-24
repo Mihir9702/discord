@@ -1,16 +1,20 @@
-import 'dotenv/config'
-import { __prod__ } from './constants'
-import { DataSource } from 'typeorm'
-import path from 'path'
+import "dotenv/config";
+import { DataSource } from "typeorm";
+import { User } from "./entities/User";
+import { Server } from "./entities/Server";
+import { Channel } from "./entities/Channel";
+import { Message } from "./entities/Message";
 
 export default new DataSource({
-  type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: process.env.POSTGRES_USER || 'postgres',
-  password: process.env.POSTGRES_PASS || 'postgres',
-  database: 'connect',
+  type: "postgres",
+  url: process.env.DATABASE_URL, // takes priority over the fields below when set
+  host: process.env.POSTGRES_HOST || "localhost",
+  port: Number(process.env.POSTGRES_PORT) || 5432,
+  username: process.env.POSTGRES_USER || "postgres",
+  password: process.env.POSTGRES_PASS || "postgres",
+  database: process.env.POSTGRES_DB || "connect",
   synchronize: true,
   // logging: true,
-  entities: [path.join(__dirname, 'entities/**/*.ts')],
-})
+  // imported directly so it works from both src (ts-node) and dist (node)
+  entities: [User, Server, Channel, Message],
+});

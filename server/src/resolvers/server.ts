@@ -1,6 +1,5 @@
 import {
   Ctx,
-  Int,
   Arg,
   Query,
   Resolver,
@@ -8,38 +7,108 @@ import {
   UseMiddleware,
 } from "type-graphql";
 import { Server } from "../entities/Server";
-import { FriendInput, MyContext, relations } from "../types";
+import { InviteInfo, MyContext, relations } from "../types";
 import { isAuth } from "../middleware/isAuth";
+import { devOnly } from "../middleware/devOnly";
 import {
   randomStringGenerator,
   randomNumberGenerator,
 } from "../helpers/random";
 import { User } from "../entities/User";
 import { Channel } from "../entities/Channel";
-import { ServerRole } from "../entities/ServerRole";
-import { push } from "../helpers/array";
+import { check } from "../helpers/array";
+import {
+  addToServer,
+  canManage,
+  deleteServer,
+  getRole,
+  memberIds,
+} from "../helpers/access";
+import {
+  inviteCode,
+  validateIcon,
+  validateServerName,
+} from "../helpers/validate";
+import { emitTo } from "../socket";
+
+async function freeLink(): Promise<string> {
+  for (let i = 0; i < 20; i++) {
+    const link = randomStringGenerator(6);
+    if (!(await Server.findOne({ where: { link } }))) return link;
+  }
+  throw new Error("create server - link generation failed");
+}
+
+async function freeServerId(): Promise<number> {
+  for (let i = 0; i < 20; i++) {
+    const serverId = randomNumberGenerator(6);
+    if (!(await Server.findOne({ where: { serverId } }))) return serverId;
+  }
+  throw new Error("create server - id generation failed");
+}
 
 @Resolver()
 export class ServerResolver {
+  // the signed in user + a server they belong to
+  async member(req: MyContext["req"], serverId: number) {
+    const user = await User.findOne({ where: { id: req.session.idx } });
+    const server = await Server.findOne({
+      where: { serverId },
+      relations: ["users", "channels"],
+    });
+
+    const { u, s } = check({ user, server });
+
+    if (!s.users?.some((m) => m.id === u.id)) {
+      throw new Error("Server not found");
+    }
+
+    s.channels?.sort((a, b) => a.id - b.id);
+
+    return { u, s };
+  }
+
   @Query(() => [Server])
+  @UseMiddleware(isAuth, devOnly)
   async servers(): Promise<Server[]> {
     return await Server.find({ relations: relations.server });
   }
 
   @Query(() => Server, { nullable: true })
   @UseMiddleware(isAuth)
-  async server(@Arg("serverId") serverId: number): Promise<Server | null> {
-    return await Server.findOne({
-      where: { serverId },
-      relations: [
-        "users",
-        "users.servers",
-        "channels",
-        "channels.users",
-        "channels.messages",
-        "channels.messages.user",
-      ],
+  async server(
+    @Arg("serverId") serverId: number,
+    @Ctx() { req }: MyContext
+  ): Promise<Server | null> {
+    const { s } = await this.member(req, serverId);
+    s.users?.sort((a, b) => a.id - b.id);
+    return s;
+  }
+
+  // what an invite link points to - works signed out too
+  @Query(() => InviteInfo, { nullable: true })
+  async invite(
+    @Arg("link") link: string,
+    @Ctx() { req }: MyContext
+  ): Promise<InviteInfo | null> {
+    const s = await Server.findOne({
+      where: { link: inviteCode(link) },
+      relations: ["users", "channels"],
     });
+
+    if (!s) return null;
+
+    const [first] = (s.channels || []).sort((a, b) => a.id - b.id);
+
+    return {
+      name: s.name,
+      link: s.link,
+      serverId: s.serverId,
+      icon: s.icon,
+      memberCount: s.users?.length || 0,
+      joined: !!s.users?.some((u) => u.id === req.session.idx),
+      channelId: first?.channelId,
+    };
   }
 
   @Mutation(() => Server)
@@ -48,75 +117,84 @@ export class ServerResolver {
     @Arg("name") name: string,
     @Ctx() { req }: MyContext
   ): Promise<Server> {
-    const link = randomStringGenerator(6);
-    const serverId = randomNumberGenerator(6);
+    const invalid = validateServerName(name.trim());
+    if (invalid) throw new Error(invalid);
 
-    const findLink = await Server.findOne({
-      where: { link },
-      relations: relations.server,
+    const { u } = check({
+      user: await User.findOne({ where: { id: req.session.idx } }),
     });
-    if (findLink) throw new Error("create server - link generation failed");
-
-    const uid = await User.findOne({
-      where: { id: req.session.idx },
-      relations: relations.user,
-    });
-    if (!uid) throw new Error("create server - no user");
-
-    const id = randomNumberGenerator(15).toString();
-    const intro = await Channel.create({
-      name: "intro",
-      users: [{ ...uid }],
-      channelId: id,
-    }).save();
 
     const s = await Server.create({
-      name,
-      link,
-      channels: [intro],
-      serverId,
-      users: [{ ...uid }],
+      name: name.trim(),
+      link: await freeLink(),
+      serverId: await freeServerId(),
     }).save();
 
-    if (!uid.servers) {
-      uid.servers = [s];
-    } else {
-      uid.servers.push(s);
-    }
+    const intro = await Channel.create({
+      name: "intro",
+      channelId: randomNumberGenerator(15).toString(),
+      server: s,
+    }).save();
 
-    if (!uid.channels) {
-      uid.channels = [intro];
-    } else {
-      uid.channels.push(intro);
-    }
+    await addToServer(u, s, "owner");
 
-    const owner = new ServerRole();
-    owner.serverId = serverId;
-    owner.role = "owner";
-
-    uid.roles = push(uid.roles, owner);
-
-    await User.save(uid);
+    s.channels = [intro];
     return s;
   }
 
-  @Mutation(() => Server) // todo ** this requires serverRole
+  @Mutation(() => Server)
   @UseMiddleware(isAuth)
   async updateServer(
     @Ctx() { req }: MyContext,
-    @Arg("serverId", () => Int) id: number,
-    @Arg("name", () => String) name: string
+    @Arg("serverId") serverId: number,
+    @Arg("name", { nullable: true }) name?: string,
+    @Arg("icon", { nullable: true }) icon?: string
   ): Promise<Server> {
-    const s = await Server.findOne({
-      where: { id },
-      relations: relations.server,
-    });
-    if (!s) throw new Error("no server");
+    const { u, s } = await this.member(req, serverId);
 
-    if (typeof name !== "undefined") {
-      s.name = name;
-      await Server.save(s);
+    if (!canManage(u, s.serverId)) {
+      throw new Error("You don't have permission to edit this server");
     }
+
+    if (typeof name === "string") {
+      const invalid = validateServerName(name.trim());
+      if (invalid) throw new Error(invalid);
+      s.name = name.trim();
+    }
+
+    if (typeof icon === "string") {
+      const invalid = validateIcon(icon.trim());
+      if (invalid) throw new Error(invalid);
+      s.icon = icon.trim() || undefined;
+    }
+
+    await Server.update(s.id, {
+      name: s.name,
+      icon: s.icon ? s.icon : () => "NULL", // clearing needs a raw null
+    });
+
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
+
+    return s;
+  }
+
+  // new invite link - the old one stops working
+  @Mutation(() => Server)
+  @UseMiddleware(isAuth)
+  async refreshLink(
+    @Ctx() { req }: MyContext,
+    @Arg("serverId") serverId: number
+  ): Promise<Server> {
+    const { u, s } = await this.member(req, serverId);
+
+    if (!canManage(u, s.serverId)) {
+      throw new Error("You don't have permission to manage invites");
+    }
+
+    s.link = await freeLink();
+    await Server.update(s.id, { link: s.link });
+
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
 
     return s;
   }
@@ -124,22 +202,17 @@ export class ServerResolver {
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async deleteServer(
-    @Arg("id") id: number,
+    @Arg("serverId") serverId: number,
     @Ctx() { req }: MyContext
   ): Promise<boolean> {
-    const u = await User.findOne({
-      where: { id: req.session.idx },
-      relations: ["servers", "servers.users"],
-    });
-    if (!u) return false;
+    const { u, s } = await this.member(req, serverId);
 
-    const s = await Server.findOne({
-      where: { id }, // this might be serverId
-      relations: relations.server,
-    });
-    if (!s) return false;
+    if (getRole(u, s.serverId) !== "owner") {
+      throw new Error("Only the server owner can delete it");
+    }
 
-    await Server.remove(s);
+    await deleteServer(s);
+
     return true;
   }
 }

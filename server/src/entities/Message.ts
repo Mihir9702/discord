@@ -8,6 +8,7 @@ import {
   CreateDateColumn,
   PrimaryGeneratedColumn,
   ManyToOne,
+  Index,
 } from "typeorm";
 import { Channel } from "./Channel";
 
@@ -28,12 +29,19 @@ export class Message extends BaseEntity {
   @Column({ type: "text" })
   msgId!: string;
 
+  @Field()
+  @Column({ type: "boolean", default: false })
+  edited!: boolean;
+
   @Field(() => User, { nullable: true })
-  @ManyToOne(() => User, (user) => user.messages)
+  @ManyToOne(() => User, (user) => user.messages, { onDelete: "CASCADE" })
   user!: User;
 
   @Field(() => Channel, { nullable: true })
-  @ManyToOne(() => Channel, (channel) => channel.messages)
+  @Index()
+  @ManyToOne(() => Channel, (channel) => channel.messages, {
+    onDelete: "CASCADE",
+  })
   channel!: Channel;
 
   @Field(() => String)

@@ -21,23 +21,10 @@ export function randomizeArray(array: any[]): any[] {
   return array.sort(() => Math.random() - 0.5);
 }
 
-export function randomNumberGen(length: number): number {
-  let result = "";
-  for (let i = 0; i < length; i++) {
-    result += randomNumber(0, 9);
-  }
-  return parseInt(result);
-}
-
-// randomNumberGenerator(4) // 4213
+// randomNumberGenerator(4) // 4213 - always exactly `length` digits
 export function randomNumberGenerator(length: number): number {
-  const result = randomNumberGen(length);
-
-  if (result.toString().split("").length === length) {
-    return result;
-  }
-
-  return randomNumberGen(length);
+  const min = 10 ** (length - 1);
+  return Math.floor(min + Math.random() * 9 * min);
 }
 
 // randomStringGenerator(6) // 'LjD3nY'

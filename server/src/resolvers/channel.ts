@@ -12,26 +12,36 @@ import { User } from "../entities/User";
 import { Channel } from "../entities/Channel";
 import { Server } from "../entities/Server";
 import { randomNumberGenerator } from "../helpers/random";
-import { check, push } from "../helpers/array";
+import { check } from "../helpers/array";
+import { channelName } from "../helpers/validate";
+import {
+  canManage,
+  channelFor,
+  isMember,
+  memberIds,
+  members,
+} from "../helpers/access";
+import { emitTo } from "../socket";
 
 @Resolver()
 export class ChannelResolver {
-  @UseMiddleware(isAuth)
   async find(id?: number, relations?: string[]) {
+    if (!id) return null;
     return await User.findOne({ where: { id }, relations: relations });
   }
 
-  @UseMiddleware(isAuth)
-  async findChannel(channelId: string, relations?: string[]) {
-    return await Channel.findOne({
-      where: { channelId },
-      relations: relations,
-    });
-  }
+  // a server channel the signed in user is allowed to manage
+  async manageable(req: MyContext["req"], channelId: string) {
+    const channel = await channelFor(req.session.idx, channelId);
+    const user = await this.find(req.session.idx);
 
-  @UseMiddleware(isAuth)
-  async findServer(serverId: number, relations?: string[]) {
-    return await Server.findOne({ where: { serverId }, relations: relations });
+    const { u, c } = check({ user, channel });
+
+    if (c.ptChat || !c.server || !canManage(u, c.server.serverId)) {
+      throw new Error("You don't have permission to manage this channel");
+    }
+
+    return { u, c, s: c.server };
   }
 
   @Query(() => Channel)
@@ -40,58 +50,33 @@ export class ChannelResolver {
     @Arg("channelId") channelId: string,
     @Ctx() { req }: MyContext
   ): Promise<Channel> {
-    const channel = await this.findChannel(channelId, [
-      "users",
-      "users.channels",
-      "server",
-      "server.channels",
-    ]);
-    const { c } = check({ channel });
+    const c = await channelFor(req.session.idx, channelId, ["users"]);
 
-    console.log(c);
+    // everyone in a server can see its channels
+    if (!c.ptChat && c.server) c.users = await members(c.server.id);
+
     return c;
   }
 
+  // the server a channel belongs to
   @Query(() => Server)
   @UseMiddleware(isAuth)
   async channel(
     @Ctx() { req }: MyContext,
     @Arg("channelId") channelId: string
-  ): Promise<Server | null> {
-    const u = await User.findOne({
-      where: { id: req.session.idx },
-      relations: [
-        "channels",
-        "channels.users",
-        "servers",
-        "servers.channels.users",
-      ],
-    });
+  ): Promise<Server> {
+    const c = await channelFor(req.session.idx, channelId);
 
-    if (!u) throw new Error("channel - no user found");
+    const s = c.server
+      ? await Server.findOne({
+          where: { id: c.server.id },
+          relations: ["channels", "channels.server"],
+        })
+      : null;
 
-    const s = await Server.findOne({
-      where: { channels: { channelId } },
-      relations: [
-        "channels",
-        "channels.users",
-        "channels.server",
-        "channels.server.channels",
-        "channels.messages",
-        "channels.messages.user",
-      ],
-    });
+    if (!s) throw new Error("Server not found");
 
-    if (!s) throw new Error("server channels - no sid");
-
-    const c = s.channels?.find((ch) => ch.channelId === channelId);
-
-    if (!c) throw new Error("channel - no channel found");
-
-    const check = c.users?.find((user) => user?.id === u.id);
-
-    if (!check) throw new Error("channel - no vip");
-
+    s.channels?.sort((a, b) => a.id - b.id);
     return s;
   }
 
@@ -106,35 +91,33 @@ export class ChannelResolver {
     return u.channels;
   }
 
+  // every channel in the same server as this one
   @Query(() => [Channel])
   @UseMiddleware(isAuth)
   async serverChannels(
     @Arg("channelId") channelId: string,
     @Ctx() { req }: MyContext
-  ): Promise<Channel[] | undefined> {
-    const user = await this.find(req.session.idx, ["channels"]);
-    const channel = await this.findChannel(channelId, ["server"]);
-    const { u, c } = check({ user, channel });
+  ): Promise<Channel[]> {
+    const c = await channelFor(req.session.idx, channelId);
 
-    const server = c.server;
-    const { s } = check({ server });
+    if (!c.server) return [];
 
-    if (!u.channels?.includes(c)) {
-      throw new Error("server channels - no access");
-    }
-
-    return s.channels;
+    return await Channel.find({
+      where: { server: { id: c.server.id } },
+      relations: ["server"],
+      order: { id: "ASC" },
+    });
   }
 
   @Query(() => [Channel])
   @UseMiddleware(isAuth)
-  async partyChats(@Ctx() { req }: MyContext): Promise<Channel[] | undefined> {
-    const relations = ["channels", "channels.users"];
-    const user = await this.find(req.session.idx, relations);
-    const { u } = check({ user });
-    const ptChats = u.channels?.filter((c: Channel) => c.ptChat === true);
-
-    return ptChats;
+  async partyChats(@Ctx() { req }: MyContext): Promise<Channel[]> {
+    return await Channel.createQueryBuilder("c")
+      .innerJoin("c.users", "me", "me.id = :id", { id: req.session.idx })
+      .leftJoinAndSelect("c.users", "users")
+      .where("c.ptChat = true")
+      .orderBy("c.id", "ASC")
+      .getMany();
   }
 
   @Mutation(() => Channel)
@@ -144,39 +127,55 @@ export class ChannelResolver {
     @Arg("serverId") serverId: number,
     @Ctx() { req }: MyContext
   ): Promise<Channel> {
-    const user = await this.find(req.session.idx, ["channels"]);
-    const server = await this.findServer(serverId, ["channels", "users"]);
-
-    const channelId = randomNumberGenerator(15).toString();
-    const channel = await this.findChannel(channelId);
-
-    if (channel) throw new Error("create server channel - channel exists");
+    const user = await this.find(req.session.idx);
+    const server = await Server.findOne({ where: { serverId } });
 
     const { u, s } = check({ user, server });
 
-    const info = { name, server: s, channelId, users: [{ ...u }] };
+    if (!(await isMember(u.id, s.id)) || !canManage(u, s.serverId)) {
+      throw new Error("You don't have permission to create channels");
+    }
 
-    return await Channel.create(info).save();
+    const clean = channelName(name);
+    if (!clean) throw new Error("Channel name can't be empty");
+
+    const channel = await Channel.create({
+      name: clean,
+      server: s,
+      channelId: randomNumberGenerator(15).toString(),
+    }).save();
+
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
+
+    return channel;
   }
 
   @Mutation(() => Channel)
   @UseMiddleware(isAuth)
   async updateChannel(
     @Arg("channelId") channelId: string,
-    @Arg("name") name: string,
+    @Arg("name", { nullable: true }) name: string,
+    @Arg("desc", { nullable: true }) desc: string,
     @Ctx() { req }: MyContext
   ): Promise<Channel> {
-    const user = await this.find(req.session.idx, ["channels"]);
-    const channel = await this.findChannel(channelId, ["users"]);
-    const { u, c } = check({ user, channel });
+    const { c, s } = await this.manageable(req, channelId);
 
-    if (!c.users.includes(u)) {
-      throw new Error("update channel - no access");
+    if (typeof name === "string") {
+      const clean = channelName(name);
+      if (!clean) throw new Error("Channel name can't be empty");
+      c.name = clean;
     }
 
-    c.name = name;
+    if (typeof desc === "string") {
+      if (desc.length > 1024) throw new Error("Channel topic is too long");
+      c.desc = desc.trim();
+    }
 
-    return await Channel.save(c);
+    await Channel.update(c.id, { name: c.name, desc: c.desc });
+
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
+
+    return c;
   }
 
   @Mutation(() => Boolean)
@@ -185,20 +184,16 @@ export class ChannelResolver {
     @Arg("channelId") channelId: string,
     @Ctx() { req }: MyContext
   ): Promise<boolean> {
-    const user = await this.find(req.session.idx, ["channels"]);
-    const channel = await this.findChannel(channelId, ["users"]);
-    const { u, c } = check({ user, channel });
+    const { c, s } = await this.manageable(req, channelId);
 
-    if (!c.users.includes(u)) {
-      throw new Error("delete channel - no vip");
-    }
+    const count = await Channel.count({ where: { server: { id: s.id } } });
+    if (count <= 1) throw new Error("A server needs at least one channel");
 
-    try {
-      await Channel.delete({ channelId });
-      return true;
-    } catch (ex) {
-      console.log(ex);
-      return false;
-    }
+    // messages cascade
+    await Channel.delete(c.id);
+
+    emitTo(await memberIds(s.id), "server", { serverId: s.serverId });
+
+    return true;
   }
 }
