@@ -2,6 +2,8 @@
 
 A Discord clone built using the PERN stack. Add friends, chat in direct messages, and create servers with text channels, invite links, roles and moderation. Messages, friend requests and online status update live over WebSockets.
 
+> **Independent project.** This is an educational clone and is not affiliated with, endorsed by, or sponsored by Discord Inc. The app uses its own "Connect" mark and does not include Discord's logo or bundled brand artwork.
+
 ## Features
 
 - Accounts - signup / login, display name + `Name#0000` tags, avatar colors, change password, delete account
@@ -98,3 +100,11 @@ In production (`NODE_ENV=production`) cookies are https only, passwords need 8+ 
 | `yarn build` | compile to `dist/` | production build |
 | `yarn start` | run `dist/` | serve the build on :3001 |
 | `yarn typecheck` | `tsc --noEmit` | `tsc --noEmit` |
+
+## Copyright and reuse
+
+The original project code and original content in this repository are source-visible but are **not released under an open-source license**. See [COPYRIGHT.md](COPYRIGHT.md).
+
+Third-party icon geometry remains under its upstream licenses. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Package dependencies installed from npm/yarn keep their own upstream licenses.
+
+"Discord" and related marks belong to their respective owner. Their use here identifies the product being independently reimplemented; no affiliation is implied.

@@ -15,8 +15,12 @@ export default () => {
         }`}
       />
       <Tooltip content="Direct Messages" position="right">
-        <Link href={`/@me`}>
-          <div className="server-icon bg-discord" />
+        <Link href={`/@me`} aria-label="Connect home">
+          <div className="server-icon bg-connect flex items-center justify-center">
+            <span aria-hidden className="text-lg font-bold text-white">
+              C
+            </span>
+          </div>
         </Link>
       </Tooltip>
     </div>

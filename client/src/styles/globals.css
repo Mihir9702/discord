@@ -11,16 +11,11 @@
 
 body {
   @apply m-0 p-0 w-full h-full box-border bg-background;
-  /* gg sans is discord's own font - fall back to a normal sans serif, not cursive */
-  font-family: "gg sans Normal", "Noto Sans", "Helvetica Neue", Helvetica, Arial,
-    sans-serif;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   font-weight: 600;
   font-size: 16px;
 }
-
-/* h1 {
-  font-family: "gg sans Normal", cursive;
-} */
 
 @media (min-width: 1200px) {
   .hidden-1200 {
@@ -29,8 +24,7 @@ body {
 }
 
 label {
-  font-family: "gg sans Normal", "Noto Sans", "Helvetica Neue", Helvetica, Arial,
-    sans-serif;
+  font-family: inherit;
   font-weight: 700;
 }
 
@@ -100,13 +94,15 @@ label {
 }
 
 .bg-image {
-  @apply bg-cover bg-center bg-no-repeat;
-  background-image: url("../assets/bg.png");
+  background:
+    radial-gradient(circle at 20% 20%, rgba(88, 101, 242, 0.35), transparent 28%),
+    radial-gradient(circle at 80% 75%, rgba(35, 165, 90, 0.18), transparent 30%),
+    linear-gradient(145deg, #111827, #1f2937 55%, #111827);
 }
 
-.bg-discord {
-  @apply rounded-2xl bg-cover bg-center bg-no-repeat w-16 h-16;
-  background-image: url("../assets/icon.png");
+.bg-connect {
+  @apply rounded-2xl w-12 h-12;
+  background: linear-gradient(145deg, #5865f2, #3f4acb);
 }
 
 ::-webkit-scrollbar {

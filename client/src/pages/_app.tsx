@@ -9,8 +9,12 @@ export default ({ Component, pageProps }: AppProps) => {
   return (
     <ApolloProvider client={client}>
       <Head>
-        <title>Discord</title>
-        <link rel="icon" href="/favicon.png" />
+        <title>Connect</title>
+        <meta
+          name="description"
+          content="An independent educational chat-app clone."
+        />
+        <link rel="icon" href="/favicon.svg" />
       </Head>
       <SocketProvider>
         <Component {...pageProps} />

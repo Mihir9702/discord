@@ -100,7 +100,7 @@ export default () => {
               href={me ? "/@me" : "/login"}
               className="mt-4 w-full py-2.5 rounded bg-lightblue hover:bg-darkblue text-white transition-all"
             >
-              {me ? "Continue to Discord" : "Log in"}
+              {me ? "Continue to Connect" : "Log in"}
             </Link>
           </>
         )}

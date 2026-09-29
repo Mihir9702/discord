@@ -87,7 +87,7 @@ function Overview({ s }: { s: Server }) {
             Server Icon (image url)
             <input
               value={icon}
-              placeholder="https://i.imgur.com/icon.png"
+              placeholder="https://example.com/server-icon.png"
               onChange={(e) => setIcon(e.target.value)}
               className={input}
             />
