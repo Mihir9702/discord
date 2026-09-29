@@ -101,6 +101,16 @@ In production (`NODE_ENV=production`) cookies are https only, passwords need 8+ 
 | `yarn start` | run `dist/` | serve the build on :3001 |
 | `yarn typecheck` | `tsc --noEmit` | `tsc --noEmit` |
 
+## Project history
+
+This project was originally developed under the **Connect** name across separate repositories. Their original Git histories are preserved in this repository without rewriting the old commit SHAs:
+
+- `legacy/connect-frontend`
+- `legacy/connect-backend`
+- `legacy/connect-graphql-controller`
+
+The current `client`, `server`, and `controller` directories remain the active implementation; the `legacy/` copies exist to keep the earlier split-repository source and history together with the project.
+
 ## Copyright and reuse
 
 The original project code and original content in this repository are source-visible but are **not released under an open-source license**. See [COPYRIGHT.md](COPYRIGHT.md).
