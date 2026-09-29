@@ -1,0 +1,26 @@
+query UserFriends {
+  userFriends {
+    id
+    nameId
+    userId
+    iconId
+    friends {
+      nameId
+      userId
+      iconId
+      status
+    }
+    friendRequests {
+      nameId
+      userId
+      iconId
+      status
+    }
+    blocked {
+      nameId
+      userId
+      iconId
+      status
+    }
+  }
+}

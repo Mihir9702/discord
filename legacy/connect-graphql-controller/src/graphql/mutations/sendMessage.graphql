@@ -1,0 +1,16 @@
+# params: { msg: String!, channelId: String! }
+mutation sendMessage($params: MessageInput!) {
+  sendMessage(params: $params) {
+    msg
+    msgId
+    createdAt
+    updatedAt
+    user {
+      nameId
+      userId
+    }
+    channel {
+      channelId
+    }
+  }
+}

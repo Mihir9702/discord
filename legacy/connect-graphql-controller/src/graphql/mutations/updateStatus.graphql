@@ -1,0 +1,10 @@
+mutation UpdateStatus($status: String!) {
+  updateStatus(status: $status) {
+    id
+    nameId
+    userId
+    status
+    createdAt
+    updatedAt
+  }
+}

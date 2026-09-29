@@ -1,0 +1,22 @@
+{
+  "name": "@ghost/controller",
+  "version": "0.1.0",
+  "main": "generated/graphql.ts",
+  "description": "A GraphQL API controller",
+  "scripts": {
+    "gen": "graphql-codegen --config codegen.yml",
+    "build": "tsc "
+  },
+  "dependencies": {
+    "@apollo/client": "^3.7.15",
+    "graphql": "^16.6.0"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^4.0.1",
+    "@graphql-codegen/typescript": "^4.0.0",
+    "@graphql-codegen/typescript-operations": "^4.0.0",
+    "@graphql-codegen/typescript-react-apollo": "^3.3.7",
+    "@graphql-codegen/typescript-resolvers": "^4.0.0",
+    "typescript": "^5.1.3"
+  }
+}

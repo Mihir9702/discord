@@ -1,0 +1,6 @@
+mutation RemoveFriend($params: FriendInput!) {
+  removeFriend(params: $params) {
+    nameId
+    userId
+  }
+}

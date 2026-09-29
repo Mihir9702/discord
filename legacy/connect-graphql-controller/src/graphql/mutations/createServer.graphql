@@ -1,0 +1,30 @@
+mutation CreateServer($name: String!) {
+  createServer(name: $name) {
+    id
+    name
+    link
+    serverId
+    channels {
+      id
+      name
+      channelId
+      users {
+        id
+        nameId
+        userId
+      }
+      messages {
+        id
+        msg
+        msgId
+        createdAt
+        updatedAt
+        user {
+          id
+          nameId
+          userId
+        }
+      }
+    }
+  }
+}

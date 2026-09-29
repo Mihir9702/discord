@@ -1,0 +1,11 @@
+mutation Join($link: String!) {
+  join(link: $link) {
+    nameId
+    userId
+    servers {
+      name
+      link
+      serverId
+    }
+  }
+}

@@ -1,0 +1,40 @@
+query Server($serverId: Float!) {
+  server(serverId: $serverId) {
+    id
+    name
+    link
+    serverId
+    users {
+      id
+      servers {
+        serverId
+      }
+    }
+    channels {
+      name
+      channelId
+      users {
+        nameId
+        userId
+        iconId
+        status
+      }
+      messages {
+        id
+        msg
+        msgId
+        createdAt
+        updatedAt
+        channel {
+          channelId
+        }
+        user {
+          id
+          nameId
+          userId
+          iconId
+        }
+      }
+    }
+  }
+}

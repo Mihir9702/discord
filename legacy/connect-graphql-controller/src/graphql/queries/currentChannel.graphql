@@ -1,0 +1,13 @@
+query CurrentChannel($channelId: String!) {
+  currentChannel(channelId: $channelId) {
+    id
+    name
+    ptChat
+    channelId
+    users {
+      id
+      nameId
+      status
+    }
+  }
+}

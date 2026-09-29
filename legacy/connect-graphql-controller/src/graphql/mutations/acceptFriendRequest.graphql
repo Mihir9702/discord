@@ -1,0 +1,29 @@
+mutation AcceptFriendRequest($params: FriendInput!) {
+  acceptFriendRequest(params: $params) {
+    id
+    nameId
+    userId
+    friends {
+      id
+      nameId
+      userId
+      status
+      # should check to see if channelId matches
+    }
+    friendRequests {
+      nameId
+      userId
+      status
+    }
+    channels {
+      id
+      name
+      channelId
+      users {
+        id
+        nameId
+        userId
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+query UserServers {
+  userServers {
+    id
+    name
+    serverId
+    channels {
+      name
+      channelId
+    }
+  }
+}

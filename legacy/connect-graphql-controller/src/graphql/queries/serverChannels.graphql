@@ -1,0 +1,24 @@
+query ServerChannels($channelId: String!) {
+  serverChannels(channelId: $channelId) {
+    name
+    channelId
+    server {
+      name
+      serverId
+      channels {
+        name
+        channelId
+        users {
+          nameId
+          userId
+          iconId
+        }
+      }
+    }
+    users {
+      nameId
+      userId
+      iconId
+    }
+  }
+}

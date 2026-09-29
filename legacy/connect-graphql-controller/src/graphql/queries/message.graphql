@@ -1,0 +1,43 @@
+query Message($msgId: String!) {
+  message(msgId: $msgId) {
+    id
+    msg
+    msgId
+    createdAt
+    updatedAt
+    user {
+      id
+      nameId
+      userId
+    }
+    channel {
+      name
+      channelId
+      ptChat
+      users {
+        id
+        nameId
+        userId
+      }
+      messages {
+        id
+        msg
+        msgId
+        createdAt
+        updatedAt
+        user {
+          id
+          nameId
+          userId
+          messages {
+            id
+            msg
+            msgId
+            createdAt
+            updatedAt
+          }
+        }
+      }
+    }
+  }
+}
