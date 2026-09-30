@@ -103,13 +103,19 @@ In production (`NODE_ENV=production`) cookies are https only, passwords need 8+ 
 
 ## Project history
 
-This project was originally developed under the **Connect** name across separate repositories. Their original Git histories are preserved in this repository without rewriting the old commit SHAs:
+This project began as **Connect** across separate repositories. Their original commits are joined with Discord's history, preserving their original commit IDs, authors, and dates.
 
-- `legacy/connect-frontend`
-- `legacy/connect-backend`
-- `legacy/connect-graphql-controller`
+| Earlier repository | Preserved Git history |
+| --- | --- |
+| `connect-frontend` | [4 original commits](https://github.com/Mihir9702/discord/commits/1b5b157cdbedb307ee729f011d366693be26130e) |
+| `connect-backend` | [2 original commits](https://github.com/Mihir9702/discord/commits/07f034c1ee0570c9a59bb689005331be63fb310f) |
+| `connect-graphql-controller` | [2 original commits](https://github.com/Mihir9702/discord/commits/6f285590a3d2abcf2e30bc9eef6543d6e8a21721) |
 
-The current `client`, `server`, and `controller` directories remain the active implementation; the `legacy/` copies exist to keep the earlier split-repository source and history together with the project.
+The current application is in `client/`, `server/`, and `controller/`. Earlier implementations are available through Git history.
+
+```bash
+git log --all --graph --oneline
+```
 
 ## Copyright and reuse
 
