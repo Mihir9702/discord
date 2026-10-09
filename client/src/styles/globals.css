@@ -70,15 +70,7 @@ label {
   @apply bg-mid;
 }
 
-.flex-col {
-  display: flex;
-  flex-direction: column;
-}
-
-.flex-col-reverse {
-  display: flex;
-  flex-direction: column-reverse;
-}
+/* Tailwind owns .flex-col and .flex-col-reverse; unlayered overrides break md:flex-row. */
 
 .status-status {
   @apply rounded-full w-3 h-3 absolute bottom-0 right-1;
