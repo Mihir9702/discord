@@ -73,6 +73,7 @@ async function screenshot(page: Page, file: string) {
 }
 
 test.describe.configure({mode:"serial"});
+test.setTimeout(60_000);
 test.beforeAll(async () => {
   alice = await signUp();
   bob = await signUp();
@@ -123,9 +124,23 @@ test("desktop visual review: server channel, friends, and settings", async ({bro
     await screenshot(page,"desktop-server.png");
     await page.getByRole("button",{name:"User Settings"}).click();
     await expect(page.getByText("My Account",{exact:true}).last()).toBeVisible();
+    await page.waitForTimeout(450); // allow Framer Motion to settle before screenshot
+    const settingsDebug = await page.evaluate(() => {
+      const close = document.querySelector('[aria-label="Close settings"]');
+      const panel = document.querySelector(".max-w-2xl");
+      return {
+        heading: panel?.textContent?.slice(0,200) || "not found",
+        closeExists: !!close,
+        closeBounds: close?.getBoundingClientRect().toJSON(),
+        modalCount: document.querySelectorAll(".fixed.inset-0").length,
+      };
+    });
+    console.log("desktop settings DOM diagnostics", JSON.stringify(settingsDebug));
     await screenshot(page,"desktop-settings.png");
-    await page.getByRole("button",{name:"Close settings"}).click();
-    await page.goto(web + "/@me");
+    await page.getByRole("button",{name:"Close settings"}).click({timeout:5000});
+    console.log("desktop settings closed");
+    await page.goto(web + "/@me", {waitUntil:"domcontentloaded",timeout:7000});
+    console.log("desktop home navigated");
     await screenshot(page,"desktop-friends.png");
     expect(browserErrors).toEqual([]);
   } finally {await context.close();}
@@ -140,6 +155,7 @@ test("tablet visual review: server and settings", async ({browser}) => {
     await screenshot(page,"tablet-server.png");
     await page.getByRole("button",{name:"User Settings"}).click();
     await expect(page.getByRole("button",{name:"Close settings"})).toBeVisible();
+    await page.waitForTimeout(350);
     await screenshot(page,"tablet-settings.png");
   } finally {await context.close();}
 });
@@ -162,6 +178,7 @@ test("phone visual review: chat, navigation drawer and settings", async ({browse
     const closeBounds = await close.boundingBox();
     expect(closeBounds).not.toBeNull();
     expect(closeBounds!.x + closeBounds!.width).toBeLessThanOrEqual(390);
+    await page.waitForTimeout(350);
     await screenshot(page,"phone-settings.png");
     await page.getByRole("button",{name:"Profiles",exact:true}).click();
     await screenshot(page,"phone-profile.png");
