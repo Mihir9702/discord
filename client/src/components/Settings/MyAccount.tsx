@@ -137,7 +137,7 @@ export default ({ me, editProfile }: Props) => {
 
       <article className="bg-darkish rounded-lg overflow-hidden">
         <div className="h-24" style={{ backgroundColor: iconId }} />
-        <div className="flex justify-between items-end px-4 -mt-8">
+        <div className="flex flex-wrap gap-3 justify-between items-end px-4 -mt-8">
           <div className="flex items-end gap-4">
             <div className="rounded-full border-[6px] border-darkish">
               <UserIcon

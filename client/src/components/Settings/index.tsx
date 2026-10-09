@@ -44,7 +44,7 @@ export default ({ onClose }: Props) => {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 1.1 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-40 w-full h-screen flex bg-background"
+        className="fixed inset-0 z-40 w-full h-[100dvh] flex flex-col md:flex-row bg-background"
       >
         <Options
           option={option}
@@ -52,7 +52,7 @@ export default ({ onClose }: Props) => {
           onLogout={() => setLogout(true)}
         />
 
-        <section className="flex-1 h-full overflow-y-auto py-14 px-10 text-gray-200">
+        <section className="flex-1 min-h-0 min-w-0 overflow-y-auto py-6 px-4 md:py-14 md:px-10 text-gray-200">
           <div className="max-w-2xl">
             {option === "MyAccount" && (
               <MyAccount me={me} editProfile={() => setOption("Profiles")} />
@@ -71,8 +71,10 @@ export default ({ onClose }: Props) => {
           </div>
         </section>
 
-        <section className="h-full pt-14 pr-10 flex flex-col items-center gap-1">
+        <section className="fixed md:relative top-3 right-3 md:top-auto md:right-auto md:h-full md:pt-14 md:pr-10 flex flex-col items-center gap-1">
           <button
+            type="button"
+            aria-label="Close settings"
             className="w-9 h-9 rounded-full border-2 border-gray-400 text-gray-400 hover:text-white hover:border-white flex items-center justify-center"
             onClick={onClose}
           >

@@ -50,6 +50,7 @@ export default ({ channelId, placeholder, disabled }: ChatInput) => {
         <button
           disabled
           title="Uploads are coming soon"
+          aria-label="Attach a file (not yet available)"
           className="flex items-center justify-center text-gray-400 cursor-not-allowed"
         >
           {PlusCircle}
@@ -78,6 +79,7 @@ export default ({ channelId, placeholder, disabled }: ChatInput) => {
           <span className="text-xs text-gray-400 mr-2">{left}</span>
         )}
         <button
+          aria-label="Send message"
           className="text-2xl text-gray-400 hover:text-gray-200 disabled:opacity-40"
           disabled={isWhiteSpace(msg) || loading || disabled}
           onClick={sendMessage}

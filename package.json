@@ -1,0 +1,14 @@
+{
+  "name": "connect-discord-clone",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Open-source Discord-style text chat application",
+  "scripts": {
+    "schema": "npm run schema --prefix server",
+    "generate": "npm run gen --prefix controller",
+    "typecheck": "npm run typecheck --prefix server && npm run typecheck --prefix client",
+    "build": "npm run build --prefix server && npm run build --prefix client",
+    "test": "npm run test --prefix server",
+    "check": "npm run schema && npm run generate && npm run typecheck && npm run test && npm run build"
+  }
+}

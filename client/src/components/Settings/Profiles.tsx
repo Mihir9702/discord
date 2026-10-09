@@ -46,7 +46,7 @@ export default ({ me }: { me: User }) => {
     <form onSubmit={save} className="flex flex-col gap-6 font-normal">
       <h1 className="text-xl font-semibold text-white">Profiles</h1>
 
-      <div className="flex gap-10 items-start">
+      <div className="flex flex-col xl:flex-row gap-6 xl:gap-10 items-start">
         <div className="flex-1 flex flex-col gap-6">
           <label className="text-xs uppercase font-bold text-gray-400">
             Display Name
@@ -110,7 +110,7 @@ export default ({ me }: { me: User }) => {
         </div>
 
         {/* preview */}
-        <div className="w-72 bg-darkish rounded-lg overflow-hidden shrink-0">
+        <div className="w-full xl:w-72 bg-darkish rounded-lg overflow-hidden shrink-0">
           <div className="h-16" style={{ backgroundColor: iconId }} />
           <div className="px-4 -mt-10">
             <div className="rounded-full border-[6px] border-darkish w-fit">

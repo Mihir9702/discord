@@ -7,9 +7,9 @@ import db from "../connect";
 type Tag = { nameId: string; userId: number };
 
 async function update(sql: string, params: unknown[]) {
-  // postgres UPDATE ... RETURNING comes back as [rows, count]
-  const [rows] = await db.query(sql, params);
-  return rows?.[0];
+  // TypeORM's postgres DataSource.query returns the rows array directly.
+  const rows = await db.query(sql, params);
+  return rows[0];
 }
 
 // the column's array minus the elements (x) matching `drop`

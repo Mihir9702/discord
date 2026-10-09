@@ -1,0 +1,175 @@
+type Query {
+  users: [User!]!
+  user: User
+  userFriends: User
+  userServers: [Server!]
+  serverRole(serverId: Float!): ServerRole
+  servers: [Server!]!
+  server(serverId: Float!): Server
+  invite(link: String!): InviteInfo
+  message(msgId: String!): Message!
+  messages(beforeId: Int, channelId: String!): MessagesResponse!
+  currentChannel(channelId: String!): Channel!
+  channel(channelId: String!): Server!
+  userChannels: [Channel!]!
+  serverChannels(channelId: String!): [Channel!]!
+  partyChats: [Channel!]!
+}
+
+type User {
+  id: Float!
+  userId: Float!
+  nameId: String!
+  iconId: String!
+  status: String!
+  messages: [Message!]
+  servers: [Server!]
+  channels: [Channel!]
+  friends: [User!]
+  blocked: [User!]
+  createdAt: String!
+  updatedAt: String!
+  username: String
+  friendRequests: [FriendRequest!]
+  roles: [ServerRole!]
+}
+
+type Message {
+  id: Float!
+  msg: String!
+  msgId: String!
+  edited: Boolean!
+  user: User
+  channel: Channel
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Channel {
+  id: Float!
+  name: String!
+  desc: String
+  channelId: String!
+  ptChat: Boolean!
+  users: [User!]
+  messages: [Message!]
+  server: Server
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Server {
+  id: Float!
+  name: String!
+  icon: String
+  link: String!
+  serverId: Float!
+  users: [User!]
+  channels: [Channel!]
+  banned: [BannedUser!]
+  createdAt: String!
+  updatedAt: String!
+  members: [ServerMember!]!
+}
+
+type BannedUser {
+  id: Float!
+  nameId: String!
+  userId: Float!
+  iconId: String!
+}
+
+type ServerMember {
+  user: User!
+  role: String!
+}
+
+type FriendRequest {
+  nameId: String!
+  userId: Float!
+  iconId: String!
+  status: String!
+}
+
+type ServerRole {
+  serverId: Int!
+  role: String!
+}
+
+type InviteInfo {
+  name: String!
+  link: String!
+  serverId: Float!
+  icon: String
+  memberCount: Float!
+  joined: Boolean!
+  channelId: String
+}
+
+type MessagesResponse {
+  messages: [Message!]!
+  channel: Channel!
+  friend: User
+  hasMore: Boolean!
+  nextCursor: Int
+}
+
+type Mutation {
+  signup(params: Input!): User!
+  login(params: Input!): User!
+  updateUser(params: UpdateUserInput!): User!
+  updatePass(params: UpdatePassInput!): User!
+  deleteUser(password: String!): Boolean!
+  logout: Boolean!
+  sendFriendRequest(params: FriendInput!): User!
+  acceptFriendRequest(params: FriendInput!): User!
+  declineFriendRequest(params: FriendInput!): User!
+  cancelFriendRequest(params: FriendInput!): User!
+  removeFriend(params: FriendInput!): User!
+  block(params: FriendInput!): User!
+  unblock(params: FriendInput!): User!
+  join(link: String!): User
+  leave(serverId: Float!): Boolean!
+  kick(params: FriendInput!, serverId: Float!): Boolean!
+  ban(params: FriendInput!, serverId: Float!): Boolean!
+  unban(params: FriendInput!, serverId: Float!): Boolean!
+  updateRole(role: String!, params: FriendInput!, serverId: Float!): Boolean!
+  updateStatus(status: String!): User!
+  createServer(name: String!): Server!
+  updateServer(icon: String, name: String, serverId: Float!): Server!
+  refreshLink(serverId: Float!): Server!
+  deleteServer(serverId: Float!): Boolean!
+  sendMessage(params: MessageInput!): Message!
+  updateMessage(content: String!, msgId: String!): Message!
+  deleteMessage(msgId: String!): Boolean!
+  createServerChannel(serverId: Float!, name: String!): Channel!
+  updateChannel(desc: String, name: String, channelId: String!): Channel!
+  deleteChannel(channelId: String!): Boolean!
+}
+
+input Input {
+  username: String!
+  password: String!
+}
+
+input UpdateUserInput {
+  username: String
+  nameId: String
+  iconId: String
+  status: String
+}
+
+input UpdatePassInput {
+  currPass: String!
+  newPass: String!
+}
+
+input FriendInput {
+  nameId: String!
+  userId: Float!
+}
+
+input MessageInput {
+  msg: String!
+  channelId: String!
+}

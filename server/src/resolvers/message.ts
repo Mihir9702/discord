@@ -1,5 +1,6 @@
 import {
   Arg,
+  Int,
   Ctx,
   Query,
   Mutation,
@@ -54,23 +55,32 @@ export class MessageResolver {
   @UseMiddleware(isAuth)
   async messages(
     @Ctx() { req }: MyContext,
-    @Arg("channelId") channelId: string
+    @Arg("channelId") channelId: string,
+    @Arg("beforeId", () => Int, { nullable: true }) beforeId?: number
   ): Promise<MessagesResponse | null> {
     const channel = await channelFor(req.session.idx, channelId, ["users"]);
-
-    const messages = await Message.find({
-      where: { channel: { id: channel.id } },
-      relations: ["user"],
-      order: { id: "ASC" },
-    });
-
+    // Fetch the latest page instead of loading every message in the channel.
+    const pageSize = 50;
+    const query = Message.createQueryBuilder("m")
+      .leftJoinAndSelect("m.user", "user")
+      .where('m."channelId" = :channelDbId', { channelDbId: channel.id })
+      .orderBy("m.id", "DESC")
+      .take(pageSize + 1);
+    if (beforeId !== undefined) {
+      if (!Number.isInteger(beforeId) || beforeId <= 0) {
+        throw new Error("Invalid message cursor");
+      }
+      query.andWhere("m.id < :beforeId", { beforeId });
+    }
+    const rows = await query.getMany();
+    const hasMore = rows.length > pageSize;
+    const messages = rows.slice(0, pageSize).reverse();
+    const nextCursor = hasMore && messages.length ? messages[0].id : null;
     if (channel.ptChat) {
       const friend = channel.users?.find((u) => u.id !== req.session.idx);
-
-      return { channel, messages, friend: friend || null };
+      return { channel, messages, friend: friend || null, hasMore, nextCursor };
     }
-
-    return { channel, messages };
+    return { channel, messages, hasMore, nextCursor };
   }
 
   @Mutation(() => Message)

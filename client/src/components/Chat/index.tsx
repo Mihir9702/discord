@@ -36,13 +36,14 @@ export default ({ size, setSize }: Props) => {
   const router = useRouter();
   const [confirm, setConfirm] = useState<"remove" | "block" | null>(null);
   const [error, setError] = useState("");
+  const [loadingOlder, setLoadingOlder] = useState(false);
 
   // /@me/[channelId] for dms, /@me/[serverId]/[channelId] for servers
   const channelId = (router.query.channel || router.query.id) as string;
   const serverId = router.query.channel ? Number(router.query.id) : 0;
   const { manage } = useRole(serverId);
 
-  const { data, loading } = useQuery<MessagesQuery>(MessagesDocument, {
+  const { data, loading, fetchMore } = useQuery<MessagesQuery>(MessagesDocument, {
     variables: { channelId },
     skip: !channelId,
   });
@@ -88,6 +89,35 @@ export default ({ size, setSize }: Props) => {
   const isBlocked = !!friends?.blocked?.some((f) => sameUser(f, friend));
   const request = friends?.friendRequests?.find((r) => sameUser(r, friend));
   const sent = request?.status === "outgoing";
+
+  async function loadOlder() {
+    if (!query?.hasMore || !query.nextCursor || loadingOlder) return;
+    setLoadingOlder(true);
+    setError("");
+    try {
+      await fetchMore({
+        variables: { channelId, beforeId: query.nextCursor },
+        updateQuery: (previous, { fetchMoreResult }) => {
+          if (!fetchMoreResult?.messages) return previous;
+          const known = new Set(previous.messages.messages.map((m) => m.id));
+          const older = fetchMoreResult.messages.messages.filter((m) => !known.has(m.id));
+          return {
+            ...previous,
+            messages: {
+              ...previous.messages,
+              messages: [...older, ...previous.messages.messages],
+              hasMore: fetchMoreResult.messages.hasMore,
+              nextCursor: fetchMoreResult.messages.nextCursor,
+            },
+          };
+        },
+      });
+    } catch (ex: any) {
+      setError(ex.message || "Failed to load older messages");
+    } finally {
+      setLoadingOlder(false);
+    }
+  }
 
   async function run(action: () => Promise<unknown>) {
     setError("");
@@ -219,6 +249,16 @@ export default ({ size, setSize }: Props) => {
             </div>
           )}
 
+          {query?.hasMore && (
+            <button
+              type="button"
+              onClick={loadOlder}
+              disabled={loadingOlder}
+              className="self-center mx-auto mt-4 px-3 py-1.5 rounded bg-mid text-gray-200 text-sm hover:bg-highlight disabled:opacity-50"
+            >
+              {loadingOlder ? "Loading…" : "Load older messages"}
+            </button>
+          )}
           <Messages msgs={messages} manage={server && manage} />
         </div>
       </section>

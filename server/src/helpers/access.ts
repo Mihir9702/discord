@@ -126,25 +126,33 @@ export async function deleteServer(s: Server) {
 
 // the dm between two friends - reused if they were friends before
 export async function dmChannel(a: User, b: User): Promise<Channel> {
-  const existing = await Channel.createQueryBuilder("c")
-    .innerJoin("c.users", "a", "a.id = :a", { a: a.id })
-    .innerJoin("c.users", "b", "b.id = :b", { b: b.id })
-    .where("c.ptChat = true")
-    .getOne();
+  if (a.id === b.id) throw new Error("Cannot create a self-DM");
+  // Lock the same users in the same order across concurrent accept requests.
+  // The duplicate check, creation and both memberships commit together.
+  return db.transaction(async (m) => {
+    const ids = [a.id, b.id].sort((x, y) => x - y);
+    await m.query(
+      'SELECT id FROM "user" WHERE id IN ($1,$2) ORDER BY id FOR UPDATE',
+      ids
+    );
+    const existing = await m.getRepository(Channel)
+      .createQueryBuilder("c")
+      .innerJoin("c.users", "a", "a.id = :a", { a: a.id })
+      .innerJoin("c.users", "b", "b.id = :b", { b: b.id })
+      .where("c.ptChat = true")
+      .getOne();
+    if (existing) return existing;
 
-  if (existing) return existing;
-
-  const id = randomNumberGenerator(15).toString();
-  const channel = await Channel.create({
-    name: id,
-    channelId: id,
-    ptChat: true,
-  }).save();
-
-  await relation(User, "channels").of(a.id).add(channel.id);
-  await relation(User, "channels").of(b.id).add(channel.id);
-
-  return channel;
+    const id = randomNumberGenerator(15).toString();
+    const channel = await m.save(Channel, m.create(Channel, {
+      name: id,
+      channelId: id,
+      ptChat: true,
+    }));
+    await m.createQueryBuilder().relation(User, "channels").of(a.id).add(channel.id);
+    await m.createQueryBuilder().relation(User, "channels").of(b.id).add(channel.id);
+    return channel;
+  });
 }
 
 export async function deleteChannels(ids: number[]) {
