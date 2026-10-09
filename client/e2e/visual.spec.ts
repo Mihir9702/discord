@@ -183,6 +183,15 @@ test("phone visual review: chat, navigation drawer and settings", async ({browse
     const closeBounds = await close.boundingBox();
     expect(closeBounds).not.toBeNull();
     expect(closeBounds!.x + closeBounds!.width).toBeLessThanOrEqual(390);
+    const logout = page.getByRole("button",{name:"Log out",exact:true});
+    await expect(logout).toBeVisible();
+    const logoutBounds = await logout.boundingBox();
+    expect(logoutBounds).not.toBeNull();
+    const overlapping = !(closeBounds!.x + closeBounds!.width <= logoutBounds!.x ||
+      logoutBounds!.x + logoutBounds!.width <= closeBounds!.x ||
+      closeBounds!.y + closeBounds!.height <= logoutBounds!.y ||
+      logoutBounds!.y + logoutBounds!.height <= closeBounds!.y);
+    expect(overlapping).toBeFalsy();
     await screenshot(page,"phone-settings.png");
     await page.getByRole("button",{name:"Profiles",exact:true}).click();
     await screenshot(page,"phone-profile.png");

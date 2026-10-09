@@ -12,7 +12,7 @@ interface Options {
 export default ({ option, setOption, onLogout }: Options) => {
   const sidebar = {
     title: "text-xs font-semibold uppercase mx-4 mb-1 text-gray-400",
-    item: "cursor-pointer hover:bg-highlight w-full text-start p-4 py-2 rounded text-gray-200",
+    item: "cursor-pointer hover:bg-highlight w-auto md:w-full text-start p-3 md:p-4 py-2 rounded text-gray-200",
     soon: "w-full text-start p-4 py-2 rounded text-gray-200 opacity-40 cursor-not-allowed",
     divider: "border-1 border-dash mx-4 my-1",
   };
@@ -23,6 +23,7 @@ export default ({ option, setOption, onLogout }: Options) => {
         option === key ? "bg-highlight text-white" : ""
       }`}
       aria-current={option === key ? "page" : undefined}
+      style={{ whiteSpace: "nowrap" }}
       onClick={() => setOption(key)}
     >
       {label}
@@ -41,12 +42,12 @@ export default ({ option, setOption, onLogout }: Options) => {
       <section className="w-full flex flex-col gap-2 py-3 md:py-8">
         <div className="w-full">
           <h1 className={sidebar.title + " hidden md:block"}>User Settings</h1>
-          <div className="flex items-center gap-1 md:block px-2 md:px-0">
+          <div className="flex items-center gap-1 md:block px-2 md:px-0 pr-12 md:pr-0">
             {item("MyAccount", "My Account")}
             {item("Profiles", "Profiles")}
             {item("Blocked", "Blocked")}
-            <button type="button" className="md:hidden whitespace-nowrap px-3 text-sm text-gray-300" onClick={onLogout}>Logout</button>
           </div>
+          <button type="button" className="md:hidden mx-4 mt-1 self-start text-xs text-gray-300 hover:text-white" onClick={onLogout}>Log out</button>
           <hr className={sidebar.divider} />
         </div>
         <div className="hidden md:block w-full">
