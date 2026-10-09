@@ -3,88 +3,110 @@ import "dotenv/config";
 import express from "express";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { createServer } from "http";
-import db, { pgConfig } from "./connect";
+import { createServer } from "node:http";
 import cors from "cors";
-import { ApolloServer } from "apollo-server-express";
+import { ApolloServer } from "@apollo/server";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { expressMiddleware } from "@as-integrations/express4";
+import { GraphQLError, ValidationContext } from "graphql";
+import depthLimit from "graphql-depth-limit";
+import { rateLimit } from "express-rate-limit";
 import { buildSchema } from "type-graphql";
+import db, { pgConfig } from "./connect";
 import { __prod__, COOKIE, CLIENT_URLS, PORT, runApp } from "./constants";
 import { MyContext } from "./types";
-import { ApolloServerPluginLandingPageGraphQLPlayground } from "apollo-server-core";
 import { UserResolver, UserFieldResolver } from "./resolvers/user";
 import { ServerResolver } from "./resolvers/server";
 import { MessageResolver } from "./resolvers/message";
 import { ChannelResolver } from "./resolvers/channel";
 import { initSocket } from "./socket";
 
-const main = async () => {
-  // Connect to Database
+// Bound the work done by deeply nested or alias-heavy GraphQL queries.
+function limitFields(context: ValidationContext) {
+  let fields = 0;
+  let aliases = 0;
+  return {
+    Field(node: import("graphql").FieldNode) {
+      fields++;
+      if (node.alias) aliases++;
+      if (fields === 251 || aliases === 31) {
+        context.reportError(new GraphQLError("GraphQL request is too complex", { nodes: [node] }));
+      }
+    }
+  };
+}
+
+export async function main() {
+  if (__prod__ && (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32)) {
+    throw new Error("A strong SESSION_SECRET (at least 32 characters) is required in production");
+  }
+
+  // Never silently modify schemas. Only audited migrations may run.
   await db.initialize();
   await db.runMigrations();
 
   const app = express();
   const http = createServer(app);
-
-  // behind a proxy (heroku, render, nginx...) in production
+  app.disable("x-powered-by");
   app.set("trust proxy", __prod__ ? 1 : false);
+  app.use(cors({ origin: CLIENT_URLS, credentials: true }));
 
-  app.use(
-    cors({
-      origin: CLIENT_URLS,
-      credentials: true,
-    })
-  );
-
-  if (__prod__ && !process.env.SESSION_SECRET) {
-    throw new Error("SESSION_SECRET must be set in production");
-  }
-
-  // sessions live in postgres so restarts don't log everyone out
   const PgStore = connectPg(session);
-
   const sessionMiddleware = session({
     name: COOKIE,
     store: new PgStore({ conObject: pgConfig, createTableIfMissing: true }),
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
+      maxAge: 1000 * 60 * 60 * 24 * (__prod__ ? 7 : 30),
       httpOnly: true,
-      // csrf - set COOKIE_SAMESITE=none if the client + api are on different sites
       sameSite: (process.env.COOKIE_SAMESITE as "lax" | "none") || "lax",
-      secure: __prod__, // cookie only works in https
+      secure: __prod__,
     },
-    saveUninitialized: false, // don't create session until something stored
+    saveUninitialized: false,
     secret: process.env.SESSION_SECRET || "express.session.cookie.secret.key",
-    resave: false, // false // do not save session if unmodified
+    resave: false,
   });
-
   app.use(sessionMiddleware);
 
-  const apolloServer = new ApolloServer({
-    schema: await buildSchema({
-      resolvers: [
-        UserResolver,
-        UserFieldResolver,
-        ServerResolver,
-        MessageResolver,
-        ChannelResolver,
-      ],
-      validate: false,
-    }),
-    context: ({ req, res }): MyContext => ({ req, res }),
-    cache: "bounded",
-    plugins: [ApolloServerPluginLandingPageGraphQLPlayground],
+  const schema = await buildSchema({
+    resolvers: [UserResolver, UserFieldResolver, ServerResolver, MessageResolver, ChannelResolver],
+    validate: false,
   });
-
+  const apolloServer = new ApolloServer<MyContext>({
+    schema,
+    introspection: !__prod__,
+    csrfPrevention: true,
+    includeStacktraceInErrorResponses: !__prod__,
+    validationRules: [depthLimit(10), limitFields],
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer: http })],
+  });
   await apolloServer.start();
 
-  apolloServer.applyMiddleware({ app, cors: false });
+  const limiter = rateLimit({
+    windowMs: 60_000,
+    limit: 300,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+  });
+
+  app.use(
+    "/graphql",
+    limiter,
+    express.json({ limit: "128kb" }),
+    expressMiddleware(apolloServer, {
+      context: async ({ req, res }): Promise<MyContext> => ({
+        req: req as MyContext["req"],
+        res,
+      }),
+    })
+  );
 
   initSocket(http, sessionMiddleware, CLIENT_URLS);
-
   http.listen(PORT, runApp);
-};
+}
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+}

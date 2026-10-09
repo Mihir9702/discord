@@ -91,7 +91,9 @@ export type MessagesResponse = {
   __typename?: 'MessagesResponse';
   channel: Channel;
   friend?: Maybe<User>;
+  hasMore: Scalars['Boolean']['output'];
   messages: Array<Message>;
+  nextCursor?: Maybe<Scalars['Int']['output']>;
 };
 
 export type Mutation = {
@@ -325,6 +327,7 @@ export type QueryMessageArgs = {
 
 
 export type QueryMessagesArgs = {
+  beforeId?: InputMaybe<Scalars['Int']['input']>;
   channelId: Scalars['String']['input'];
 };
 
@@ -650,10 +653,11 @@ export type MessageQuery = { __typename?: 'Query', message: { __typename?: 'Mess
 
 export type MessagesQueryVariables = Exact<{
   channelId: Scalars['String']['input'];
+  beforeId?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type MessagesQuery = { __typename?: 'Query', messages: { __typename?: 'MessagesResponse', channel: { __typename?: 'Channel', name: string, desc?: string | null, ptChat: boolean, channelId: string }, messages: Array<{ __typename?: 'Message', id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string } | null }>, friend?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string } | null } };
+export type MessagesQuery = { __typename?: 'Query', messages: { __typename?: 'MessagesResponse', hasMore: boolean, nextCursor?: number | null, channel: { __typename?: 'Channel', name: string, desc?: string | null, ptChat: boolean, channelId: string }, messages: Array<{ __typename?: 'Message', id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string } | null }>, friend?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string } | null } };
 
 export type PartyChatsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -864,7 +868,9 @@ export type MessageResolvers<ContextType = any, ParentType extends ResolversPare
 export type MessagesResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesResponse'] = ResolversParentTypes['MessagesResponse']> = {
   channel?: Resolver<ResolversTypes['Channel'], ParentType, ContextType>;
   friend?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  hasMore?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   messages?: Resolver<Array<ResolversTypes['Message']>, ParentType, ContextType>;
+  nextCursor?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -2265,8 +2271,10 @@ export type MessageQueryHookResult = ReturnType<typeof useMessageQuery>;
 export type MessageLazyQueryHookResult = ReturnType<typeof useMessageLazyQuery>;
 export type MessageQueryResult = Apollo.QueryResult<MessageQuery, MessageQueryVariables>;
 export const MessagesDocument = gql`
-    query Messages($channelId: String!) {
-  messages(channelId: $channelId) {
+    query Messages($channelId: String!, $beforeId: Int) {
+  messages(channelId: $channelId, beforeId: $beforeId) {
+    hasMore
+    nextCursor
     channel {
       name
       desc
@@ -2311,6 +2319,7 @@ export const MessagesDocument = gql`
  * const { data, loading, error } = useMessagesQuery({
  *   variables: {
  *      channelId: // value for 'channelId'
+ *      beforeId: // value for 'beforeId'
  *   },
  * });
  */

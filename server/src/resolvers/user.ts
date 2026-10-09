@@ -27,6 +27,8 @@ import { ServerRole } from "../entities/ServerRole";
 import { check, find, role, same } from "../helpers/array";
 import { Input, FriendInput } from "../types";
 import { Server } from "../entities/Server";
+import { Channel } from "../entities/Channel";
+import { Message } from "../entities/Message";
 import { COOKIE } from "../constants";
 import {
   inviteCode,
@@ -49,7 +51,8 @@ import {
   removeFromServer,
   setRole,
 } from "../helpers/access";
-import { audience, emitTo, isOnline } from "../socket";
+import { audience, disconnectUser, emitTo, isOnline } from "../socket";
+import { assertLoginAllowed, failedLogin, successfulLogin } from "../security/login";
 import { renameInRequests, saveBan, saveRequest } from "../helpers/jsonb";
 import { EntityManager } from "typeorm";
 import db from "../connect";
@@ -100,9 +103,11 @@ function startSession(req: MyContext["req"], id: number): Promise<void> {
 }
 
 function destroySession({ req, res }: MyContext): Promise<boolean> {
+  const id = req.session.idx;
   return new Promise((resolve) =>
     req.session.destroy((err) => {
       res.clearCookie(COOKIE);
+      if (!err && id) disconnectUser(id);
       resolve(!err);
     })
   );
@@ -145,6 +150,31 @@ export class UserFieldResolver {
   @FieldResolver(() => [ServerRole], { nullable: true })
   roles(@Root() user: User, @Ctx() { req }: MyContext) {
     return user.id === req.session.idx ? user.roles : null;
+  }
+  // A nested User object must not disclose another user's private relations.
+  @FieldResolver(() => [User], { nullable: true })
+  friends(@Root() user: User, @Ctx() { req }: MyContext) {
+    return user.id === req.session.idx ? user.friends : null;
+  }
+
+  @FieldResolver(() => [User], { nullable: true })
+  blocked(@Root() user: User, @Ctx() { req }: MyContext) {
+    return user.id === req.session.idx ? user.blocked : null;
+  }
+
+  @FieldResolver(() => [Channel], { nullable: true })
+  channels(@Root() user: User, @Ctx() { req }: MyContext) {
+    return user.id === req.session.idx ? user.channels : null;
+  }
+
+  @FieldResolver(() => [Server], { nullable: true })
+  servers(@Root() user: User, @Ctx() { req }: MyContext) {
+    return user.id === req.session.idx ? user.servers : null;
+  }
+
+  @FieldResolver(() => [Message], { nullable: true })
+  messages(@Root() user: User, @Ctx() { req }: MyContext) {
+    return user.id === req.session.idx ? user.messages : null;
   }
 }
 
@@ -260,16 +290,15 @@ export class UserResolver {
     if (!username) throw new Error("Username not provided");
     if (!params.password) throw new Error("Password not provided");
 
-    const user = await User.findOne({
-      where: { username },
-    });
-
+    assertLoginAllowed(username, req.ip || "unknown");
+    const user = await User.findOne({ where: { username } });
     const valid = user && (await compare(params.password, user.password));
-
-    if (!user || !valid) throw new Error("Invalid username or password");
-
+    if (!user || !valid) {
+      failedLogin(username, req.ip || "unknown");
+      throw new Error("Invalid username or password");
+    }
+    successfulLogin(username, req.ip || "unknown");
     await startSession(req, user.id);
-
     return user;
   }
 

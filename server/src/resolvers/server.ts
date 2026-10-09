@@ -36,7 +36,7 @@ import { emitTo } from "../socket";
 
 async function freeLink(): Promise<string> {
   for (let i = 0; i < 20; i++) {
-    const link = randomStringGenerator(6);
+    const link = randomStringGenerator(16);
     if (!(await Server.findOne({ where: { link } }))) return link;
   }
   throw new Error("create server - link generation failed");

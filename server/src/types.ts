@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Session, SessionData } from "express-session";
-import { Field, InputType, ObjectType } from "type-graphql";
+import { Field, Int, InputType, ObjectType } from "type-graphql";
 import { User, UserStatus } from "./entities/User";
 import { Message } from "./entities/Message";
 import { Channel } from "./entities/Channel";
@@ -57,6 +57,8 @@ export class MessagesResponse {
   @Field(() => [Message]) messages!: Message[];
   @Field(() => Channel) channel!: Channel;
   @Field(() => User, { nullable: true }) friend?: User | null;
+  @Field(() => Boolean) hasMore!: boolean;
+  @Field(() => Int, { nullable: true }) nextCursor?: number | null;
 }
 
 // someone in a server + their role there

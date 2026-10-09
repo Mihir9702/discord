@@ -29,7 +29,14 @@ export function initSocket(
   session: RequestHandler,
   origin: string[]
 ) {
-  io = new Server(http, { cors: { origin, credentials: true } });
+  io = new Server(http, {
+    cors: { origin, credentials: true },
+    // WebSocket upgrade requests do not obey browser CORS checks.
+    allowRequest: (request, callback) => {
+      const requestOrigin = request.headers.origin;
+      callback(null, !requestOrigin || origin.includes(requestOrigin));
+    },
+  });
 
   // share the express session so every socket knows its user
   io.engine.use(session as any);
@@ -61,6 +68,10 @@ export function initSocket(
       notifyPresence(id);
     });
   });
+}
+
+export function disconnectUser(id: number) {
+  io?.in(room(id)).disconnectSockets(true);
 }
 
 export function emitTo(ids: number[], event: SocketEvent, payload = {}) {

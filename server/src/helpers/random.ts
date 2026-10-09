@@ -1,3 +1,5 @@
+import { randomInt } from "node:crypto";
+
 // prettier-ignore
 const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -32,7 +34,7 @@ export function randomStringGenerator(len: number): string {
   let result = "";
 
   for (let i = 0; i < len; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
+    const randomIndex = randomInt(characters.length);
     result += characters.charAt(randomIndex);
   }
 

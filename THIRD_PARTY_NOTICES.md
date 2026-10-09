@@ -24,4 +24,4 @@ The Heroicons software is provided "AS IS", without warranty of any kind, expres
 
 ## Package dependencies
 
-Runtime and development dependencies installed from package managers remain under their respective upstream licenses. This repository's copyright notice does not replace or narrow those licenses.
+Runtime and development dependencies installed from package managers remain under their respective upstream licenses. This repository's MIT license does not replace or narrow those licenses.

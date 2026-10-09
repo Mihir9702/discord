@@ -1,0 +1,83 @@
+name: Verify Connect
+
+on:
+  push:
+    branches: [main, "feature/**", "fix/**"]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: connect_discord_test_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d connect_discord_test_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/connect_discord_test_ci
+      TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/connect_discord_test_ci
+      TEST_GRAPHQL_URL: http://127.0.0.1:4300/graphql
+      CLIENT_URL: http://localhost:3001
+      SESSION_SECRET: ci-only-ephemeral-secret-please-never-use-in-production
+      PORT: "4300"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+            controller/package-lock.json
+
+      - name: Install locked dependencies
+        run: |
+          npm ci --prefix server
+          npm ci --prefix client
+          npm ci --prefix controller
+
+      - name: Reproduce schema and generated client types
+        run: |
+          npm run schema --prefix server
+          npm run gen --prefix controller
+          git diff --exit-code -- server/schema.graphql client/src/graphql.ts
+
+      - name: Typecheck and build
+        run: |
+          npm run typecheck --prefix server
+          npm run typecheck --prefix client
+          npm run build --prefix server
+          npm run build --prefix client
+
+      - name: Unit security and schema tests
+        run: npm run test:unit --prefix server
+
+      - name: PostgreSQL integration and WebSocket tests
+        shell: bash
+        run: |
+          npm run start --prefix server > /tmp/connect-api.log 2>&1 &
+          API_PID=$!
+          trap 'kill $API_PID 2>/dev/null || true; cat /tmp/connect-api.log' EXIT
+          for i in {1..40}; do
+            if curl --fail --silent --show-error \
+              -H 'Content-Type: application/json' \
+              -d '{"query":"query { __typename }"}' \
+              http://127.0.0.1:4300/graphql > /dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          npm run test:e2e --prefix server
+      - name: Git whitespace validation
+        run: git diff --check

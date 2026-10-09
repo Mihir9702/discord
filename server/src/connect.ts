@@ -4,6 +4,7 @@ import { User } from "./entities/User";
 import { Server } from "./entities/Server";
 import { Channel } from "./entities/Channel";
 import { Message } from "./entities/Message";
+import { BootstrapConnect1728345600000 } from "./migrations/1728345600000-BootstrapConnect";
 
 // postgres connection settings - also used by the session store
 export const pgConfig = process.env.DATABASE_URL
@@ -24,8 +25,9 @@ export default new DataSource({
   username: process.env.POSTGRES_USER || "postgres",
   password: process.env.POSTGRES_PASS || "postgres",
   database: process.env.POSTGRES_DB || "connect",
-  synchronize: true,
-  // logging: true,
+  synchronize: false,
+  migrationsRun: false,
+  migrations: [BootstrapConnect1728345600000],
   // imported directly so it works from both src (ts-node) and dist (node)
   entities: [User, Server, Channel, Message],
 });

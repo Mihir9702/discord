@@ -22,7 +22,7 @@ A Discord clone built using the PERN stack. Add friends, chat in direct messages
 
 ## Installation
 
-Requires Node 18+, Yarn and PostgreSQL.
+Requires Node 20+, npm and PostgreSQL.
 
 1. Clone the repository:
 
@@ -40,27 +40,27 @@ Requires Node 18+, Yarn and PostgreSQL.
 
    ```bash
    cd discord/server
-   yarn install
+   npm install
    cp .env.example .env # defaults: postgres:postgres@localhost:5432/connect
    ```
 
 4. Run the server (http://localhost:3000/graphql):
 
    ```bash
-   yarn dev
+   npm run dev
    ```
 
 5. Open a new terminal window, navigate to the client directory, and install dependencies:
 
    ```bash
    cd ../client
-   yarn install
+   npm install
    ```
 
 6. Run the client:
 
    ```bash
-   yarn dev
+   npm run dev
    ```
 
 7. Access Discord at `http://localhost:3001`.
@@ -69,8 +69,8 @@ Requires Node 18+, Yarn and PostgreSQL.
 
    ```bash
    cd discord/controller
-   yarn install
-   yarn gen
+   npm install
+   npm run gen
    ```
 
 ## Configuration
@@ -96,10 +96,10 @@ In production (`NODE_ENV=production`) cookies are https only, passwords need 8+ 
 
 | | server | client |
 | --- | --- | --- |
-| `yarn dev` | api with auto reload | next dev on :3001 |
-| `yarn build` | compile to `dist/` | production build |
-| `yarn start` | run `dist/` | serve the build on :3001 |
-| `yarn typecheck` | `tsc --noEmit` | `tsc --noEmit` |
+| `npm run dev` | api with auto reload | next dev on :3001 |
+| `npm run build` | compile to `dist/` | production build |
+| `npm start` | run `dist/` | serve the build on :3001 |
+| `npm run typecheck` | `tsc --noEmit` | `tsc --noEmit` |
 
 ## Project history
 
@@ -117,10 +117,8 @@ The current application is in `client/`, `server/`, and `controller/`. Earlier i
 git log --all --graph --oneline
 ```
 
-## Copyright and reuse
+## License
 
-The original project code and original content in this repository are source-visible but are **not released under an open-source license**. See [COPYRIGHT.md](COPYRIGHT.md).
+This is an independent open-source educational project released under the MIT License; see [LICENSE](LICENSE). Third-party components retain their own licenses and notices in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-Third-party icon geometry remains under its upstream licenses. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Package dependencies installed from npm/yarn keep their own upstream licenses.
-
-"Discord" and related marks belong to their respective owner. Their use here identifies the product being independently reimplemented; no affiliation is implied.
+Discord and associated marks are trademarks of their respective owners. This app is not affiliated with Discord Inc.
