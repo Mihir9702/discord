@@ -166,7 +166,11 @@ test("phone visual review: chat, navigation drawer and settings", async ({browse
     const page=await context.newPage();
     await page.goto(web + "/@me/" + serverId + "/" + channelId);
     await expect(page.locator("textarea#msg")).toBeVisible();
-    await expect(page.getByRole("button",{name:"Channels"})).toBeVisible();
+    const toggle=page.getByRole("button",{name:"Channels"});
+    await expect(toggle).toBeVisible();
+    const toggleBounds=await toggle.boundingBox();
+    expect(toggleBounds).not.toBeNull();
+    expect(toggleBounds!.x + toggleBounds!.width).toBeLessThanOrEqual(72);
     await screenshot(page,"phone-chat.png");
     await page.getByRole("button",{name:"Channels"}).click();
     await expect(page.locator("#mobile-conversations")).toHaveClass(/mobile-expanded/);
@@ -175,10 +179,10 @@ test("phone visual review: chat, navigation drawer and settings", async ({browse
     await page.getByRole("button",{name:"User Settings"}).click();
     const close = page.getByRole("button",{name:"Close settings"});
     await expect(close).toBeVisible();
+    await page.waitForTimeout(450);
     const closeBounds = await close.boundingBox();
     expect(closeBounds).not.toBeNull();
     expect(closeBounds!.x + closeBounds!.width).toBeLessThanOrEqual(390);
-    await page.waitForTimeout(350);
     await screenshot(page,"phone-settings.png");
     await page.getByRole("button",{name:"Profiles",exact:true}).click();
     await screenshot(page,"phone-profile.png");

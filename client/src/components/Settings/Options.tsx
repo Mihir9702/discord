@@ -36,7 +36,7 @@ export default ({ option, setOption, onLogout }: Options) => {
   );
 
   return (
-    <section className="bg-mid w-full md:w-80 h-auto md:h-full flex overflow-x-auto md:overflow-x-hidden overflow-y-auto shrink-0">
+    <section className="bg-mid w-full md:w-64 lg:w-80 h-auto md:h-full flex overflow-x-auto md:overflow-x-hidden overflow-y-auto shrink-0">
       <hr className="sm:px-2 md:px-6 border-none" />
       <section className="w-full flex flex-col gap-2 py-3 md:py-8">
         <div className="w-full">

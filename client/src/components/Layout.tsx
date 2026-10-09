@@ -68,7 +68,7 @@ export default function Layout({ home, server }: LayoutProps) {
           aria-controls="mobile-conversations"
           aria-expanded={mobileSidebar}
           onClick={() => setMobileSidebar((opened) => !opened)}
-          className="md:hidden fixed bottom-20 left-[80px] z-40 rounded-lg bg-mid px-3 py-2 text-sm font-semibold text-gray-100 border border-dash shadow-lg"
+          className="md:hidden fixed bottom-4 left-2 z-40 w-14 rounded-md bg-mid px-1 py-2 text-[11px] font-semibold text-gray-100 border border-dash shadow-lg"
         >
           {mobileSidebar ? "Close" : server ? "Channels" : "Chats"}
         </button>
