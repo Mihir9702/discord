@@ -81,6 +81,12 @@ export default () => {
       <input
         className="w-full h-full p-1 px-2 rounded placeholder:text-md placeholder:font-light placeholder:font-sans placeholder:text-left text-[#dbdee1] bg-[#1e1f22] focus:outline-0"
         type="text"
+        aria-label="Find conversations and servers"
+        role="combobox"
+        aria-expanded={open && !!query}
+        aria-controls="quick-switcher-results"
+        aria-autocomplete="list"
+        aria-activedescendant={results.length ? "quick-switcher-option-" + active : undefined}
         placeholder="Find or start a conversation"
         value={value}
         onFocus={() => setOpen(true)}
@@ -106,13 +112,16 @@ export default () => {
         }}
       />
       {open && query && (
-        <ul className="absolute left-2 right-2 top-full mt-1 z-30 bg-[#111214] rounded-md p-1 shadow-lg shadow-darkish font-normal text-sm">
+        <ul id="quick-switcher-results" role="listbox" className="absolute left-2 right-2 top-full mt-1 z-30 bg-[#111214] rounded-md p-1 shadow-lg shadow-darkish font-normal text-sm">
           {results.length === 0 && (
             <li className="p-2 text-gray-400">No results</li>
           )}
           {results.map((r, i) => (
             <li
               key={r.key}
+              id={"quick-switcher-option-" + i}
+              role="option"
+              aria-selected={i === active}
               onMouseDown={() => go(r)}
               onMouseEnter={() => setActive(i)}
               className={`flex items-center gap-2 p-1.5 rounded cursor-pointer ${

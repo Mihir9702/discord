@@ -56,7 +56,10 @@ export default () => {
     <ServerContext.Provider value={{ s, channelId, manage, owner }}>
       <main className="flex flex-col flex-1 min-h-0">
         <section className="text-gray-100 text-center h-full max-h-[48px] shadow shadow-darkish flex flex-col gap-3 shrink-0">
-          <h1
+          <button
+            type="button"
+            aria-expanded={menu}
+            aria-label="Server options"
             onClick={() => setMenu(!menu)}
             className={`
           relative flex items-center justify-center
@@ -70,7 +73,7 @@ export default () => {
             <span className="absolute right-2">
               {menu ? Cross : ChevronDown}
             </span>
-          </h1>
+          </button>
         </section>
 
         {menu && (

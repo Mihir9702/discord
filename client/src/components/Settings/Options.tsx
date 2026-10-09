@@ -18,14 +18,15 @@ export default ({ option, setOption, onLogout }: Options) => {
   };
 
   const item = (key: Option, label: string) => (
-    <h2
+    <button type="button"
       className={`${sidebar.item} ${
         option === key ? "bg-highlight text-white" : ""
       }`}
+      aria-current={option === key ? "page" : undefined}
       onClick={() => setOption(key)}
     >
       {label}
-    </h2>
+    </button>
   );
 
   const soon = (label: string) => (
@@ -59,12 +60,12 @@ export default ({ option, setOption, onLogout }: Options) => {
           {soon("Text & Images")}
           {soon("Notifications")}
           <hr className={sidebar.divider} />
-          <h2
+          <button type="button"
             className={sidebar.item + " flex items-center justify-between"}
             onClick={onLogout}
           >
             Logout <span className="text-gray-400">{LogOut}</span>
-          </h2>
+          </button>
           <hr className={sidebar.divider} />
         </div>
       </section>
