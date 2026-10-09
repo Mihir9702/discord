@@ -125,6 +125,8 @@ test("23-step Connect workflow: accounts, friends, DMs, servers, moderation, per
     await graphql(bob,"mutation($id:Float!,$p:FriendInput!){kick(serverId:$id,params:$p)}",{id:s2.serverId,p:tag(charlie)});
     await join(charlie,s2.link);
     await graphql(bob,"mutation($id:Float!,$p:FriendInput!){ban(serverId:$id,params:$p)}",{id:s2.serverId,p:tag(charlie)});
+    const moderatorBans=await graphql(bob,"query($id:Float!){server(serverId:$id){banned{userId}}}",{id:s2.serverId});
+    assert.ok(moderatorBans.server.banned.some((b:any)=>b.userId===charlie.userId));
     await join(charlie,s2.link).then(()=>assert.fail("Banned user joined"),()=>undefined);
     await graphql(bob,"mutation($id:Float!,$p:FriendInput!){unban(serverId:$id,params:$p)}",{id:s2.serverId,p:tag(charlie)});
     await join(charlie,s2.link);
@@ -186,6 +188,6 @@ test("23-step Connect workflow: accounts, friends, DMs, servers, moderation, per
     assert.equal(alice.cookie.startsWith("dyx="),true);
     const invalid=await graphql({cookie:""},"mutation($p:Input!){login(params:$p){id}}",
       {p:{username:"bad_login_for_ci",password:"bad"}},true);
-    assert.equal(invalid,undefined);
+    assert.equal(invalid,null);
   });
 });

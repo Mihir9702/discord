@@ -9,6 +9,7 @@ import {
   Root,
 } from "type-graphql";
 import { Server } from "../entities/Server";
+import { BannedUser } from "../entities/BannedUser";
 import { InviteInfo, MyContext, ServerMember, relations } from "../types";
 import { isAuth } from "../middleware/isAuth";
 import { devOnly } from "../middleware/devOnly";
@@ -25,6 +26,7 @@ import {
   deleteServer,
   getRole,
   memberIds,
+  isMember,
   members as membersOf,
 } from "../helpers/access";
 import {
@@ -52,6 +54,16 @@ async function freeServerId(): Promise<number> {
 
 @Resolver(() => Server)
 export class ServerResolver {
+  // Ban records must only be disclosed to moderators.
+  @FieldResolver(() => [BannedUser], { nullable: true })
+  async banned(@Root() server: Server, @Ctx() { req }: MyContext): Promise<BannedUser[] | null> {
+    const id = req.session?.idx;
+    if (!id || !(await isMember(id, server.id))) return null;
+    const user = await User.findOne({ where: { id } });
+    if (!user || !canManage(user, server.serverId)) return null;
+    return server.banned || [];
+  }
+
   // everyone in the server with their role in it (roles on users are private)
   @FieldResolver(() => [ServerMember])
   async members(@Root() s: Server): Promise<ServerMember[]> {

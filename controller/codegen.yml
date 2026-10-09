@@ -7,10 +7,7 @@ generates:
       - "typescript"
       - "typescript-operations"
       - "typescript-resolvers"
-      - "typescript-react-apollo"
   ../client/src/graphql.ts:
     plugins:
-      - "typescript"
       - "typescript-operations"
-      - "typescript-resolvers"
       - "typescript-react-apollo"

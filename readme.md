@@ -22,7 +22,7 @@ A Discord clone built using the PERN stack. Add friends, chat in direct messages
 
 ## Installation
 
-Requires Node 20+, npm and PostgreSQL.
+Requires Node 24+, npm and PostgreSQL.
 
 1. Clone the repository:
 
@@ -30,7 +30,7 @@ Requires Node 20+, npm and PostgreSQL.
    git clone https://github.com/Mihir9702/discord.git
    ```
 
-2. Create the database (tables are created automatically on first run):
+2. Create an empty development database (versioned migrations create tables on startup):
 
    ```bash
    createdb connect
@@ -40,7 +40,7 @@ Requires Node 20+, npm and PostgreSQL.
 
    ```bash
    cd discord/server
-   npm install
+   npm ci
    cp .env.example .env # defaults: postgres:postgres@localhost:5432/connect
    ```
 
@@ -54,7 +54,7 @@ Requires Node 20+, npm and PostgreSQL.
 
    ```bash
    cd ../client
-   npm install
+   npm ci
    ```
 
 6. Run the client:
@@ -65,12 +65,13 @@ Requires Node 20+, npm and PostgreSQL.
 
 7. Access Discord at `http://localhost:3001`.
 
-8. (Optional) To regenerate TypeScript types after changing the GraphQL schema or anything in `controller/src/graphql`, run this with the server running:
+8. Regenerate the GraphQL schema and client operation types offline (no API required):
 
    ```bash
-   cd discord/controller
-   npm install
-   npm run gen
+   cd discord
+   npm run schema
+   npm ci --prefix controller
+   npm run gen --prefix controller
    ```
 
 ## Configuration
@@ -90,7 +91,7 @@ Server (`server/.env`, see `.env.example`):
 
 Client: `NEXT_PUBLIC_API_URL` (default `http://localhost:3000`).
 
-In production (`NODE_ENV=production`) cookies are https only, passwords need 8+ characters with upper, lower and special characters, and the `users` / `servers` debugging queries are disabled.
+In production, sessions expire after seven days and use HTTPS-only cookies, login throttling is enabled, GraphQL introspection is disabled, passwords require strong complexity, and debug queries are disabled.
 
 ## Scripts
 
@@ -100,6 +101,20 @@ In production (`NODE_ENV=production`) cookies are https only, passwords need 8+ 
 | `npm run build` | compile to `dist/` | production build |
 | `npm start` | run `dist/` | serve the build on :3001 |
 | `npm run typecheck` | `tsc --noEmit` | `tsc --noEmit` |
+
+## Verification and safe database upgrades
+
+Run npm ci in server/, client/ and controller/. At the project root run:
+
+    npm run check
+
+This generates the schema and typed GraphQL operations, typechecks, runs unit tests and builds both applications. Database-backed tests run in GitHub Actions against an isolated PostgreSQL database called connect_discord_test_ci. Local E2E tests require TEST_GRAPHQL_URL and TEST_DATABASE_URL pointing to a dedicated connect_discord_test_* database. Never point tests at real user data.
+
+The API disables automatic TypeORM synchronization and applies additive versioned migrations. Before upgrading an existing installation, BACK UP the database, compare its schema to the migration, and rehearse the upgrade on a restored copy. The baseline creates missing objects; it does not repair every historical schema mismatch. Production schema upgrades remain subject to a separate approval.
+
+### Feature scope
+
+Text channels, direct messages, invitations, moderation, profiles and real-time presence are implemented. Voice/video, file attachments, private channels, notifications and unread counters are not implemented; the Active Now panel is informational. The controller is a code-generation tool, not a separate deployed service.
 
 ## Project history
 

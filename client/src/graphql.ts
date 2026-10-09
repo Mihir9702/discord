@@ -1,407 +1,35 @@
-import { GraphQLResolveInfo } from 'graphql';
+/** Internal type. DO NOT USE DIRECTLY. */
+type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+/** Internal type. DO NOT USE DIRECTLY. */
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
-export type Maybe<T> = T | null;
-export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
-export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
-export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
-export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 const defaultOptions = {} as const;
-/** All built-in and custom scalars, mapped to their actual values */
-export type Scalars = {
-  ID: { input: string; output: string; }
-  String: { input: string; output: string; }
-  Boolean: { input: boolean; output: boolean; }
-  Int: { input: number; output: number; }
-  Float: { input: number; output: number; }
-};
-
-export type BannedUser = {
-  __typename?: 'BannedUser';
-  iconId: Scalars['String']['output'];
-  id: Scalars['Float']['output'];
-  nameId: Scalars['String']['output'];
-  userId: Scalars['Float']['output'];
-};
-
-export type Channel = {
-  __typename?: 'Channel';
-  channelId: Scalars['String']['output'];
-  createdAt: Scalars['String']['output'];
-  desc?: Maybe<Scalars['String']['output']>;
-  id: Scalars['Float']['output'];
-  messages?: Maybe<Array<Message>>;
-  name: Scalars['String']['output'];
-  ptChat: Scalars['Boolean']['output'];
-  server?: Maybe<Server>;
-  updatedAt: Scalars['String']['output'];
-  users?: Maybe<Array<User>>;
-};
-
 export type FriendInput = {
-  nameId: Scalars['String']['input'];
-  userId: Scalars['Float']['input'];
-};
-
-export type FriendRequest = {
-  __typename?: 'FriendRequest';
-  iconId: Scalars['String']['output'];
-  nameId: Scalars['String']['output'];
-  status: Scalars['String']['output'];
-  userId: Scalars['Float']['output'];
+  nameId: string;
+  userId: number;
 };
 
 export type Input = {
-  password: Scalars['String']['input'];
-  username: Scalars['String']['input'];
-};
-
-export type InviteInfo = {
-  __typename?: 'InviteInfo';
-  channelId?: Maybe<Scalars['String']['output']>;
-  icon?: Maybe<Scalars['String']['output']>;
-  joined: Scalars['Boolean']['output'];
-  link: Scalars['String']['output'];
-  memberCount: Scalars['Float']['output'];
-  name: Scalars['String']['output'];
-  serverId: Scalars['Float']['output'];
-};
-
-export type Message = {
-  __typename?: 'Message';
-  channel?: Maybe<Channel>;
-  createdAt: Scalars['String']['output'];
-  edited: Scalars['Boolean']['output'];
-  id: Scalars['Float']['output'];
-  msg: Scalars['String']['output'];
-  msgId: Scalars['String']['output'];
-  updatedAt: Scalars['String']['output'];
-  user?: Maybe<User>;
+  password: string;
+  username: string;
 };
 
 export type MessageInput = {
-  channelId: Scalars['String']['input'];
-  msg: Scalars['String']['input'];
-};
-
-export type MessagesResponse = {
-  __typename?: 'MessagesResponse';
-  channel: Channel;
-  friend?: Maybe<User>;
-  hasMore: Scalars['Boolean']['output'];
-  messages: Array<Message>;
-  nextCursor?: Maybe<Scalars['Int']['output']>;
-};
-
-export type Mutation = {
-  __typename?: 'Mutation';
-  acceptFriendRequest: User;
-  ban: Scalars['Boolean']['output'];
-  block: User;
-  cancelFriendRequest: User;
-  createServer: Server;
-  createServerChannel: Channel;
-  declineFriendRequest: User;
-  deleteChannel: Scalars['Boolean']['output'];
-  deleteMessage: Scalars['Boolean']['output'];
-  deleteServer: Scalars['Boolean']['output'];
-  deleteUser: Scalars['Boolean']['output'];
-  join?: Maybe<User>;
-  kick: Scalars['Boolean']['output'];
-  leave: Scalars['Boolean']['output'];
-  login: User;
-  logout: Scalars['Boolean']['output'];
-  refreshLink: Server;
-  removeFriend: User;
-  sendFriendRequest: User;
-  sendMessage: Message;
-  signup: User;
-  unban: Scalars['Boolean']['output'];
-  unblock: User;
-  updateChannel: Channel;
-  updateMessage: Message;
-  updatePass: User;
-  updateRole: Scalars['Boolean']['output'];
-  updateServer: Server;
-  updateStatus: User;
-  updateUser: User;
-};
-
-
-export type MutationAcceptFriendRequestArgs = {
-  params: FriendInput;
-};
-
-
-export type MutationBanArgs = {
-  params: FriendInput;
-  serverId: Scalars['Float']['input'];
-};
-
-
-export type MutationBlockArgs = {
-  params: FriendInput;
-};
-
-
-export type MutationCancelFriendRequestArgs = {
-  params: FriendInput;
-};
-
-
-export type MutationCreateServerArgs = {
-  name: Scalars['String']['input'];
-};
-
-
-export type MutationCreateServerChannelArgs = {
-  name: Scalars['String']['input'];
-  serverId: Scalars['Float']['input'];
-};
-
-
-export type MutationDeclineFriendRequestArgs = {
-  params: FriendInput;
-};
-
-
-export type MutationDeleteChannelArgs = {
-  channelId: Scalars['String']['input'];
-};
-
-
-export type MutationDeleteMessageArgs = {
-  msgId: Scalars['String']['input'];
-};
-
-
-export type MutationDeleteServerArgs = {
-  serverId: Scalars['Float']['input'];
-};
-
-
-export type MutationDeleteUserArgs = {
-  password: Scalars['String']['input'];
-};
-
-
-export type MutationJoinArgs = {
-  link: Scalars['String']['input'];
-};
-
-
-export type MutationKickArgs = {
-  params: FriendInput;
-  serverId: Scalars['Float']['input'];
-};
-
-
-export type MutationLeaveArgs = {
-  serverId: Scalars['Float']['input'];
-};
-
-
-export type MutationLoginArgs = {
-  params: Input;
-};
-
-
-export type MutationRefreshLinkArgs = {
-  serverId: Scalars['Float']['input'];
-};
-
-
-export type MutationRemoveFriendArgs = {
-  params: FriendInput;
-};
-
-
-export type MutationSendFriendRequestArgs = {
-  params: FriendInput;
-};
-
-
-export type MutationSendMessageArgs = {
-  params: MessageInput;
-};
-
-
-export type MutationSignupArgs = {
-  params: Input;
-};
-
-
-export type MutationUnbanArgs = {
-  params: FriendInput;
-  serverId: Scalars['Float']['input'];
-};
-
-
-export type MutationUnblockArgs = {
-  params: FriendInput;
-};
-
-
-export type MutationUpdateChannelArgs = {
-  channelId: Scalars['String']['input'];
-  desc?: InputMaybe<Scalars['String']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
-};
-
-
-export type MutationUpdateMessageArgs = {
-  content: Scalars['String']['input'];
-  msgId: Scalars['String']['input'];
-};
-
-
-export type MutationUpdatePassArgs = {
-  params: UpdatePassInput;
-};
-
-
-export type MutationUpdateRoleArgs = {
-  params: FriendInput;
-  role: Scalars['String']['input'];
-  serverId: Scalars['Float']['input'];
-};
-
-
-export type MutationUpdateServerArgs = {
-  icon?: InputMaybe<Scalars['String']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
-  serverId: Scalars['Float']['input'];
-};
-
-
-export type MutationUpdateStatusArgs = {
-  status: Scalars['String']['input'];
-};
-
-
-export type MutationUpdateUserArgs = {
-  params: UpdateUserInput;
-};
-
-export type Query = {
-  __typename?: 'Query';
-  channel: Server;
-  currentChannel: Channel;
-  invite?: Maybe<InviteInfo>;
-  message: Message;
-  messages: MessagesResponse;
-  partyChats: Array<Channel>;
-  server?: Maybe<Server>;
-  serverChannels: Array<Channel>;
-  serverRole?: Maybe<ServerRole>;
-  servers: Array<Server>;
-  user?: Maybe<User>;
-  userChannels: Array<Channel>;
-  userFriends?: Maybe<User>;
-  userServers?: Maybe<Array<Server>>;
-  users: Array<User>;
-};
-
-
-export type QueryChannelArgs = {
-  channelId: Scalars['String']['input'];
-};
-
-
-export type QueryCurrentChannelArgs = {
-  channelId: Scalars['String']['input'];
-};
-
-
-export type QueryInviteArgs = {
-  link: Scalars['String']['input'];
-};
-
-
-export type QueryMessageArgs = {
-  msgId: Scalars['String']['input'];
-};
-
-
-export type QueryMessagesArgs = {
-  beforeId?: InputMaybe<Scalars['Int']['input']>;
-  channelId: Scalars['String']['input'];
-};
-
-
-export type QueryServerArgs = {
-  serverId: Scalars['Float']['input'];
-};
-
-
-export type QueryServerChannelsArgs = {
-  channelId: Scalars['String']['input'];
-};
-
-
-export type QueryServerRoleArgs = {
-  serverId: Scalars['Float']['input'];
-};
-
-export type Server = {
-  __typename?: 'Server';
-  banned?: Maybe<Array<BannedUser>>;
-  channels?: Maybe<Array<Channel>>;
-  createdAt: Scalars['String']['output'];
-  icon?: Maybe<Scalars['String']['output']>;
-  id: Scalars['Float']['output'];
-  link: Scalars['String']['output'];
-  members: Array<ServerMember>;
-  name: Scalars['String']['output'];
-  serverId: Scalars['Float']['output'];
-  updatedAt: Scalars['String']['output'];
-  users?: Maybe<Array<User>>;
-};
-
-export type ServerMember = {
-  __typename?: 'ServerMember';
-  role: Scalars['String']['output'];
-  user: User;
-};
-
-export type ServerRole = {
-  __typename?: 'ServerRole';
-  role: Scalars['String']['output'];
-  serverId: Scalars['Int']['output'];
+  channelId: string;
+  msg: string;
 };
 
 export type UpdatePassInput = {
-  currPass: Scalars['String']['input'];
-  newPass: Scalars['String']['input'];
+  currPass: string;
+  newPass: string;
 };
 
 export type UpdateUserInput = {
-  iconId?: InputMaybe<Scalars['String']['input']>;
-  nameId?: InputMaybe<Scalars['String']['input']>;
-  status?: InputMaybe<Scalars['String']['input']>;
-  username?: InputMaybe<Scalars['String']['input']>;
-};
-
-export type User = {
-  __typename?: 'User';
-  blocked?: Maybe<Array<User>>;
-  channels?: Maybe<Array<Channel>>;
-  createdAt: Scalars['String']['output'];
-  friendRequests?: Maybe<Array<FriendRequest>>;
-  friends?: Maybe<Array<User>>;
-  iconId: Scalars['String']['output'];
-  id: Scalars['Float']['output'];
-  messages?: Maybe<Array<Message>>;
-  nameId: Scalars['String']['output'];
-  roles?: Maybe<Array<ServerRole>>;
-  servers?: Maybe<Array<Server>>;
-  status: Scalars['String']['output'];
-  updatedAt: Scalars['String']['output'];
-  userId: Scalars['Float']['output'];
-  username?: Maybe<Scalars['String']['output']>;
+  iconId?: string | null | undefined;
+  nameId?: string | null | undefined;
+  status?: string | null | undefined;
+  username?: string | null | undefined;
 };
 
 export type AcceptFriendRequestMutationVariables = Exact<{
@@ -409,583 +37,289 @@ export type AcceptFriendRequestMutationVariables = Exact<{
 }>;
 
 
-export type AcceptFriendRequestMutation = { __typename?: 'Mutation', acceptFriendRequest: { __typename?: 'User', id: number, nameId: string, userId: number, friends?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, status: string }> | null, friendRequests?: Array<{ __typename?: 'FriendRequest', nameId: string, userId: number, status: string }> | null, channels?: Array<{ __typename?: 'Channel', id: number, name: string, channelId: string, users?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number }> | null }> | null } };
+export type AcceptFriendRequestMutation = { acceptFriendRequest: { id: number, nameId: string, userId: number, friends: Array<{ id: number, nameId: string, userId: number, status: string }> | null, friendRequests: Array<{ nameId: string, userId: number, status: string }> | null, channels: Array<{ id: number, name: string, channelId: string, users: Array<{ id: number, nameId: string, userId: number }> | null }> | null } };
 
 export type BanMutationVariables = Exact<{
-  serverId: Scalars['Float']['input'];
+  serverId: number;
   params: FriendInput;
 }>;
 
 
-export type BanMutation = { __typename?: 'Mutation', ban: boolean };
+export type BanMutation = { ban: boolean };
 
 export type BlockMutationVariables = Exact<{
   params: FriendInput;
 }>;
 
 
-export type BlockMutation = { __typename?: 'Mutation', block: { __typename?: 'User', nameId: string, userId: number } };
+export type BlockMutation = { block: { nameId: string, userId: number } };
 
 export type CancelFriendRequestMutationVariables = Exact<{
   params: FriendInput;
 }>;
 
 
-export type CancelFriendRequestMutation = { __typename?: 'Mutation', cancelFriendRequest: { __typename?: 'User', id: number, nameId: string, userId: number, status: string, friends?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, status: string }> | null, friendRequests?: Array<{ __typename?: 'FriendRequest', nameId: string, userId: number, status: string }> | null } };
+export type CancelFriendRequestMutation = { cancelFriendRequest: { id: number, nameId: string, userId: number, status: string, friends: Array<{ id: number, nameId: string, userId: number, status: string }> | null, friendRequests: Array<{ nameId: string, userId: number, status: string }> | null } };
 
 export type CreateServerMutationVariables = Exact<{
-  name: Scalars['String']['input'];
+  name: string;
 }>;
 
 
-export type CreateServerMutation = { __typename?: 'Mutation', createServer: { __typename?: 'Server', id: number, name: string, link: string, serverId: number, channels?: Array<{ __typename?: 'Channel', id: number, name: string, channelId: string }> | null } };
+export type CreateServerMutation = { createServer: { id: number, name: string, link: string, serverId: number, channels: Array<{ id: number, name: string, channelId: string }> | null } };
 
 export type CreateServerChannelMutationVariables = Exact<{
-  name: Scalars['String']['input'];
-  serverId: Scalars['Float']['input'];
+  name: string;
+  serverId: number;
 }>;
 
 
-export type CreateServerChannelMutation = { __typename?: 'Mutation', createServerChannel: { __typename?: 'Channel', id: number, name: string, channelId: string } };
+export type CreateServerChannelMutation = { createServerChannel: { id: number, name: string, channelId: string } };
 
 export type DeclineFriendRequestMutationVariables = Exact<{
   params: FriendInput;
 }>;
 
 
-export type DeclineFriendRequestMutation = { __typename?: 'Mutation', declineFriendRequest: { __typename?: 'User', id: number, nameId: string, userId: number, status: string, friends?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, status: string }> | null, friendRequests?: Array<{ __typename?: 'FriendRequest', nameId: string, userId: number, status: string }> | null } };
+export type DeclineFriendRequestMutation = { declineFriendRequest: { id: number, nameId: string, userId: number, status: string, friends: Array<{ id: number, nameId: string, userId: number, status: string }> | null, friendRequests: Array<{ nameId: string, userId: number, status: string }> | null } };
 
 export type DeleteChannelMutationVariables = Exact<{
-  channelId: Scalars['String']['input'];
+  channelId: string;
 }>;
 
 
-export type DeleteChannelMutation = { __typename?: 'Mutation', deleteChannel: boolean };
+export type DeleteChannelMutation = { deleteChannel: boolean };
 
 export type DeleteMessageMutationVariables = Exact<{
-  msgId: Scalars['String']['input'];
+  msgId: string;
 }>;
 
 
-export type DeleteMessageMutation = { __typename?: 'Mutation', deleteMessage: boolean };
+export type DeleteMessageMutation = { deleteMessage: boolean };
 
 export type DeleteServerMutationVariables = Exact<{
-  serverId: Scalars['Float']['input'];
+  serverId: number;
 }>;
 
 
-export type DeleteServerMutation = { __typename?: 'Mutation', deleteServer: boolean };
+export type DeleteServerMutation = { deleteServer: boolean };
 
 export type DeleteUserMutationVariables = Exact<{
-  password: Scalars['String']['input'];
+  password: string;
 }>;
 
 
-export type DeleteUserMutation = { __typename?: 'Mutation', deleteUser: boolean };
+export type DeleteUserMutation = { deleteUser: boolean };
 
 export type JoinMutationVariables = Exact<{
-  link: Scalars['String']['input'];
+  link: string;
 }>;
 
 
-export type JoinMutation = { __typename?: 'Mutation', join?: { __typename?: 'User', nameId: string, userId: number, servers?: Array<{ __typename?: 'Server', name: string, link: string, serverId: number }> | null } | null };
+export type JoinMutation = { join: { nameId: string, userId: number, servers: Array<{ name: string, link: string, serverId: number }> | null } | null };
 
 export type KickMutationVariables = Exact<{
-  serverId: Scalars['Float']['input'];
+  serverId: number;
   params: FriendInput;
 }>;
 
 
-export type KickMutation = { __typename?: 'Mutation', kick: boolean };
+export type KickMutation = { kick: boolean };
 
 export type LeaveMutationVariables = Exact<{
-  serverId: Scalars['Float']['input'];
+  serverId: number;
 }>;
 
 
-export type LeaveMutation = { __typename?: 'Mutation', leave: boolean };
+export type LeaveMutation = { leave: boolean };
 
 export type LoginMutationVariables = Exact<{
   params: Input;
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'User', id: number } };
+export type LoginMutation = { login: { id: number } };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+export type LogoutMutation = { logout: boolean };
 
 export type RefreshLinkMutationVariables = Exact<{
-  serverId: Scalars['Float']['input'];
+  serverId: number;
 }>;
 
 
-export type RefreshLinkMutation = { __typename?: 'Mutation', refreshLink: { __typename?: 'Server', id: number, link: string } };
+export type RefreshLinkMutation = { refreshLink: { id: number, link: string } };
 
 export type RemoveFriendMutationVariables = Exact<{
   params: FriendInput;
 }>;
 
 
-export type RemoveFriendMutation = { __typename?: 'Mutation', removeFriend: { __typename?: 'User', nameId: string, userId: number } };
+export type RemoveFriendMutation = { removeFriend: { nameId: string, userId: number } };
 
 export type SendFriendRequestMutationVariables = Exact<{
   params: FriendInput;
 }>;
 
 
-export type SendFriendRequestMutation = { __typename?: 'Mutation', sendFriendRequest: { __typename?: 'User', id: number, nameId: string, userId: number, status: string, friends?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, status: string }> | null, friendRequests?: Array<{ __typename?: 'FriendRequest', nameId: string, userId: number, status: string }> | null } };
+export type SendFriendRequestMutation = { sendFriendRequest: { id: number, nameId: string, userId: number, status: string, friends: Array<{ id: number, nameId: string, userId: number, status: string }> | null, friendRequests: Array<{ nameId: string, userId: number, status: string }> | null } };
 
 export type SendMessageMutationVariables = Exact<{
   params: MessageInput;
 }>;
 
 
-export type SendMessageMutation = { __typename?: 'Mutation', sendMessage: { __typename?: 'Message', id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user?: { __typename?: 'User', nameId: string, userId: number } | null, channel?: { __typename?: 'Channel', channelId: string } | null } };
+export type SendMessageMutation = { sendMessage: { id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user: { nameId: string, userId: number } | null, channel: { channelId: string } | null } };
 
 export type SignupMutationVariables = Exact<{
   params: Input;
 }>;
 
 
-export type SignupMutation = { __typename?: 'Mutation', signup: { __typename?: 'User', id: number } };
+export type SignupMutation = { signup: { id: number } };
 
 export type UnbanMutationVariables = Exact<{
-  serverId: Scalars['Float']['input'];
+  serverId: number;
   params: FriendInput;
 }>;
 
 
-export type UnbanMutation = { __typename?: 'Mutation', unban: boolean };
+export type UnbanMutation = { unban: boolean };
 
 export type UnblockMutationVariables = Exact<{
   params: FriendInput;
 }>;
 
 
-export type UnblockMutation = { __typename?: 'Mutation', unblock: { __typename?: 'User', nameId: string, userId: number } };
+export type UnblockMutation = { unblock: { nameId: string, userId: number } };
 
 export type UpdateChannelMutationVariables = Exact<{
-  channelId: Scalars['String']['input'];
-  name?: InputMaybe<Scalars['String']['input']>;
-  desc?: InputMaybe<Scalars['String']['input']>;
+  channelId: string;
+  name?: string | null | undefined;
+  desc?: string | null | undefined;
 }>;
 
 
-export type UpdateChannelMutation = { __typename?: 'Mutation', updateChannel: { __typename?: 'Channel', id: number, name: string, desc?: string | null, channelId: string } };
+export type UpdateChannelMutation = { updateChannel: { id: number, name: string, desc: string | null, channelId: string } };
 
 export type UpdateMessageMutationVariables = Exact<{
-  msgId: Scalars['String']['input'];
-  content: Scalars['String']['input'];
+  msgId: string;
+  content: string;
 }>;
 
 
-export type UpdateMessageMutation = { __typename?: 'Mutation', updateMessage: { __typename?: 'Message', id: number, msgId: string, msg: string, edited: boolean } };
+export type UpdateMessageMutation = { updateMessage: { id: number, msgId: string, msg: string, edited: boolean } };
 
 export type UpdatePassMutationVariables = Exact<{
   params: UpdatePassInput;
 }>;
 
 
-export type UpdatePassMutation = { __typename?: 'Mutation', updatePass: { __typename?: 'User', nameId: string, userId: number } };
+export type UpdatePassMutation = { updatePass: { nameId: string, userId: number } };
 
 export type UpdateRoleMutationVariables = Exact<{
-  serverId: Scalars['Float']['input'];
+  serverId: number;
   params: FriendInput;
-  role: Scalars['String']['input'];
+  role: string;
 }>;
 
 
-export type UpdateRoleMutation = { __typename?: 'Mutation', updateRole: boolean };
+export type UpdateRoleMutation = { updateRole: boolean };
 
 export type UpdateServerMutationVariables = Exact<{
-  serverId: Scalars['Float']['input'];
-  name?: InputMaybe<Scalars['String']['input']>;
-  icon?: InputMaybe<Scalars['String']['input']>;
+  serverId: number;
+  name?: string | null | undefined;
+  icon?: string | null | undefined;
 }>;
 
 
-export type UpdateServerMutation = { __typename?: 'Mutation', updateServer: { __typename?: 'Server', id: number, name: string, icon?: string | null } };
+export type UpdateServerMutation = { updateServer: { id: number, name: string, icon: string | null } };
 
 export type UpdateStatusMutationVariables = Exact<{
-  status: Scalars['String']['input'];
+  status: string;
 }>;
 
 
-export type UpdateStatusMutation = { __typename?: 'Mutation', updateStatus: { __typename?: 'User', id: number, nameId: string, userId: number, status: string, createdAt: string, updatedAt: string } };
+export type UpdateStatusMutation = { updateStatus: { id: number, nameId: string, userId: number, status: string, createdAt: string, updatedAt: string } };
 
 export type UpdateUserMutationVariables = Exact<{
   params: UpdateUserInput;
 }>;
 
 
-export type UpdateUserMutation = { __typename?: 'Mutation', updateUser: { __typename?: 'User', id: number, username?: string | null, nameId: string, userId: number, iconId: string, status: string } };
+export type UpdateUserMutation = { updateUser: { id: number, username: string | null, nameId: string, userId: number, iconId: string, status: string } };
 
 export type ChannelQueryVariables = Exact<{
-  channelId: Scalars['String']['input'];
+  channelId: string;
 }>;
 
 
-export type ChannelQuery = { __typename?: 'Query', channel: { __typename?: 'Server', name: string, link: string, serverId: number, channels?: Array<{ __typename?: 'Channel', name: string, ptChat: boolean, channelId: string, server?: { __typename?: 'Server', serverId: number } | null }> | null } };
+export type ChannelQuery = { channel: { name: string, link: string, serverId: number, channels: Array<{ name: string, ptChat: boolean, channelId: string, server: { serverId: number } | null }> | null } };
 
 export type CurrentChannelQueryVariables = Exact<{
-  channelId: Scalars['String']['input'];
+  channelId: string;
 }>;
 
 
-export type CurrentChannelQuery = { __typename?: 'Query', currentChannel: { __typename?: 'Channel', id: number, name: string, desc?: string | null, ptChat: boolean, channelId: string, server?: { __typename?: 'Server', serverId: number } | null, users?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string }> | null } };
+export type CurrentChannelQuery = { currentChannel: { id: number, name: string, desc: string | null, ptChat: boolean, channelId: string, server: { serverId: number } | null, users: Array<{ id: number, nameId: string, userId: number, iconId: string, status: string }> | null } };
 
 export type InviteQueryVariables = Exact<{
-  link: Scalars['String']['input'];
+  link: string;
 }>;
 
 
-export type InviteQuery = { __typename?: 'Query', invite?: { __typename?: 'InviteInfo', name: string, link: string, icon?: string | null, serverId: number, memberCount: number, joined: boolean, channelId?: string | null } | null };
+export type InviteQuery = { invite: { name: string, link: string, icon: string | null, serverId: number, memberCount: number, joined: boolean, channelId: string | null } | null };
 
 export type MessageQueryVariables = Exact<{
-  msgId: Scalars['String']['input'];
+  msgId: string;
 }>;
 
 
-export type MessageQuery = { __typename?: 'Query', message: { __typename?: 'Message', id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string } | null, channel?: { __typename?: 'Channel', name: string, channelId: string, ptChat: boolean } | null } };
+export type MessageQuery = { message: { id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user: { id: number, nameId: string, userId: number, iconId: string } | null, channel: { name: string, channelId: string, ptChat: boolean } | null } };
 
 export type MessagesQueryVariables = Exact<{
-  channelId: Scalars['String']['input'];
-  beforeId?: InputMaybe<Scalars['Int']['input']>;
+  channelId: string;
+  beforeId?: number | null | undefined;
 }>;
 
 
-export type MessagesQuery = { __typename?: 'Query', messages: { __typename?: 'MessagesResponse', hasMore: boolean, nextCursor?: number | null, channel: { __typename?: 'Channel', name: string, desc?: string | null, ptChat: boolean, channelId: string }, messages: Array<{ __typename?: 'Message', id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string } | null }>, friend?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string } | null } };
+export type MessagesQuery = { messages: { hasMore: boolean, nextCursor: number | null, channel: { name: string, desc: string | null, ptChat: boolean, channelId: string }, messages: Array<{ id: number, msg: string, msgId: string, edited: boolean, createdAt: string, updatedAt: string, user: { id: number, nameId: string, userId: number, iconId: string } | null }>, friend: { id: number, nameId: string, userId: number, iconId: string, status: string } | null } };
 
 export type PartyChatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type PartyChatsQuery = { __typename?: 'Query', partyChats: Array<{ __typename?: 'Channel', channelId: string, users?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string }> | null }> };
+export type PartyChatsQuery = { partyChats: Array<{ channelId: string, users: Array<{ id: number, nameId: string, userId: number, iconId: string, status: string }> | null }> };
 
 export type ServerQueryVariables = Exact<{
-  serverId: Scalars['Float']['input'];
+  serverId: number;
 }>;
 
 
-export type ServerQuery = { __typename?: 'Query', server?: { __typename?: 'Server', id: number, name: string, link: string, icon?: string | null, serverId: number, members: Array<{ __typename?: 'ServerMember', role: string, user: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string } }>, channels?: Array<{ __typename?: 'Channel', id: number, name: string, desc?: string | null, channelId: string }> | null, banned?: Array<{ __typename?: 'BannedUser', id: number, nameId: string, userId: number, iconId: string }> | null } | null };
+export type ServerQuery = { server: { id: number, name: string, link: string, icon: string | null, serverId: number, members: Array<{ role: string, user: { id: number, nameId: string, userId: number, iconId: string, status: string } }>, channels: Array<{ id: number, name: string, desc: string | null, channelId: string }> | null, banned: Array<{ id: number, nameId: string, userId: number, iconId: string }> | null } | null };
 
 export type ServerChannelsQueryVariables = Exact<{
-  channelId: Scalars['String']['input'];
+  channelId: string;
 }>;
 
 
-export type ServerChannelsQuery = { __typename?: 'Query', serverChannels: Array<{ __typename?: 'Channel', name: string, channelId: string, server?: { __typename?: 'Server', name: string, serverId: number } | null }> };
+export type ServerChannelsQuery = { serverChannels: Array<{ name: string, channelId: string, server: { name: string, serverId: number } | null }> };
 
 export type UserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UserQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: number, username?: string | null, nameId: string, userId: number, iconId: string, status: string, roles?: Array<{ __typename?: 'ServerRole', serverId: number, role: string }> | null } | null };
+export type UserQuery = { user: { id: number, username: string | null, nameId: string, userId: number, iconId: string, status: string, roles: Array<{ serverId: number, role: string }> | null } | null };
 
 export type UserFriendsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UserFriendsQuery = { __typename?: 'Query', userFriends?: { __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, friends?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string }> | null, friendRequests?: Array<{ __typename?: 'FriendRequest', nameId: string, userId: number, iconId: string, status: string }> | null, blocked?: Array<{ __typename?: 'User', id: number, nameId: string, userId: number, iconId: string, status: string }> | null } | null };
+export type UserFriendsQuery = { userFriends: { id: number, nameId: string, userId: number, iconId: string, friends: Array<{ id: number, nameId: string, userId: number, iconId: string, status: string }> | null, friendRequests: Array<{ nameId: string, userId: number, iconId: string, status: string }> | null, blocked: Array<{ id: number, nameId: string, userId: number, iconId: string, status: string }> | null } | null };
 
 export type UserServersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type UserServersQuery = { __typename?: 'Query', userServers?: Array<{ __typename?: 'Server', id: number, name: string, icon?: string | null, link: string, serverId: number, channels?: Array<{ __typename?: 'Channel', name: string, channelId: string }> | null }> | null };
-
-
-
-export type ResolverTypeWrapper<T> = Promise<T> | T;
-
-
-export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
-  resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
-};
-export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> = ResolverFn<TResult, TParent, TContext, TArgs> | ResolverWithResolve<TResult, TParent, TContext, TArgs>;
-
-export type ResolverFn<TResult, TParent, TContext, TArgs> = (
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => Promise<TResult> | TResult;
-
-export type SubscriptionSubscribeFn<TResult, TParent, TContext, TArgs> = (
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => AsyncIterable<TResult> | Promise<AsyncIterable<TResult>>;
-
-export type SubscriptionResolveFn<TResult, TParent, TContext, TArgs> = (
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => TResult | Promise<TResult>;
-
-export interface SubscriptionSubscriberObject<TResult, TKey extends string, TParent, TContext, TArgs> {
-  subscribe: SubscriptionSubscribeFn<{ [key in TKey]: TResult }, TParent, TContext, TArgs>;
-  resolve?: SubscriptionResolveFn<TResult, { [key in TKey]: TResult }, TContext, TArgs>;
-}
-
-export interface SubscriptionResolverObject<TResult, TParent, TContext, TArgs> {
-  subscribe: SubscriptionSubscribeFn<any, TParent, TContext, TArgs>;
-  resolve: SubscriptionResolveFn<TResult, any, TContext, TArgs>;
-}
-
-export type SubscriptionObject<TResult, TKey extends string, TParent, TContext, TArgs> =
-  | SubscriptionSubscriberObject<TResult, TKey, TParent, TContext, TArgs>
-  | SubscriptionResolverObject<TResult, TParent, TContext, TArgs>;
-
-export type SubscriptionResolver<TResult, TKey extends string, TParent = {}, TContext = {}, TArgs = {}> =
-  | ((...args: any[]) => SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>)
-  | SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>;
-
-export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
-  parent: TParent,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => Maybe<TTypes> | Promise<Maybe<TTypes>>;
-
-export type IsTypeOfResolverFn<T = {}, TContext = {}> = (obj: T, context: TContext, info: GraphQLResolveInfo) => boolean | Promise<boolean>;
-
-export type NextResolverFn<T> = () => Promise<T>;
-
-export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs = {}> = (
-  next: NextResolverFn<TResult>,
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => TResult | Promise<TResult>;
-
-
-
-/** Mapping between all available schema types and the resolvers types */
-export type ResolversTypes = {
-  BannedUser: ResolverTypeWrapper<BannedUser>;
-  Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
-  Channel: ResolverTypeWrapper<Channel>;
-  Float: ResolverTypeWrapper<Scalars['Float']['output']>;
-  FriendInput: FriendInput;
-  FriendRequest: ResolverTypeWrapper<FriendRequest>;
-  Input: Input;
-  Int: ResolverTypeWrapper<Scalars['Int']['output']>;
-  InviteInfo: ResolverTypeWrapper<InviteInfo>;
-  Message: ResolverTypeWrapper<Message>;
-  MessageInput: MessageInput;
-  MessagesResponse: ResolverTypeWrapper<MessagesResponse>;
-  Mutation: ResolverTypeWrapper<{}>;
-  Query: ResolverTypeWrapper<{}>;
-  Server: ResolverTypeWrapper<Server>;
-  ServerMember: ResolverTypeWrapper<ServerMember>;
-  ServerRole: ResolverTypeWrapper<ServerRole>;
-  String: ResolverTypeWrapper<Scalars['String']['output']>;
-  UpdatePassInput: UpdatePassInput;
-  UpdateUserInput: UpdateUserInput;
-  User: ResolverTypeWrapper<User>;
-};
-
-/** Mapping between all available schema types and the resolvers parents */
-export type ResolversParentTypes = {
-  BannedUser: BannedUser;
-  Boolean: Scalars['Boolean']['output'];
-  Channel: Channel;
-  Float: Scalars['Float']['output'];
-  FriendInput: FriendInput;
-  FriendRequest: FriendRequest;
-  Input: Input;
-  Int: Scalars['Int']['output'];
-  InviteInfo: InviteInfo;
-  Message: Message;
-  MessageInput: MessageInput;
-  MessagesResponse: MessagesResponse;
-  Mutation: {};
-  Query: {};
-  Server: Server;
-  ServerMember: ServerMember;
-  ServerRole: ServerRole;
-  String: Scalars['String']['output'];
-  UpdatePassInput: UpdatePassInput;
-  UpdateUserInput: UpdateUserInput;
-  User: User;
-};
-
-export type BannedUserResolvers<ContextType = any, ParentType extends ResolversParentTypes['BannedUser'] = ResolversParentTypes['BannedUser']> = {
-  iconId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  nameId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  userId?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type ChannelResolvers<ContextType = any, ParentType extends ResolversParentTypes['Channel'] = ResolversParentTypes['Channel']> = {
-  channelId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  desc?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  messages?: Resolver<Maybe<Array<ResolversTypes['Message']>>, ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  ptChat?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  server?: Resolver<Maybe<ResolversTypes['Server']>, ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  users?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type FriendRequestResolvers<ContextType = any, ParentType extends ResolversParentTypes['FriendRequest'] = ResolversParentTypes['FriendRequest']> = {
-  iconId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  nameId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  userId?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type InviteInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['InviteInfo'] = ResolversParentTypes['InviteInfo']> = {
-  channelId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  icon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  joined?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  memberCount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  serverId?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type MessageResolvers<ContextType = any, ParentType extends ResolversParentTypes['Message'] = ResolversParentTypes['Message']> = {
-  channel?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  edited?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  msg?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  msgId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type MessagesResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['MessagesResponse'] = ResolversParentTypes['MessagesResponse']> = {
-  channel?: Resolver<ResolversTypes['Channel'], ParentType, ContextType>;
-  friend?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  hasMore?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  messages?: Resolver<Array<ResolversTypes['Message']>, ParentType, ContextType>;
-  nextCursor?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  acceptFriendRequest?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAcceptFriendRequestArgs, 'params'>>;
-  ban?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationBanArgs, 'params' | 'serverId'>>;
-  block?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationBlockArgs, 'params'>>;
-  cancelFriendRequest?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCancelFriendRequestArgs, 'params'>>;
-  createServer?: Resolver<ResolversTypes['Server'], ParentType, ContextType, RequireFields<MutationCreateServerArgs, 'name'>>;
-  createServerChannel?: Resolver<ResolversTypes['Channel'], ParentType, ContextType, RequireFields<MutationCreateServerChannelArgs, 'name' | 'serverId'>>;
-  declineFriendRequest?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationDeclineFriendRequestArgs, 'params'>>;
-  deleteChannel?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteChannelArgs, 'channelId'>>;
-  deleteMessage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteMessageArgs, 'msgId'>>;
-  deleteServer?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteServerArgs, 'serverId'>>;
-  deleteUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'password'>>;
-  join?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationJoinArgs, 'link'>>;
-  kick?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationKickArgs, 'params' | 'serverId'>>;
-  leave?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationLeaveArgs, 'serverId'>>;
-  login?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'params'>>;
-  logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  refreshLink?: Resolver<ResolversTypes['Server'], ParentType, ContextType, RequireFields<MutationRefreshLinkArgs, 'serverId'>>;
-  removeFriend?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationRemoveFriendArgs, 'params'>>;
-  sendFriendRequest?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSendFriendRequestArgs, 'params'>>;
-  sendMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationSendMessageArgs, 'params'>>;
-  signup?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationSignupArgs, 'params'>>;
-  unban?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUnbanArgs, 'params' | 'serverId'>>;
-  unblock?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUnblockArgs, 'params'>>;
-  updateChannel?: Resolver<ResolversTypes['Channel'], ParentType, ContextType, RequireFields<MutationUpdateChannelArgs, 'channelId'>>;
-  updateMessage?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<MutationUpdateMessageArgs, 'content' | 'msgId'>>;
-  updatePass?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdatePassArgs, 'params'>>;
-  updateRole?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationUpdateRoleArgs, 'params' | 'role' | 'serverId'>>;
-  updateServer?: Resolver<ResolversTypes['Server'], ParentType, ContextType, RequireFields<MutationUpdateServerArgs, 'serverId'>>;
-  updateStatus?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateStatusArgs, 'status'>>;
-  updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'params'>>;
-};
-
-export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  channel?: Resolver<ResolversTypes['Server'], ParentType, ContextType, RequireFields<QueryChannelArgs, 'channelId'>>;
-  currentChannel?: Resolver<ResolversTypes['Channel'], ParentType, ContextType, RequireFields<QueryCurrentChannelArgs, 'channelId'>>;
-  invite?: Resolver<Maybe<ResolversTypes['InviteInfo']>, ParentType, ContextType, RequireFields<QueryInviteArgs, 'link'>>;
-  message?: Resolver<ResolversTypes['Message'], ParentType, ContextType, RequireFields<QueryMessageArgs, 'msgId'>>;
-  messages?: Resolver<ResolversTypes['MessagesResponse'], ParentType, ContextType, RequireFields<QueryMessagesArgs, 'channelId'>>;
-  partyChats?: Resolver<Array<ResolversTypes['Channel']>, ParentType, ContextType>;
-  server?: Resolver<Maybe<ResolversTypes['Server']>, ParentType, ContextType, RequireFields<QueryServerArgs, 'serverId'>>;
-  serverChannels?: Resolver<Array<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<QueryServerChannelsArgs, 'channelId'>>;
-  serverRole?: Resolver<Maybe<ResolversTypes['ServerRole']>, ParentType, ContextType, RequireFields<QueryServerRoleArgs, 'serverId'>>;
-  servers?: Resolver<Array<ResolversTypes['Server']>, ParentType, ContextType>;
-  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  userChannels?: Resolver<Array<ResolversTypes['Channel']>, ParentType, ContextType>;
-  userFriends?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  userServers?: Resolver<Maybe<Array<ResolversTypes['Server']>>, ParentType, ContextType>;
-  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
-};
-
-export type ServerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Server'] = ResolversParentTypes['Server']> = {
-  banned?: Resolver<Maybe<Array<ResolversTypes['BannedUser']>>, ParentType, ContextType>;
-  channels?: Resolver<Maybe<Array<ResolversTypes['Channel']>>, ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  icon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  link?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  members?: Resolver<Array<ResolversTypes['ServerMember']>, ParentType, ContextType>;
-  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  serverId?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  users?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type ServerMemberResolvers<ContextType = any, ParentType extends ResolversParentTypes['ServerMember'] = ResolversParentTypes['ServerMember']> = {
-  role?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type ServerRoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['ServerRole'] = ResolversParentTypes['ServerRole']> = {
-  role?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  serverId?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
-  blocked?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>;
-  channels?: Resolver<Maybe<Array<ResolversTypes['Channel']>>, ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  friendRequests?: Resolver<Maybe<Array<ResolversTypes['FriendRequest']>>, ParentType, ContextType>;
-  friends?: Resolver<Maybe<Array<ResolversTypes['User']>>, ParentType, ContextType>;
-  iconId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  messages?: Resolver<Maybe<Array<ResolversTypes['Message']>>, ParentType, ContextType>;
-  nameId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  roles?: Resolver<Maybe<Array<ResolversTypes['ServerRole']>>, ParentType, ContextType>;
-  servers?: Resolver<Maybe<Array<ResolversTypes['Server']>>, ParentType, ContextType>;
-  status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  userId?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
-  username?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type Resolvers<ContextType = any> = {
-  BannedUser?: BannedUserResolvers<ContextType>;
-  Channel?: ChannelResolvers<ContextType>;
-  FriendRequest?: FriendRequestResolvers<ContextType>;
-  InviteInfo?: InviteInfoResolvers<ContextType>;
-  Message?: MessageResolvers<ContextType>;
-  MessagesResponse?: MessagesResponseResolvers<ContextType>;
-  Mutation?: MutationResolvers<ContextType>;
-  Query?: QueryResolvers<ContextType>;
-  Server?: ServerResolvers<ContextType>;
-  ServerMember?: ServerMemberResolvers<ContextType>;
-  ServerRole?: ServerRoleResolvers<ContextType>;
-  User?: UserResolvers<ContextType>;
-};
-
+export type UserServersQuery = { userServers: Array<{ id: number, name: string, icon: string | null, link: string, serverId: number, channels: Array<{ name: string, channelId: string }> | null }> | null };
 
 
 export const AcceptFriendRequestDocument = gql`
@@ -2118,7 +1452,7 @@ export const ChannelDocument = gql`
  *   },
  * });
  */
-export function useChannelQuery(baseOptions: Apollo.QueryHookOptions<ChannelQuery, ChannelQueryVariables>) {
+export function useChannelQuery(baseOptions: Apollo.QueryHookOptions<ChannelQuery, ChannelQueryVariables> & ({ variables: ChannelQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<ChannelQuery, ChannelQueryVariables>(ChannelDocument, options);
       }
@@ -2126,8 +1460,16 @@ export function useChannelLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Ch
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<ChannelQuery, ChannelQueryVariables>(ChannelDocument, options);
         }
+// @ts-ignore
+export function useChannelSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<ChannelQuery, ChannelQueryVariables>): Apollo.UseSuspenseQueryResult<ChannelQuery, ChannelQueryVariables>;
+export function useChannelSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ChannelQuery, ChannelQueryVariables>): Apollo.UseSuspenseQueryResult<ChannelQuery | undefined, ChannelQueryVariables>;
+export function useChannelSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ChannelQuery, ChannelQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ChannelQuery, ChannelQueryVariables>(ChannelDocument, options);
+        }
 export type ChannelQueryHookResult = ReturnType<typeof useChannelQuery>;
 export type ChannelLazyQueryHookResult = ReturnType<typeof useChannelLazyQuery>;
+export type ChannelSuspenseQueryHookResult = ReturnType<typeof useChannelSuspenseQuery>;
 export type ChannelQueryResult = Apollo.QueryResult<ChannelQuery, ChannelQueryVariables>;
 export const CurrentChannelDocument = gql`
     query CurrentChannel($channelId: String!) {
@@ -2167,7 +1509,7 @@ export const CurrentChannelDocument = gql`
  *   },
  * });
  */
-export function useCurrentChannelQuery(baseOptions: Apollo.QueryHookOptions<CurrentChannelQuery, CurrentChannelQueryVariables>) {
+export function useCurrentChannelQuery(baseOptions: Apollo.QueryHookOptions<CurrentChannelQuery, CurrentChannelQueryVariables> & ({ variables: CurrentChannelQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<CurrentChannelQuery, CurrentChannelQueryVariables>(CurrentChannelDocument, options);
       }
@@ -2175,8 +1517,16 @@ export function useCurrentChannelLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<CurrentChannelQuery, CurrentChannelQueryVariables>(CurrentChannelDocument, options);
         }
+// @ts-ignore
+export function useCurrentChannelSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<CurrentChannelQuery, CurrentChannelQueryVariables>): Apollo.UseSuspenseQueryResult<CurrentChannelQuery, CurrentChannelQueryVariables>;
+export function useCurrentChannelSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CurrentChannelQuery, CurrentChannelQueryVariables>): Apollo.UseSuspenseQueryResult<CurrentChannelQuery | undefined, CurrentChannelQueryVariables>;
+export function useCurrentChannelSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CurrentChannelQuery, CurrentChannelQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CurrentChannelQuery, CurrentChannelQueryVariables>(CurrentChannelDocument, options);
+        }
 export type CurrentChannelQueryHookResult = ReturnType<typeof useCurrentChannelQuery>;
 export type CurrentChannelLazyQueryHookResult = ReturnType<typeof useCurrentChannelLazyQuery>;
+export type CurrentChannelSuspenseQueryHookResult = ReturnType<typeof useCurrentChannelSuspenseQuery>;
 export type CurrentChannelQueryResult = Apollo.QueryResult<CurrentChannelQuery, CurrentChannelQueryVariables>;
 export const InviteDocument = gql`
     query Invite($link: String!) {
@@ -2208,7 +1558,7 @@ export const InviteDocument = gql`
  *   },
  * });
  */
-export function useInviteQuery(baseOptions: Apollo.QueryHookOptions<InviteQuery, InviteQueryVariables>) {
+export function useInviteQuery(baseOptions: Apollo.QueryHookOptions<InviteQuery, InviteQueryVariables> & ({ variables: InviteQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<InviteQuery, InviteQueryVariables>(InviteDocument, options);
       }
@@ -2216,8 +1566,16 @@ export function useInviteLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Inv
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<InviteQuery, InviteQueryVariables>(InviteDocument, options);
         }
+// @ts-ignore
+export function useInviteSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<InviteQuery, InviteQueryVariables>): Apollo.UseSuspenseQueryResult<InviteQuery, InviteQueryVariables>;
+export function useInviteSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<InviteQuery, InviteQueryVariables>): Apollo.UseSuspenseQueryResult<InviteQuery | undefined, InviteQueryVariables>;
+export function useInviteSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<InviteQuery, InviteQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<InviteQuery, InviteQueryVariables>(InviteDocument, options);
+        }
 export type InviteQueryHookResult = ReturnType<typeof useInviteQuery>;
 export type InviteLazyQueryHookResult = ReturnType<typeof useInviteLazyQuery>;
+export type InviteSuspenseQueryHookResult = ReturnType<typeof useInviteSuspenseQuery>;
 export type InviteQueryResult = Apollo.QueryResult<InviteQuery, InviteQueryVariables>;
 export const MessageDocument = gql`
     query Message($msgId: String!) {
@@ -2259,7 +1617,7 @@ export const MessageDocument = gql`
  *   },
  * });
  */
-export function useMessageQuery(baseOptions: Apollo.QueryHookOptions<MessageQuery, MessageQueryVariables>) {
+export function useMessageQuery(baseOptions: Apollo.QueryHookOptions<MessageQuery, MessageQueryVariables> & ({ variables: MessageQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<MessageQuery, MessageQueryVariables>(MessageDocument, options);
       }
@@ -2267,8 +1625,16 @@ export function useMessageLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Me
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<MessageQuery, MessageQueryVariables>(MessageDocument, options);
         }
+// @ts-ignore
+export function useMessageSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MessageQuery, MessageQueryVariables>): Apollo.UseSuspenseQueryResult<MessageQuery, MessageQueryVariables>;
+export function useMessageSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MessageQuery, MessageQueryVariables>): Apollo.UseSuspenseQueryResult<MessageQuery | undefined, MessageQueryVariables>;
+export function useMessageSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MessageQuery, MessageQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MessageQuery, MessageQueryVariables>(MessageDocument, options);
+        }
 export type MessageQueryHookResult = ReturnType<typeof useMessageQuery>;
 export type MessageLazyQueryHookResult = ReturnType<typeof useMessageLazyQuery>;
+export type MessageSuspenseQueryHookResult = ReturnType<typeof useMessageSuspenseQuery>;
 export type MessageQueryResult = Apollo.QueryResult<MessageQuery, MessageQueryVariables>;
 export const MessagesDocument = gql`
     query Messages($channelId: String!, $beforeId: Int) {
@@ -2323,7 +1689,7 @@ export const MessagesDocument = gql`
  *   },
  * });
  */
-export function useMessagesQuery(baseOptions: Apollo.QueryHookOptions<MessagesQuery, MessagesQueryVariables>) {
+export function useMessagesQuery(baseOptions: Apollo.QueryHookOptions<MessagesQuery, MessagesQueryVariables> & ({ variables: MessagesQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<MessagesQuery, MessagesQueryVariables>(MessagesDocument, options);
       }
@@ -2331,8 +1697,16 @@ export function useMessagesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<M
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<MessagesQuery, MessagesQueryVariables>(MessagesDocument, options);
         }
+// @ts-ignore
+export function useMessagesSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<MessagesQuery, MessagesQueryVariables>): Apollo.UseSuspenseQueryResult<MessagesQuery, MessagesQueryVariables>;
+export function useMessagesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MessagesQuery, MessagesQueryVariables>): Apollo.UseSuspenseQueryResult<MessagesQuery | undefined, MessagesQueryVariables>;
+export function useMessagesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MessagesQuery, MessagesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MessagesQuery, MessagesQueryVariables>(MessagesDocument, options);
+        }
 export type MessagesQueryHookResult = ReturnType<typeof useMessagesQuery>;
 export type MessagesLazyQueryHookResult = ReturnType<typeof useMessagesLazyQuery>;
+export type MessagesSuspenseQueryHookResult = ReturnType<typeof useMessagesSuspenseQuery>;
 export type MessagesQueryResult = Apollo.QueryResult<MessagesQuery, MessagesQueryVariables>;
 export const PartyChatsDocument = gql`
     query PartyChats {
@@ -2372,8 +1746,16 @@ export function usePartyChatsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<PartyChatsQuery, PartyChatsQueryVariables>(PartyChatsDocument, options);
         }
+// @ts-ignore
+export function usePartyChatsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<PartyChatsQuery, PartyChatsQueryVariables>): Apollo.UseSuspenseQueryResult<PartyChatsQuery, PartyChatsQueryVariables>;
+export function usePartyChatsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PartyChatsQuery, PartyChatsQueryVariables>): Apollo.UseSuspenseQueryResult<PartyChatsQuery | undefined, PartyChatsQueryVariables>;
+export function usePartyChatsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<PartyChatsQuery, PartyChatsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<PartyChatsQuery, PartyChatsQueryVariables>(PartyChatsDocument, options);
+        }
 export type PartyChatsQueryHookResult = ReturnType<typeof usePartyChatsQuery>;
 export type PartyChatsLazyQueryHookResult = ReturnType<typeof usePartyChatsLazyQuery>;
+export type PartyChatsSuspenseQueryHookResult = ReturnType<typeof usePartyChatsSuspenseQuery>;
 export type PartyChatsQueryResult = Apollo.QueryResult<PartyChatsQuery, PartyChatsQueryVariables>;
 export const ServerDocument = gql`
     query Server($serverId: Float!) {
@@ -2425,7 +1807,7 @@ export const ServerDocument = gql`
  *   },
  * });
  */
-export function useServerQuery(baseOptions: Apollo.QueryHookOptions<ServerQuery, ServerQueryVariables>) {
+export function useServerQuery(baseOptions: Apollo.QueryHookOptions<ServerQuery, ServerQueryVariables> & ({ variables: ServerQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<ServerQuery, ServerQueryVariables>(ServerDocument, options);
       }
@@ -2433,8 +1815,16 @@ export function useServerLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Ser
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<ServerQuery, ServerQueryVariables>(ServerDocument, options);
         }
+// @ts-ignore
+export function useServerSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<ServerQuery, ServerQueryVariables>): Apollo.UseSuspenseQueryResult<ServerQuery, ServerQueryVariables>;
+export function useServerSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ServerQuery, ServerQueryVariables>): Apollo.UseSuspenseQueryResult<ServerQuery | undefined, ServerQueryVariables>;
+export function useServerSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ServerQuery, ServerQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ServerQuery, ServerQueryVariables>(ServerDocument, options);
+        }
 export type ServerQueryHookResult = ReturnType<typeof useServerQuery>;
 export type ServerLazyQueryHookResult = ReturnType<typeof useServerLazyQuery>;
+export type ServerSuspenseQueryHookResult = ReturnType<typeof useServerSuspenseQuery>;
 export type ServerQueryResult = Apollo.QueryResult<ServerQuery, ServerQueryVariables>;
 export const ServerChannelsDocument = gql`
     query ServerChannels($channelId: String!) {
@@ -2465,7 +1855,7 @@ export const ServerChannelsDocument = gql`
  *   },
  * });
  */
-export function useServerChannelsQuery(baseOptions: Apollo.QueryHookOptions<ServerChannelsQuery, ServerChannelsQueryVariables>) {
+export function useServerChannelsQuery(baseOptions: Apollo.QueryHookOptions<ServerChannelsQuery, ServerChannelsQueryVariables> & ({ variables: ServerChannelsQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<ServerChannelsQuery, ServerChannelsQueryVariables>(ServerChannelsDocument, options);
       }
@@ -2473,8 +1863,16 @@ export function useServerChannelsLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<ServerChannelsQuery, ServerChannelsQueryVariables>(ServerChannelsDocument, options);
         }
+// @ts-ignore
+export function useServerChannelsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<ServerChannelsQuery, ServerChannelsQueryVariables>): Apollo.UseSuspenseQueryResult<ServerChannelsQuery, ServerChannelsQueryVariables>;
+export function useServerChannelsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ServerChannelsQuery, ServerChannelsQueryVariables>): Apollo.UseSuspenseQueryResult<ServerChannelsQuery | undefined, ServerChannelsQueryVariables>;
+export function useServerChannelsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ServerChannelsQuery, ServerChannelsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ServerChannelsQuery, ServerChannelsQueryVariables>(ServerChannelsDocument, options);
+        }
 export type ServerChannelsQueryHookResult = ReturnType<typeof useServerChannelsQuery>;
 export type ServerChannelsLazyQueryHookResult = ReturnType<typeof useServerChannelsLazyQuery>;
+export type ServerChannelsSuspenseQueryHookResult = ReturnType<typeof useServerChannelsSuspenseQuery>;
 export type ServerChannelsQueryResult = Apollo.QueryResult<ServerChannelsQuery, ServerChannelsQueryVariables>;
 export const UserDocument = gql`
     query User {
@@ -2516,8 +1914,16 @@ export function useUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<UserQ
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<UserQuery, UserQueryVariables>(UserDocument, options);
         }
+// @ts-ignore
+export function useUserSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<UserQuery, UserQueryVariables>): Apollo.UseSuspenseQueryResult<UserQuery, UserQueryVariables>;
+export function useUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<UserQuery, UserQueryVariables>): Apollo.UseSuspenseQueryResult<UserQuery | undefined, UserQueryVariables>;
+export function useUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<UserQuery, UserQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<UserQuery, UserQueryVariables>(UserDocument, options);
+        }
 export type UserQueryHookResult = ReturnType<typeof useUserQuery>;
 export type UserLazyQueryHookResult = ReturnType<typeof useUserLazyQuery>;
+export type UserSuspenseQueryHookResult = ReturnType<typeof useUserSuspenseQuery>;
 export type UserQueryResult = Apollo.QueryResult<UserQuery, UserQueryVariables>;
 export const UserFriendsDocument = gql`
     query UserFriends {
@@ -2573,8 +1979,16 @@ export function useUserFriendsLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<UserFriendsQuery, UserFriendsQueryVariables>(UserFriendsDocument, options);
         }
+// @ts-ignore
+export function useUserFriendsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<UserFriendsQuery, UserFriendsQueryVariables>): Apollo.UseSuspenseQueryResult<UserFriendsQuery, UserFriendsQueryVariables>;
+export function useUserFriendsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<UserFriendsQuery, UserFriendsQueryVariables>): Apollo.UseSuspenseQueryResult<UserFriendsQuery | undefined, UserFriendsQueryVariables>;
+export function useUserFriendsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<UserFriendsQuery, UserFriendsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<UserFriendsQuery, UserFriendsQueryVariables>(UserFriendsDocument, options);
+        }
 export type UserFriendsQueryHookResult = ReturnType<typeof useUserFriendsQuery>;
 export type UserFriendsLazyQueryHookResult = ReturnType<typeof useUserFriendsLazyQuery>;
+export type UserFriendsSuspenseQueryHookResult = ReturnType<typeof useUserFriendsSuspenseQuery>;
 export type UserFriendsQueryResult = Apollo.QueryResult<UserFriendsQuery, UserFriendsQueryVariables>;
 export const UserServersDocument = gql`
     query UserServers {
@@ -2615,6 +2029,14 @@ export function useUserServersLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<UserServersQuery, UserServersQueryVariables>(UserServersDocument, options);
         }
+// @ts-ignore
+export function useUserServersSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<UserServersQuery, UserServersQueryVariables>): Apollo.UseSuspenseQueryResult<UserServersQuery, UserServersQueryVariables>;
+export function useUserServersSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<UserServersQuery, UserServersQueryVariables>): Apollo.UseSuspenseQueryResult<UserServersQuery | undefined, UserServersQueryVariables>;
+export function useUserServersSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<UserServersQuery, UserServersQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<UserServersQuery, UserServersQueryVariables>(UserServersDocument, options);
+        }
 export type UserServersQueryHookResult = ReturnType<typeof useUserServersQuery>;
 export type UserServersLazyQueryHookResult = ReturnType<typeof useUserServersLazyQuery>;
+export type UserServersSuspenseQueryHookResult = ReturnType<typeof useUserServersSuspenseQuery>;
 export type UserServersQueryResult = Apollo.QueryResult<UserServersQuery, UserServersQueryVariables>;
