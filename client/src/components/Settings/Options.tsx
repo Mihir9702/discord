@@ -36,24 +36,27 @@ export default ({ option, setOption, onLogout }: Options) => {
   );
 
   return (
-    <section className="bg-mid w-80 h-full flex overflow-x-hidden overflow-y-auto shrink-0">
+    <section className="bg-mid w-full md:w-80 h-auto md:h-full flex overflow-x-auto md:overflow-x-hidden overflow-y-auto shrink-0">
       <hr className="sm:px-2 md:px-6 border-none" />
-      <section className="w-full flex flex-col gap-2 py-8">
+      <section className="w-full flex flex-col gap-2 py-3 md:py-8">
         <div className="w-full">
-          <h1 className={sidebar.title}>User Settings</h1>
-          {item("MyAccount", "My Account")}
-          {item("Profiles", "Profiles")}
-          {item("Blocked", "Blocked")}
+          <h1 className={sidebar.title + " hidden md:block"}>User Settings</h1>
+          <div className="flex items-center gap-1 md:block px-2 md:px-0">
+            {item("MyAccount", "My Account")}
+            {item("Profiles", "Profiles")}
+            {item("Blocked", "Blocked")}
+            <button type="button" className="md:hidden whitespace-nowrap px-3 text-sm text-gray-300" onClick={onLogout}>Logout</button>
+          </div>
           <hr className={sidebar.divider} />
         </div>
-        <div className="w-full">
+        <div className="hidden md:block w-full">
           <h1 className={sidebar.title}>Billing Settings</h1>
           {soon("Remix")}
           {soon("Subscriptions")}
           {soon("Billing")}
           <hr className={sidebar.divider} />
         </div>
-        <div className="w-full">
+        <div className="hidden md:block w-full">
           <h1 className={sidebar.title}>App Settings</h1>
           {soon("Appearance")}
           {soon("Voice & Video")}

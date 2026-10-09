@@ -115,3 +115,75 @@ jobs:
         run: npm ci --prefix server
       - name: Build original schema, seed linked legacy data and rehearse new migration
         run: npm run test:migration --prefix server
+
+  visual-review:
+    name: Screenshot review at desktop, tablet and phone sizes
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: connect_discord_visual_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d connect_discord_visual_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/connect_discord_visual_ci
+      NEXT_PUBLIC_API_URL: http://localhost:4300
+      CLIENT_URL: http://localhost:3001
+      SESSION_SECRET: ci-visual-only-ephemeral-not-for-production-use
+      PORT: "4300"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: |
+            server/package-lock.json
+            client/package-lock.json
+      - name: Install locked application and browser test dependencies
+        run: |
+          npm ci --prefix server
+          npm ci --prefix client
+      - name: Build both applications
+        run: |
+          npm run build --prefix server
+          npm run build --prefix client
+      - name: Install headless browser
+        working-directory: client
+        run: npx playwright install --with-deps chromium
+      - name: Generate authenticated synthetic screenshot matrix
+        shell: bash
+        run: |
+          npm run start --prefix server > /tmp/connect-visual-api.log 2>&1 &
+          API_PID=$!
+          npm run start --prefix client > /tmp/connect-visual-client.log 2>&1 &
+          CLIENT_PID=$!
+          trap 'kill $CLIENT_PID $API_PID 2>/dev/null || true; echo ---API---; tail -50 /tmp/connect-visual-api.log; echo ---CLIENT---; tail -50 /tmp/connect-visual-client.log' EXIT
+          for i in {1..45}; do
+            if curl --fail --silent --show-error \
+              -H 'Content-Type: application/json' \
+              -d '{"query":"query { __typename }"}' \
+              http://localhost:4300/graphql > /dev/null 2>&1 && \
+              curl --fail --silent http://localhost:3001/login > /dev/null 2>&1; then
+              break
+            fi
+            sleep 1
+          done
+          npm run test:visual --prefix client
+      - name: Upload screenshots for manual review even if a browser assertion fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discord-visual-review
+          path: client/visual-review/
+          retention-days: 7
+          if-no-files-found: warn

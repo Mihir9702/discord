@@ -8,3 +8,7 @@
 *.log
 server/audit-runtime.json
 client/audit-runtime.json
+
+/client/visual-review/
+/client/test-results/
+/client/playwright-report/
