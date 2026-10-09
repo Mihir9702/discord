@@ -81,3 +81,37 @@ jobs:
           npm run test:e2e --prefix server
       - name: Git whitespace validation
         run: git diff --check
+
+
+  migration-rehearsal:
+    name: Migrate populated legacy schema
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: connect_discord_rehearsal_ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d connect_discord_rehearsal_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/connect_discord_rehearsal_ci
+      MIGRATION_REHEARSAL: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: server/package-lock.json
+      - name: Install backend locked dependencies
+        run: npm ci --prefix server
+      - name: Build original schema, seed linked legacy data and rehearse new migration
+        run: npm run test:migration --prefix server
